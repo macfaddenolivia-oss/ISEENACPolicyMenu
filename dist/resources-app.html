@@ -3453,7 +3453,20 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
   function setupFeedbackModal() {
     try {
       var STORAGE_KEY = "feedbackModalDismissed";
-      if (sessionStorage.getItem(STORAGE_KEY)) return;
+      // Guarded on its own: some browsers' stricter privacy modes throw
+      // on sessionStorage access entirely rather than just returning
+      // null, which would otherwise trip the outer catch below and
+      // silently cancel the popup before it ever got a chance to
+      // schedule its timer. Defaulting to "not dismissed" here means it
+      // still shows in that case — it just won't remember being
+      // dismissed across reloads, same fallback dismiss() already uses.
+      var alreadyDismissed = false;
+      try {
+        alreadyDismissed = !!sessionStorage.getItem(STORAGE_KEY);
+      } catch (e) {
+        /* storage blocked/unavailable */
+      }
+      if (alreadyDismissed) return;
 
       var backdrop = document.getElementById("feedback-modal-backdrop");
       var closeBtn = document.getElementById("feedback-modal-close");
@@ -3516,7 +3529,13 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
         closeBtn.focus();
       }, 60000);
     } catch (e) {
-      /* never let a feedback-popup issue affect the rest of the app */
+      // Never let a feedback-popup issue affect the rest of the app —
+      // still logged (not thrown/shown to the visitor) so a real
+      // problem is visible in devtools instead of just silently never
+      // showing the popup with no trace of why.
+      if (typeof console !== "undefined" && console.error) {
+        console.error("Feedback popup failed to set up:", e);
+      }
     }
   }
 
