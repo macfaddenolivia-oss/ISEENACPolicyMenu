@@ -338,26 +338,37 @@
     return ALL.filter(passes);
   }
 
-  // For every distinct value in `field`, how many of ALL the records
-  // would pass if that value were included in state[listKey] — added to
-  // whatever's already selected there, never replacing it — combined
-  // with the *other* facets' current selections under the current
-  // matchMode. This is what makes every tag's count answer "how many
-  // results if I picked this too," live, including tags in the same
-  // facet the count belongs to (Type tags updating as other Types are
-  // (de)selected, not just as Subtype/Organization change) — unlike a
-  // simpler "skip this facet entirely" approach, which would show what
-  // swapping to just this value alone would give, ignoring whatever
-  // else is already picked in the same facet.
+  // For every distinct value in `field`, the live count shown on its
+  // tag. Two cases, depending on whether *this facet* already has an
+  // active selection:
   //
-  // A value already selected needs no such simulation — since it's
-  // already included, "if it were included" is just the current,
-  // unmodified result count. Computed up front, before any of the loop
-  // below's temporary mutations, and reused for every already-selected
-  // value in the facet (matching how they're all already contributing
-  // to that same number) — computing it lazily on first use inside the
-  // loop instead would risk grabbing it *after* some other value's
-  // temporary state.types/subs/orgs mutation was already in place.
+  // - Facet already active (e.g. another Type is picked, and this is a
+  //   Type count): simulate adding the candidate to that selection —
+  //   never replacing what's there — and recompute the full result
+  //   count under the current matchMode. This is what lets a Type tag's
+  //   count answer "how many results if I picked this one too," live,
+  //   for tags in the *same* facet as each other (Type reacting to
+  //   other Types, not just to Subtype/Organization).
+  //
+  // - Facet not yet active (e.g. no Organization is picked, and Type is
+  //   what's currently narrowing things down): just intersect the
+  //   *current* result set with the candidate value, rather than
+  //   simulating and recombining via matchMode. In Match all these give
+  //   the same number either way — but in Match any, simulating would
+  //   OR the brand-new facet in, so every not-yet-active Organization
+  //   would show roughly "current count + that org's own total"
+  //   regardless of how relevant it actually is to what's already
+  //   showing, which is what made Organization counts look disconnected
+  //   from an active Type filter. Intersecting instead answers "of what
+  //   I'm already seeing, how many are also this" — informative in both
+  //   modes, and there's nothing yet active in this facet for matchMode
+  //   to combine any other way regardless.
+  //
+  // A value already selected needs neither simulation: it's already
+  // included, so its count is just the current, unmodified result
+  // count. Both `current` and the per-value work below run against a
+  // stable snapshot captured up front, before any temporary
+  // state.types/subs/orgs mutation happens later in the same pass.
   function countIncluding(listKey, field) {
     var counts = Object.create(null);
     var original = state[listKey];
@@ -365,13 +376,20 @@
     original.forEach(function (v) {
       alreadyOn[v] = true;
     });
-    var currentCount = currentResults().length;
+    var current = currentResults();
+    var facetActive = original.length > 0;
 
     ALL.forEach(function (r) {
       var v = r[field];
       if (!v || counts[v] !== undefined) return;
       if (alreadyOn[v]) {
-        counts[v] = currentCount;
+        counts[v] = current.length;
+        return;
+      }
+      if (!facetActive) {
+        counts[v] = current.filter(function (rr) {
+          return rr[field] === v;
+        }).length;
         return;
       }
       state[listKey] = original.concat([v]);
