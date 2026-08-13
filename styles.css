@@ -431,14 +431,16 @@ kbd {
   pointer-events: none;
 }
 
-/* Fixed navy (not inherited from .random-hint's own light/hover text
-   color) so the dice icon stays the same brand-navy regardless of
-   hover/focus state, unlike the text beside it. */
+/* Fixed to --accent (not inherited from .random-hint's own light/hover
+   text color) — the same teal/sage the "New to advocacy?" header pill
+   uses, via the same variable rather than a separately-hardcoded
+   value, so the two stay in sync if --accent ever changes again. Fixed
+   regardless of hover/focus state, unlike the text beside it. */
 .random-hint svg {
   flex: none;
   width: 19px;
   height: 19px;
-  color: var(--brand-navy);
+  color: var(--accent);
 }
 
 .clear-search {
