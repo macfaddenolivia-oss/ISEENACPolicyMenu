@@ -7,7 +7,7 @@
      on top of that. */
   color-scheme: light;
 
-  --bg: #f6f7f9;
+  --bg: #ffffff;
   --surface: #ffffff;
   --surface-2: #f1f3f6;
   --border: #e2e6ec;
@@ -16,21 +16,30 @@
   --text-2: #5a6472;
   --text-3: #8a93a2;
 
-  /* Brand palette (ISEE-aligned) — fixed navy/slate, constant across themes */
+  /* Brand palette (ISEE-aligned) — fixed navy/slate. Used directly (not
+     through --accent below) by the header bar and the search input,
+     which both intentionally keep their original navy styling even
+     though the general accent has moved to teal. */
   --brand-navy: #1b3a5c;
   --brand-navy-deep: #122a44;
   --brand-slate: #5b84a8;
+  --search-border: var(--brand-slate);
+  --search-border-focus: var(--brand-navy);
+  --search-ring: 0 0 0 3px rgba(27, 58, 92, 0.28);
 
-  /* Theme-adaptive accent: navy for primary/active/focus, slate for hover/highlight */
-  --accent: #1b3a5c;
-  --accent-2: #5b84a8;
+  /* General accent — buttons, links, selected/focus states, Organization
+     pills, etc. site-wide. A muted teal/sage rather than the brand navy
+     above, which stays reserved for the header bar and search input
+     specifically (see --search-* above). */
+  --accent: #2e6058;
+  --accent-2: #4f8f83;
   --accent-soft: color-mix(in srgb, var(--accent) 10%, white);
   --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
   --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
   --shadow-lg: 0 14px 34px rgba(16, 24, 40, 0.14);
   --radius: 14px;
   --radius-sm: 8px;
-  --ring: 0 0 0 3px rgba(27, 58, 92, 0.28);
+  --ring: 0 0 0 3px rgba(46, 96, 88, 0.28);
   --type-s: 62%;
   --type-l: 42%;
   --type-tint-l: 96%;
@@ -46,7 +55,7 @@
   /* Dedicated accent for "Another random resource" (see .btn-random) —
      the same pink/magenta hue used on some Type tags (hue 340 in app.js's
      HUES list), so the playful random-pick feature has its own on-brand
-     color distinct from the navy used for primary/neutral actions
+     color distinct from the teal used for primary/neutral actions
      elsewhere. */
   --random-h: 340;
   --random-s: 68%;
@@ -102,9 +111,13 @@ body {
   margin: 0 auto;
   /* Vertical padding upped to give the larger logo below room to breathe
      without cramping the navy bar. */
-  padding: 22px clamp(16px, 4vw, 40px);
+  padding: 26px clamp(16px, 4vw, 40px);
   display: flex;
   align-items: center;
+  /* .brand on the left, the Start Here pill (see below) pinned to the
+     far right, opposite it. */
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .brand {
@@ -118,13 +131,13 @@ body {
    regardless of the source image's own background. Sized by height with
    width auto so it scales proportionally and never stretches. */
 .brand-logo {
-  height: 52px;
+  height: 68px;
   width: auto;
   flex: none;
   display: block;
   background: #fff;
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   object-fit: contain;
 }
 
@@ -139,9 +152,6 @@ body {
 
 /* No max-width: spans the same full container width as .start-here and
    .filter-bar below it, rather than sitting narrower and centered. */
-/* --accent equals the header's navy in light mode and swaps to a lighter
-   blue in dark mode, so this stays readable on a dark background instead
-   of the fixed --brand-navy going low-contrast there. */
 .intro {
   margin: 0 0 8px;
   color: var(--accent);
@@ -158,54 +168,45 @@ body {
 
 /* ---------- Start Here ---------- */
 
-/* Clickable line that reveals/hides the card grid below it. Collapsed by
-   default on every load (app.js sets no persisted state), so this is the
-   only way back into Start Here once dismissed — keeping first-paint
-   focus on search/filter rather than a wall of four cards. */
+/* Compact pill living inside the navy header bar itself (see
+   .site-header-inner's justify-content:space-between), opposite the
+   logo/title, rather than its own full-width bar below it. Solid
+   --accent fill (the site's teal accent) reads clearly against navy —
+   a tint/outline treatment like the old full-width bar used would go
+   low-contrast there. Collapsed by default on every load (app.js sets
+   no persisted state), so this is the only way back into Start Here
+   once dismissed. */
 .start-here-toggle {
-  position: relative;
-  display: flex;
+  flex: none;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  margin: 0 0 10px;
-  padding: 11px 18px;
+  gap: 8px;
+  padding: 9px 16px;
   font: inherit;
-  font-size: 14px;
-  /* A step heavier than the surrounding body copy's default weight, so
-     the whole line (not just the <strong> lead-in) reads as more
-     prominent without tipping into a heavier, shoutier weight. */
-  font-weight: 500;
-  color: var(--accent);
-  text-align: center;
-  /* Deeper navy tint than the plain accent-soft used elsewhere, so this
-     reads clearly as its own navy-branded, clickable bar rather than a
-     neutral gray one blending into the surrounding boxes. */
-  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border));
-  border-radius: var(--radius);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  background: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, white);
+  border-radius: 999px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  /* One-time, subtle settle-in on page load — the same fadeUp keyframes
-     and timing function .card already uses elsewhere, so the motion
-     language matches rather than introducing a second style of entrance.
-     Automatically neutralized by the site-wide prefers-reduced-motion
-     rule further down (animation-duration: 0.01ms !important), no
-     separate handling needed here. */
-  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
-
-.start-here-toggle strong { color: var(--accent); }
 
 .start-here-toggle:hover,
 .start-here-toggle:focus-visible {
-  background: color-mix(in srgb, var(--accent) 28%, var(--surface));
-  border-color: var(--accent-2);
+  background: var(--accent-2);
   box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
-.start-here-toggle:focus-visible { outline: none; box-shadow: var(--ring); }
+/* A navy-based --ring would go low-contrast against this same navy
+   header — white reads clearly against it instead. */
+.start-here-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+}
 
 .start-here-toggle .chevron {
   flex: none;
@@ -333,6 +334,10 @@ body {
    thicker accent-toned border plus a standing shadow (not just on focus)
    so it reads as the primary way in, ahead of Match/filter categories
    below it (see .filter-group-box, .segmented). */
+/* Border/focus intentionally use the dedicated --search-* variables
+   (brand navy) rather than the general --accent, which keeps this the
+   one prominent control that still reads as navy-branded even as the
+   rest of the page's accent color has moved to teal. */
 #search {
   width: 100%;
   padding: 12px 84px 12px 40px;
@@ -340,7 +345,7 @@ body {
   font-size: 15.5px;
   color: var(--text);
   background: var(--surface);
-  border: 1.5px solid var(--accent-2);
+  border: 1.5px solid var(--search-border);
   border-radius: 11px;
   outline: none;
   box-shadow: var(--shadow-sm);
@@ -348,7 +353,7 @@ body {
 }
 
 #search::placeholder { color: var(--text-3); }
-#search:focus { border-color: var(--accent); box-shadow: var(--ring); }
+#search:focus { border-color: var(--search-border-focus); box-shadow: var(--search-ring); }
 
 .slash-hint {
   position: absolute;
@@ -416,7 +421,7 @@ kbd {
   color: var(--text-3);
 }
 
-/* Primary CTA (Random resource) — solid brand navy, slate on hover */
+/* Primary CTA (Random resource) — solid accent teal, darker teal on hover */
 .btn-primary {
   color: #fff;
   background: var(--accent);
@@ -433,7 +438,7 @@ kbd {
    pick is showing, styled distinctly from the neutral "Back to all
    resources" beside it: pill-shaped rather than the standard rounded-
    rectangle .btn, filled with a dedicated pink/magenta (--random-h, tied
-   to the same hue used on some Type tags) instead of the navy every
+   to the same hue used on some Type tags) instead of the teal every
    other primary action uses, so it reads as its own playful thing tied
    to the random-pick feature specifically. */
 .btn-random {
@@ -499,14 +504,17 @@ kbd {
   gap: 6px 16px;
 }
 
-/* Match all/any is a persistent control, not part of the collapse — it
-   always applies across whichever facets are active, so it stays visible
-   regardless of whether the boxes below are showing their preview or the
-   full pill wall. Toggle and info icon sit on one line at every width
-   (unlike .fgroup, which stacks on mobile) — there's nothing here that
-   needs the room a stacked layout buys, and staying inline keeps this
-   row's footprint minimal. */
-.match-row {
+/* Hidden until "Browse filters" is actually open — Match all/any only
+   means something once there's a pill wall in view to apply it to, so
+   there's nothing useful to show before that (or worth clicking
+   Clear filters just to make it go away again after). Toggle and info
+   icon sit on one line at every width (unlike .fgroup, which stacks on
+   mobile) — there's nothing here that needs the room a stacked layout
+   buys, and staying inline keeps this row's footprint minimal once it
+   does appear. */
+.match-row { display: none; }
+
+.filter-bar.filters-open .match-row {
   grid-area: match;
   display: flex;
   align-items: center;
@@ -616,16 +624,18 @@ kbd {
 /* Type+Subtype and Organization each get their own bordered box so the
    three filter categories read as two distinct groups rather than one
    continuous wall of tags. */
-/* Muted by default — blends toward the page background rather than
-   standing out as a bordered card — so it reads as a supporting section
-   next to the search bar above. Interacting with anything inside it
-   (hover or focus, e.g. tabbing to a pill) restores the clearer card
-   treatment, since at that point the user's attention is already there. */
+/* Muted by default — blends toward --surface-2 (the page background,
+   --bg, is the same white as --surface itself now, so it can't supply
+   this contrast the way it used to) rather than standing out as a
+   bordered card — so it reads as a supporting section next to the
+   search bar above. Interacting with anything inside it (hover or
+   focus, e.g. tabbing to a pill) restores the clearer card treatment,
+   since at that point the user's attention is already there. */
 .filter-group-box {
   border: 1px solid transparent;
   border-radius: var(--radius);
   padding: 6px 10px;
-  background: color-mix(in srgb, var(--surface) 55%, var(--bg));
+  background: color-mix(in srgb, var(--surface) 55%, var(--surface-2));
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -828,18 +838,19 @@ kbd {
   filter: saturate(0.35);
 }
 
-/* Organization gets its own soft, muted light-blue identity — distinct
-   from Type's per-value hue coding and Subtype's neutral gray — built on
-   --accent/--accent-2 (the same navy/slate pair .seg-btn[aria-pressed=
-   "true"] already uses for a deliberately muted selected tone, rather
-   than a solid fill) so it reads as "on brand" instead of an arbitrary
-   new color. Text stays --accent (navy) in both states rather than the
-   lighter --accent-2 — against a background this pale, --accent-2 comes
-   in under 4:1 contrast, short of WCAG AA's 4.5:1 for this size text;
-   --accent clears it with comfortable room in both states. Selected just
-   deepens the tint and switches the border to --accent-2, rather than
-   any bold/saturated fill — a modest escalation to stay legible as
-   "this one's picked," not a different color language. */
+/* Organization gets its own soft, muted teal identity — distinct from
+   Type's per-value hue coding and Subtype's neutral gray — built on
+   --accent/--accent-2 (the same pair .seg-btn[aria-pressed="true"]
+   already uses for a deliberately muted selected tone, rather than a
+   solid fill) so it reads as "on brand" and stays in sync if the accent
+   pair ever changes again, rather than an arbitrary new color. Text
+   stays --accent in both states rather than the lighter --accent-2 —
+   against a background this pale, --accent-2 comes in under 4:1
+   contrast, short of WCAG AA's 4.5:1 for this size text; --accent clears
+   it with comfortable room in both states. Selected just deepens the
+   tint and switches the border to --accent-2, rather than any bold/
+   saturated fill — a modest escalation to stay legible as "this one's
+   picked," not a different color language. */
 .pill[data-filter="org"] {
   color: var(--accent);
   background: var(--accent-soft);
@@ -894,9 +905,10 @@ kbd {
   /* No padding/gap: the two buttons fill the pill edge-to-edge and meet
      at a center divider (below), reading as one split pill rather than
      two separate button shapes. */
-  /* Muted by default, same reasoning as .filter-group-box — a supporting
-     control, not competing with the search bar for attention. */
-  background: color-mix(in srgb, var(--surface) 55%, var(--bg));
+  /* Muted by default, same reasoning as .filter-group-box (including the
+     --surface-2 blend, not --bg) — a supporting control, not competing
+     with the search bar for attention. */
+  background: color-mix(in srgb, var(--surface) 55%, var(--surface-2));
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -1639,12 +1651,15 @@ mark {
 
   .card { padding: 16px 15px 14px; }
 
-  .site-header-inner { padding: 14px 14px; }
+  .site-header-inner { padding: 14px 14px; gap: 10px; }
   .brand { gap: 10px; }
-  .brand-logo { height: 38px; padding: 5px 9px; }
+  .brand-logo { height: 46px; padding: 6px 10px; }
   /* Small enough that the full title settles into 2 lines instead of
      wrapping awkwardly across 3. */
   .brand-name { font-size: 15px; line-height: 1.22; }
+
+  .start-here-toggle { padding: 7px 11px; font-size: 12px; gap: 6px; }
+  .start-here-toggle .chevron { width: 13px; height: 13px; }
 
   /* Wrap the creator rather than truncating it — there's room in one column */
   .meta-item .v { white-space: normal; }
