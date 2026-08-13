@@ -20,9 +20,9 @@
      through --accent below) by the header bar and the search input,
      which both intentionally keep their original navy styling even
      though the general accent has moved to teal. */
-  --brand-navy: #1b3a5c;
+  --brand-navy: #0b6fa1;
+  --brand-navy-deep: #044768;
   --brand-green: #3a95a0;
-  --brand-navy-deep: #122a44;
   --brand-slate: #5b84a8;
   --search-border: var(--brand-slate);
   --search-border-focus: var(--brand-navy);
@@ -32,13 +32,13 @@
      pills, etc. site-wide. A muted teal/sage rather than the brand navy
      above, which stays reserved for the header bar and search input
      specifically (see --search-* above). */
-  --accent: #2e6058;
-  --accent-2: #4f8f83;
+  --accent: #0b6fa1;
+  --accent-2: #3a95a0;
   --accent-soft: color-mix(in srgb, var(--accent) 10%, white);
   --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
   --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
   --shadow-lg: 0 14px 34px rgba(16, 24, 40, 0.14);
-  --radius: 14px;
+  --radius: 5px;
   --radius-sm: 8px;
   --ring: 0 0 0 3px rgba(46, 96, 88, 0.28);
   --type-s: 62%;
@@ -107,8 +107,8 @@ body {
    below without needing a solid navy block to do it. */
 .site-header {
   background: #fff;
-  color: var(--brand-navy);
-  border-bottom: 3px solid var(--brand-navy);
+  color: var(--brand-navy-deep);
+  /* border-bottom: 3px solid var(--brand-navy); */
 }
 
 .site-header-inner {
@@ -116,7 +116,7 @@ body {
   margin: 0 auto;
   /* Vertical padding upped to give the larger logo below room to breathe
      without cramping the bar. */
-  padding: 26px clamp(16px, 4vw, 40px);
+  padding: 30px clamp(16px, 4vw, 40px);
   display: flex;
   align-items: center;
   /* .brand on the left, the Start Here pill (see below) pinned to the
@@ -139,7 +139,7 @@ body {
    navy fill this bar no longer has. Sized by height with width auto so
    it scales proportionally and never stretches. */
 .brand-logo {
-  height: 68px;
+  height: 74px;
   width: auto;
   flex: none;
   display: block;
@@ -149,7 +149,7 @@ body {
 .brand-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -159,7 +159,7 @@ body {
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.25;
-  color: var(--brand-navy);
+  color: var(--brand-navy-deep);
 }
 
 /* Stacked directly under the title now (previously its own centered
@@ -171,7 +171,7 @@ body {
 .brand-subtitle {
   margin: 0;
   max-width: 640px;
-  color: var(--brand-navy);
+  color: var(--brand-navy-data);
   opacity: 0.82;
   font-size: 14px;
   line-height: 1.45;
@@ -192,12 +192,12 @@ body {
   gap: 8px;
   padding: 16px 27px;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
-  background: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, white);
+  background: var(--brand-navy);
+  border: 1px solid color-mix(in srgb, var(--brand-navy) 55%, white);
   border-radius: 999px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
@@ -206,7 +206,7 @@ body {
 
 .start-here-toggle:hover,
 .start-here-toggle:focus-visible {
-  background: var(--accent-2);
+  background: var(--brand-green);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
@@ -242,7 +242,7 @@ body {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--accent);
+  color: var(--brand-green);
   text-align: center;
 }
 
