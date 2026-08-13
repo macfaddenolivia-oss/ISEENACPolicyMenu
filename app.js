@@ -647,13 +647,13 @@
     // in the raw data are shown — a structural fact independent of
     // Match mode, search, or Organization, unlike subCounts (which
     // *does* respect all of those, and still drives the number on each
-    // surviving tag).
-    var typeIsActive = state.types.length > 0;
-    el.subFgroup.hidden = !typeIsActive;
-    el.subFgroupPreview.hidden = !typeIsActive;
-
+    // surviving tag). Some Types (e.g. "Data governance/ preservation")
+    // have no Subtype values recorded at all — for those the section
+    // must stay hidden too, not just render as an empty labeled box, so
+    // the gate checks the resulting list's length rather than only
+    // whether a Type is active.
     var subs = [];
-    if (typeIsActive) {
+    if (state.types.length > 0) {
       var subsForActiveTypes = Object.create(null);
       ALL.forEach(function (r) {
         if (r.subtype && state.types.indexOf(r.type) !== -1) {
@@ -664,6 +664,8 @@
         bySelectionThenCount(subCounts, state.subs)
       );
     }
+    el.subFgroup.hidden = subs.length === 0;
+    el.subFgroupPreview.hidden = subs.length === 0;
 
     el.subPills.innerHTML = subs
       .map(function (s) {
