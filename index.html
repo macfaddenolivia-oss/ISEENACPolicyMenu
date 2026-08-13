@@ -58,12 +58,17 @@
         <label class="visually-hidden" for="search">Search resources</label>
         <input id="search" type="search" autocomplete="off" spellcheck="false"
                placeholder="Search resources, creators, descriptions…">
-        <span class="slash-hint">
+        <span class="search-hints">
+          <!-- Same id/behavior as the old standalone "Random resource"
+               button it replaces (see app.js) — just relocated and
+               restyled to sit inline here instead. -->
+          <button class="random-hint" id="random" type="button" aria-label="Show a random resource">
+            <span class="random-hint-text">random resource</span>
+          </button>
           <button class="clear-search" id="clear-search" type="button" aria-label="Clear search">×</button>
           <kbd>/</kbd>
         </span>
       </div>
-      <button class="btn" id="random" type="button">Random resource</button>
     </div>
   </div>
 

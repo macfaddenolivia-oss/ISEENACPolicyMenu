@@ -326,7 +326,12 @@ body {
   min-width: 0;
 }
 
-.searchbox svg {
+/* Scoped to #search-icon specifically (not a blanket .searchbox svg) —
+   the random-hint button below also has an svg inside .searchbox (the
+   dice icon), which needs to stay in normal inline flow within its own
+   button rather than inheriting this leading icon's absolute
+   positioning. */
+#search-icon svg {
   position: absolute;
   left: 13px;
   top: 50%;
@@ -345,7 +350,9 @@ body {
    rest of the page's accent color has moved to teal. */
 #search {
   width: 100%;
-  padding: 12px 84px 12px 40px;
+  /* Right padding widened to clear .search-hints below, now that it
+     holds the random-resource hint in addition to clear/kbd. */
+  padding: 12px 172px 12px 40px;
   font: inherit;
   font-size: 15.5px;
   color: var(--text);
@@ -360,14 +367,18 @@ body {
 #search::placeholder { color: var(--text-3); }
 #search:focus { border-color: var(--search-border-focus); box-shadow: var(--search-ring); }
 
-.slash-hint {
+/* Houses the random-resource hint, the clear-search (×) button, and the
+   "/" keyboard-shortcut kbd, left to right — everything that used to
+   live in the standalone "Random resource" button plus the original
+   slash-hint, now sharing this one end-of-input strip. */
+.search-hints {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 kbd {
@@ -378,6 +389,51 @@ kbd {
   border-bottom-width: 2px;
   border-radius: 5px;
   padding: 4px 6px;
+}
+
+/* Small, muted hint replacing the old standalone "Random resource"
+   button — deliberately subtle (light, italic, no fill/border by
+   default) so it reads as a hint alongside clear/slash rather than
+   competing with the search input for attention. Padding well beyond
+   the visible icon+text gives it a real hit target despite the small
+   footprint; the matching negative margin cancels that padding back
+   out of .search-hints' layout so it doesn't visually push the other
+   hints further right than the icon+text alone would. */
+.random-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: none;
+  padding: 8px 5px;
+  margin: -8px -5px;
+  cursor: pointer;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 12px;
+  font-style: italic;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.random-hint:hover,
+.random-hint:focus-visible {
+  color: var(--accent-2);
+  background: var(--accent-soft);
+}
+.random-hint:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.random-hint:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+.random-hint svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
 }
 
 .clear-search {
@@ -1568,19 +1624,22 @@ mark {
     overflow: hidden;
   }
   .grid, .skeleton-grid { grid-template-columns: 1fr; }
-  .slash-hint kbd { display: none; }
+  /* The "/" shortcut is a desktop-keyboard affordance — no physical "/"
+     key to reach for on mobile, so it's dropped there entirely rather
+     than competing with the random-resource hint for the (now tighter)
+     end-of-input space. */
+  .search-hints kbd { display: none; }
 
-  /* 16px minimum stops iOS Safari zooming the page on focus */
-  #search { font-size: 16px; padding: 12px 44px 12px 40px; }
+  /* 16px minimum stops iOS Safari zooming the page on focus. Right
+     padding trimmed from desktop's — no kbd to clear here (hidden
+     above), just the random-resource hint (itself a bit smaller — see
+     .random-hint below) and the clear button. */
+  #search { font-size: 16px; padding: 12px 138px 12px 40px; }
 
   .searchbox { flex: 1 1 100%; }
 
-  /* Random resource drops to its own full-width row under the search box
-     instead of sitting cramped beside it. */
-  .searchrow #random {
-    flex: 1 1 100%;
-    justify-content: center;
-  }
+  .random-hint { font-size: 11px; gap: 4px; }
+  .random-hint svg { width: 12px; height: 12px; }
 
   /* Hide the (small, compact) search bar on scroll-down, reveal it on
      scroll-up — mobile only, gated by this media query rather than a JS
