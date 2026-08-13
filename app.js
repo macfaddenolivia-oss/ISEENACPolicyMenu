@@ -1,15 +1,20 @@
 /* Resource Menu — shared app logic.
  *
  * Runs in two modes with no changes:
- *   hosted     -> fetches data/resources.csv at runtime (GitHub Pages, local server)
- *   standalone -> reads window.__RESOURCES__ injected by tools/build.py
+ *   hosted     -> fetches the published Google Sheet CSV at runtime (GitHub Pages, local server)
+ *   standalone -> reads window.__RESOURCES__ injected by tools/build.py from data/resources.csv
  */
 (function () {
   "use strict";
 
-  // Relative to index.html at the site root, so it works both locally and
-  // under a GitHub Pages project subpath (…github.io/<repo>/).
-  var CSV_PATH = "data/resources.csv";
+  // Published Google Sheets CSV export — the team edits resources directly
+  // in the Sheet, and the hosted site re-fetches this on every page load.
+  // Google's publish endpoint sends Access-Control-Allow-Origin: * and
+  // Cache-Control: private, max-age=300 (~5 min edge cache), confirmed via
+  // curl; a stale local copy at data/resources.csv remains only as the
+  // source `tools/build.py` embeds into the standalone dist build.
+  var CSV_PATH =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFj-hZ-z0t1PGu6iK7VR4rOKfDsFtRiJuoWnoje-tiZ21fF7eC10hmPlTXt8PpsvGDypkh9Fi60qQh/pub?output=csv";
 
   /* ---------------- CSV parsing ---------------- */
 
@@ -1559,19 +1564,21 @@
       return;
     }
 
-    // Dev preview only: read the CSV over HTTP.
+    // Fetches the published Google Sheet at runtime (hosted and dev-server
+    // modes both hit the network here; only the standalone build above
+    // skips this in favor of embedded data).
     var devHint = function (err) {
       var viaFile =
         typeof location !== "undefined" && location.protocol === "file:";
       return (
-        "Reading <code>" + esc(CSV_PATH) + "</code> failed (" + errText(err) + "). " +
+        "Reading the resource sheet failed (" + errText(err) + "). " +
         (viaFile
-          ? "Browsers block local file reads, so this page needs to be served over " +
-            "HTTP — run <code>python3 -m http.server 8000</code> from the project " +
-            "folder and open <code>http://localhost:8000/</code>. For an offline " +
-            "copy you can email, use <code>dist/resources-app.html</code> instead."
-          : "Check that <code>data/resources.csv</code> exists alongside this page " +
-            "and try reloading.")
+          ? "Some browsers block cross-origin fetches from local files, so this page " +
+            "needs to be served over HTTP — run <code>python3 -m http.server 8000</code> " +
+            "from the project folder and open <code>http://localhost:8000/</code>. For an " +
+            "offline copy you can email, use <code>dist/resources-app.html</code> instead."
+          : "Check that the Google Sheet is still published to the web (File → Share → " +
+            "Publish to web) and try reloading.")
       );
     };
 
