@@ -417,6 +417,8 @@
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>',
     compass:
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+    close:
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
   };
 
   function pillHTML(value, count, active, kind) {
@@ -1358,6 +1360,86 @@
     });
   }
 
+  // Feedback popup: shown once, ~60s after page load, unless already
+  // dismissed this session (sessionStorage, not localStorage — it comes
+  // back on a future visit, not just a future page load in the same
+  // one). Entirely self-contained — its own element lookups, wrapped in
+  // one outer try/catch — rather than routed through boot()'s strict
+  // `el` validation above, so a missing or broken popup element can
+  // never take down the core filtering app; it just quietly never
+  // shows. Independent of whether resource data ends up loading
+  // successfully, so it's called unconditionally from boot(), not from
+  // start() (which only runs once data's in hand).
+  function setupFeedbackModal() {
+    try {
+      var STORAGE_KEY = "feedbackModalDismissed";
+      if (sessionStorage.getItem(STORAGE_KEY)) return;
+
+      var backdrop = document.getElementById("feedback-modal-backdrop");
+      var closeBtn = document.getElementById("feedback-modal-close");
+      var closeIcon = document.getElementById("feedback-modal-close-icon");
+      var link = document.getElementById("feedback-modal-link");
+      if (!backdrop || !closeBtn || !link) return;
+
+      if (closeIcon) closeIcon.innerHTML = ICON.close;
+
+      var dismissed = false;
+      var lastFocused = null;
+
+      function onKeydown(e) {
+        if (e.key === "Escape") dismiss();
+      }
+
+      function dismiss() {
+        if (dismissed) return;
+        dismissed = true;
+        try {
+          sessionStorage.setItem(STORAGE_KEY, "1");
+        } catch (e) {
+          /* private browsing / storage disabled — it just won't stay
+             dismissed past this page load, which is an acceptable
+             fallback rather than something to block on */
+        }
+        backdrop.classList.remove("show");
+        // Let the fade-out finish before pulling it fully out of layout,
+        // rather than having it vanish mid-transition.
+        setTimeout(function () {
+          backdrop.hidden = true;
+        }, 220);
+        document.removeEventListener("keydown", onKeydown);
+        if (lastFocused && typeof lastFocused.focus === "function") {
+          lastFocused.focus();
+        }
+      }
+
+      closeBtn.addEventListener("click", dismiss);
+      link.addEventListener("click", dismiss);
+      backdrop.addEventListener("click", function (e) {
+        if (e.target === backdrop) dismiss();
+      });
+
+      setTimeout(function () {
+        if (dismissed || sessionStorage.getItem(STORAGE_KEY)) return;
+        lastFocused = document.activeElement;
+        backdrop.hidden = false;
+        // Double rAF: guarantees the browser has painted the
+        // pre-transition state (opacity 0, offset) after [hidden] comes
+        // off before .show flips it — a single frame can occasionally
+        // still coalesce with the class change and skip the transition
+        // entirely.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            backdrop.classList.add("show");
+          });
+        });
+        document.addEventListener("keydown", onKeydown);
+        closeBtn.focus();
+      }, 60000);
+    } catch (e) {
+      /* never let a feedback-popup issue affect the rest of the app */
+    }
+  }
+
   function start(records) {
     ALL = records;
 
@@ -1441,6 +1523,8 @@
     } catch (e) {
       /* icons are decorative — never block startup on them */
     }
+
+    setupFeedbackModal();
 
     // Standalone build: the data is already here, so render synchronously.
     // No promises, no network, nothing that can leave the page hanging.

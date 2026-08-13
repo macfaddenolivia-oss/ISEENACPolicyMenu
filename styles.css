@@ -1386,6 +1386,87 @@ mark {
 
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* Feedback popup — shown once, ~60s after load, unless already
+   dismissed this session (see setupFeedbackModal in app.js). [hidden]
+   keeps it fully out of layout/tab order until then; app.js removes
+   that attribute first and adds .show on the next frame so the
+   fade/scale below actually has a starting state to transition from
+   (display can't itself be animated). Sits above the toast (a higher
+   z-index), since a popup asking for attention shouldn't be hideable
+   behind one. */
+.feedback-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 23, 32, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.feedback-modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.feedback-modal {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 30px 24px 24px;
+  text-align: center;
+  transform: translateY(10px) scale(0.98);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.feedback-modal-backdrop.show .feedback-modal { transform: none; }
+
+.feedback-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.feedback-modal-close:hover { background: var(--border-strong); color: var(--text); }
+.feedback-modal-close:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.feedback-modal-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.feedback-modal-text {
+  margin: 0 0 20px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.feedback-modal-btn { width: 100%; justify-content: center; }
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 720px) {
@@ -1567,6 +1648,18 @@ mark {
 
   /* Wrap the creator rather than truncating it — there's room in one column */
   .meta-item .v { white-space: normal; }
+
+  /* Centered and stacked rather than the desktop's side-by-side
+     space-between, which would otherwise squeeze the button into a
+     cramped second line under just a sliver of leftover width. */
+  .feedback-cta { flex-direction: column; text-align: center; padding: 14px 16px; }
+  .feedback-cta-btn { width: 100%; justify-content: center; }
+
+  /* Less outer padding and a touch less inner padding so the card has
+     room to breathe on the narrowest phones without needing to shrink
+     its own max-width. */
+  .feedback-modal-backdrop { padding: 14px; }
+  .feedback-modal { padding: 26px 20px 20px; }
 }
 
 /* ---------- No-JavaScript fallback ---------- */
@@ -1649,6 +1742,35 @@ footer.foot {
   margin-top: 40px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Feedback call-to-action — a light accent-tinted card so it reads as
+   its own inviting block rather than blending into the muted hint row
+   below it, without competing with the primary search/filter controls
+   above the fold. */
+.feedback-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.feedback-cta-text {
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+.feedback-cta-btn { flex: none; white-space: nowrap; }
+
+.foot-hint {
   color: var(--text-3);
   font-size: 12.5px;
   display: flex;
