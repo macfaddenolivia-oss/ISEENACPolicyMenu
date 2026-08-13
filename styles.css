@@ -431,10 +431,14 @@ kbd {
   pointer-events: none;
 }
 
+/* Fixed navy (not inherited from .random-hint's own light/hover text
+   color) so the dice icon stays the same brand-navy regardless of
+   hover/focus state, unlike the text beside it. */
 .random-hint svg {
   flex: none;
   width: 19px;
   height: 19px;
+  color: var(--brand-navy);
 }
 
 .clear-search {

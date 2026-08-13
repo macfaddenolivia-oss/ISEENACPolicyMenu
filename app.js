@@ -1533,7 +1533,9 @@
 
     try {
       $("search-icon").innerHTML = ICON.search;
-      el.random.insertAdjacentHTML("afterbegin", ICON.dice);
+      // "beforeend" (not "afterbegin" like below) — text first, dice
+      // icon after, on the right side of the label.
+      el.random.insertAdjacentHTML("beforeend", ICON.dice);
       // Same dice icon as "Random resource" — visually ties the two
       // random-pick actions together now that "Another random resource"
       // has its own distinct pink/magenta styling (see .btn-random).
