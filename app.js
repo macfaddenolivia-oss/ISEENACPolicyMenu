@@ -632,6 +632,20 @@
     };
   }
 
+  // "+N more" (and the preview row feeding it) only counts values worth
+  // clicking — non-zero live count, or already active (an active value
+  // stays visible even at 0, matching previewSubset's "active never
+  // drops out" rule below, since it's the user's own current pick, not
+  // a suggestion). The full wall further down (Browse filters) isn't
+  // filtered this way — it still lists every value, 0-count ones grayed
+  // out via .is-empty, since that "show me everything, including dead
+  // ends" is exactly what expanding it is for.
+  function relevantValues(values, counts, activeList) {
+    return values.filter(function (v) {
+      return (counts[v] || 0) > 0 || activeList.indexOf(v) !== -1;
+    });
+  }
+
   function renderFilters() {
     var typeCounts = countIncluding("types", "type");
     var subCounts = countIncluding("subs", "subtype");
@@ -645,14 +659,15 @@
       })
       .join("");
 
-    var typePreview = previewSubset(types, state.types, PREVIEW_TYPE_COUNT);
+    var typesForPreview = relevantValues(types, typeCounts, state.types);
+    var typePreview = previewSubset(typesForPreview, state.types, PREVIEW_TYPE_COUNT);
     el.typePillsPreview.innerHTML =
       typePreview
         .map(function (t) {
           return pillHTML(t, typeCounts[t] || 0, state.types.indexOf(t) !== -1, "type");
         })
-        .join("") + moreTagHTML(types.length - typePreview.length, "Type");
-    fitPreviewRow(el.typePillsPreview, types.length, "Type", function (v) {
+        .join("") + moreTagHTML(typesForPreview.length - typePreview.length, "Type");
+    fitPreviewRow(el.typePillsPreview, typesForPreview.length, "Type", function (v) {
       return state.types.indexOf(v) !== -1;
     });
 
@@ -691,14 +706,15 @@
       })
       .join("");
 
-    var subPreview = previewSubset(subs, state.subs, PREVIEW_SUB_COUNT);
+    var subsForPreview = relevantValues(subs, subCounts, state.subs);
+    var subPreview = previewSubset(subsForPreview, state.subs, PREVIEW_SUB_COUNT);
     el.subPillsPreview.innerHTML =
       subPreview
         .map(function (s) {
           return pillHTML(s, subCounts[s] || 0, state.subs.indexOf(s) !== -1, "sub");
         })
-        .join("") + moreTagHTML(subs.length - subPreview.length, "Subtype");
-    fitPreviewRow(el.subPillsPreview, subs.length, "Subtype", function (v) {
+        .join("") + moreTagHTML(subsForPreview.length - subPreview.length, "Subtype");
+    fitPreviewRow(el.subPillsPreview, subsForPreview.length, "Subtype", function (v) {
       return state.subs.indexOf(v) !== -1;
     });
 
@@ -716,14 +732,15 @@
       })
       .join("");
 
-    var orgPreview = previewSubset(orgs, state.orgs, PREVIEW_ORG_COUNT);
+    var orgsForPreview = relevantValues(orgs, orgCounts, state.orgs);
+    var orgPreview = previewSubset(orgsForPreview, state.orgs, PREVIEW_ORG_COUNT);
     el.orgPillsPreview.innerHTML =
       orgPreview
         .map(function (o) {
           return pillHTML(o, orgCounts[o] || 0, state.orgs.indexOf(o) !== -1, "org");
         })
-        .join("") + moreTagHTML(orgs.length - orgPreview.length, "Organization");
-    fitPreviewRow(el.orgPillsPreview, orgs.length, "Organization", function (v) {
+        .join("") + moreTagHTML(orgsForPreview.length - orgPreview.length, "Organization");
+    fitPreviewRow(el.orgPillsPreview, orgsForPreview.length, "Organization", function (v) {
       return state.orgs.indexOf(v) !== -1;
     });
   }
