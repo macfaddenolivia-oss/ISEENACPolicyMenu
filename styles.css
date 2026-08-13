@@ -100,6 +100,23 @@ body {
   padding: 14px clamp(16px, 4vw, 40px) 96px;
 }
 
+
+/* ---------- Defaults for hyperlinks --------- */
+a {
+  color: var(--brand-green);
+  text-decoration-color: var(--brand-green); /* keeps underline same color */
+}
+
+a:visited {
+  color: var(--brand-green);
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--brand-navy);            /* optional: darker on hover */
+  text-decoration-color: var(--brand-navy);
+}
+
 /* ---------- Header / nav bar ---------- */
 
 /* White banner with a navy bottom border standing in for the navy fill
@@ -196,8 +213,8 @@ body {
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
-  background: var(--brand-navy);
-  border: 1px solid color-mix(in srgb, var(--brand-navy) 55%, white);
+  background: var(--brand-green);
+  border: 1px var(--brand-green);
   border-radius: 999px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
@@ -206,7 +223,7 @@ body {
 
 .start-here-toggle:hover,
 .start-here-toggle:focus-visible {
-  background: var(--brand-green);
+  background: var(--brand-navy);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
@@ -242,7 +259,7 @@ body {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--brand-green);
+  color: var(--brand-navy);
   text-align: center;
 }
 
