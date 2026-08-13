@@ -178,25 +178,20 @@ body {
 
 /* ---------- Start Here ---------- */
 
-/* Prominent pill living inside the header bar itself (see
-   .site-header-inner's justify-content:space-between), opposite the
-   logo/title, rather than its own full-width bar below it. Solid
-   --accent fill (the site's teal accent) reads clearly against the
-   header's white background. Sized well above the site's usual .btn
-   scale — roughly double a typical button's footprint in both
-   directions — specifically because it's meant to stand out as a
-   distinct call to action next to the logo/title rather than read as
-   just another nav control. Collapsed by default on every load (app.js
-   sets no persisted state), so this is the only way back into Start
-   Here once dismissed. */
+/* Pill living inside the header bar itself (see .site-header-inner's
+   justify-content:space-between), opposite the logo/title, rather than
+   its own full-width bar below it. Solid --accent fill (the site's teal
+   accent) reads clearly against the header's white background.
+   Collapsed by default on every load (app.js sets no persisted state),
+   so this is the only way back into Start Here once dismissed. */
 .start-here-toggle {
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 24px 40px;
+  gap: 8px;
+  padding: 16px 27px;
   font: inherit;
-  font-size: 20px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -218,8 +213,8 @@ body {
 
 .start-here-toggle .chevron {
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: 15px;
+  height: 15px;
   transition: transform 0.2s ease;
 }
 
@@ -1666,16 +1661,16 @@ mark {
   .brand-subtitle { font-size: 12px; line-height: 1.35; }
 
   /* Full-width on its own row below .brand rather than squeezed beside
-     it — at this size (still a good deal larger than a typical .btn)
-     it needs the room a shared row with the logo/title wouldn't have. */
+     it, so it still has clean room to breathe even at this smaller
+     size. */
   .start-here-toggle {
     width: 100%;
     justify-content: center;
-    padding: 16px 24px;
-    font-size: 16px;
-    gap: 8px;
+    padding: 11px 16px;
+    font-size: 11px;
+    gap: 5px;
   }
-  .start-here-toggle .chevron { width: 18px; height: 18px; }
+  .start-here-toggle .chevron { width: 12px; height: 12px; }
 
   /* Wrap the creator rather than truncating it — there's room in one column */
   .meta-item .v { white-space: normal; }
