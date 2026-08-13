@@ -164,19 +164,13 @@ body {
    focus on search/filter rather than a wall of four cards. */
 .start-here-toggle {
   position: relative;
-  /* Clips the accent bar below to the button's own rounded corners —
-     same technique .card::before relies on (inset:0 auto 0 0 plus a
-     clipping ancestor) rather than matching its radius by hand. */
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   width: 100%;
   margin: 0 0 10px;
-  /* Extra left padding clears the 4px accent bar with room to spare,
-     rather than crowding the text against it. */
-  padding: 11px 18px 11px 24px;
+  padding: 11px 18px;
   font: inherit;
   font-size: 14px;
   /* A step heavier than the surrounding body copy's default weight, so
@@ -201,17 +195,6 @@ body {
      rule further down (animation-duration: 0.01ms !important), no
      separate handling needed here. */
   animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* Colored left accent bar — same visual device as .card::before (the
-   Type-colored stripe on resource cards), in the site's brand navy
-   here since this bar isn't tied to any one Type. */
-.start-here-toggle::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--accent);
 }
 
 .start-here-toggle strong { color: var(--accent); }
@@ -1426,9 +1409,7 @@ mark {
   .intro { margin: 0 0 6px; font-size: 13px; line-height: 1.35; }
   .intro-lead { font-size: 15px; }
 
-  /* Left padding still clears the accent bar (see the base rule's own
-     padding-left) even at this tighter mobile size. */
-  .start-here-toggle { font-size: 12.5px; padding: 8px 12px 8px 18px; margin: 0 0 8px; }
+  .start-here-toggle { font-size: 12.5px; padding: 8px 12px; margin: 0 0 8px; }
 
   /* Start Here: tighter box padding/margins, and 2 cards per row instead
      of 1 so the section takes roughly half the vertical space it did
