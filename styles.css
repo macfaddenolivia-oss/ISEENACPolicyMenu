@@ -1413,6 +1413,20 @@ mark {
   .fgroup { grid-template-columns: 1fr; gap: 6px; }
   .fgroup > .flabel { padding-top: 0; }
 
+  /* Desktop's Match-any Type emphasis (.pill-type-muted, right above —
+     same class, same condition) only dims the rest; mobile hides them
+     outright instead. Vertical space is tighter here, and once a Type is
+     picked the Subtype section can appear right below it (see
+     renderFilters in app.js) — a whole wall of every other unpicked Type
+     competes with that for room in a way it doesn't on a wide desktop
+     screen. No JS change needed for "bring them back": pillHTML only
+     adds this class while the condition holds, so deselecting the Type
+     or clearing filters removes the class (and this rule with it) on
+     the very next render, same as the desktop mute already does. */
+  .pill[data-filter="type"].pill-type-muted {
+    display: none;
+  }
+
   /* The desktop tooltip anchors to .info-btn itself (23px wide) and
      extends up to 320px rightward from whatever x-position the icon
      lands at — on a full-width desktop row that's harmless, but on a
