@@ -4,13 +4,15 @@ A searchable, filterable card-based browser for the resource list. Builds to a
 single self-contained HTML file you can email to people — it works offline with
 no internet connection and no external files.
 
+Created by Olivia Macfadden and Ryan Dalforno on behalf of International Society of Environmental Epidemiologists - North America Chapter's Policy Committee.
+
 ---
 
 ## The live site
 
 Hosted on GitHub Pages at:
 
-**<https://macfaddenolivia-oss.github.io/ISEENACPolicyMenu/>**
+**[https://macfaddenolivia-oss.github.io/ISEENACPolicyMenu/](https://macfaddenolivia-oss.github.io/ISEENACPolicyMenu/)**
 
 The page loads `data/resources.csv` at runtime, so **updating the list is just a
 push — no rebuild needed**:
@@ -58,7 +60,7 @@ That regenerates `dist/resources-app.html`. Send that one file to anyone.
 python3 -m http.server 8000
 ```
 
-→ open <http://localhost:8000/>
+→ open [http://localhost:8000/](http://localhost:8000/)
 
 This is the same `index.html` that GitHub Pages serves, and it reads
 `data/resources.csv` live — edit the CSV, hit refresh, see the change. Stop the
@@ -117,6 +119,7 @@ the CSV (simplest) or the spreadsheet — and stick with it.
 ## What the app does
 
 **Start Here**
+
 - Collapsed by default on every page load, for every visitor. The intro's
   second line — "New to environmental health advocacy?..." — is a toggle
   button with a chevron that expands it; it's the only way in, and there's no
@@ -132,6 +135,7 @@ the CSV (simplest) or the spreadsheet — and stick with it.
   the result is always a clean, guided set
 
 **Search & filter**
+
 - Search-as-you-type across Resource, Creator, and Description, with a live count
 - Matching text is highlighted in the results
 - Multi-word search narrows (all words must match)
@@ -175,6 +179,7 @@ the CSV (simplest) or the spreadsheet — and stick with it.
 - Press <kbd>/</kbd> anywhere to jump to the search box, <kbd>Esc</kbd> to clear
 
 **Hover interactions**
+
 - Hovering a card lifts it and expands the full description
 - Hovering any Type or Subtype tag — on a card *or* in the filter bar — dims
   everything except the other cards sharing that tag
@@ -184,6 +189,7 @@ The Organization (Creator) is always shown at the bottom of each card, not
 just on hover.
 
 **Other**
+
 - Each Type gets its own colour (stripe + tag), assigned deterministically so
   colours stay stable across rebuilds
 - "Random resource" narrows the grid to a single card drawn from the
