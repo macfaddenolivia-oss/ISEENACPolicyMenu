@@ -358,9 +358,9 @@ body {
    rest of the page's accent color has moved to teal. */
 #search {
   width: 100%;
-  /* Right padding widened to clear .search-hints below, now that it
-     holds the random-resource hint in addition to clear/kbd. */
-  padding: 12px 172px 12px 40px;
+  /* Right padding sized to clear .search-hints below (clear-search +
+     the random-resource hint, now the last/rightmost item there). */
+  padding: 12px 144px 12px 40px;
   font: inherit;
   font-size: 15.5px;
   color: var(--text);
@@ -375,10 +375,11 @@ body {
 #search::placeholder { color: var(--text-3); }
 #search:focus { border-color: var(--search-border-focus); box-shadow: var(--search-ring); }
 
-/* Houses the random-resource hint, the clear-search (×) button, and the
-   "/" keyboard-shortcut kbd, left to right — everything that used to
-   live in the standalone "Random resource" button plus the original
-   slash-hint, now sharing this one end-of-input strip. */
+/* Houses the clear-search (×) button and the random-resource hint, left
+   to right — random-hint last/rightmost so it sits at the far right
+   edge of the search bar. (The "/" keyboard-shortcut kbd that used to
+   live here too has been dropped — see the footer's own "press / to
+   search" mention for that hint now.) */
 .search-hints {
   position: absolute;
   right: 10px;
@@ -440,8 +441,8 @@ kbd {
 
 .random-hint svg {
   flex: none;
-  width: 13px;
-  height: 13px;
+  width: 19px;
+  height: 19px;
 }
 
 .clear-search {
@@ -1632,22 +1633,17 @@ mark {
     overflow: hidden;
   }
   .grid, .skeleton-grid { grid-template-columns: 1fr; }
-  /* The "/" shortcut is a desktop-keyboard affordance — no physical "/"
-     key to reach for on mobile, so it's dropped there entirely rather
-     than competing with the random-resource hint for the (now tighter)
-     end-of-input space. */
-  .search-hints kbd { display: none; }
 
   /* 16px minimum stops iOS Safari zooming the page on focus. Right
-     padding trimmed from desktop's — no kbd to clear here (hidden
-     above), just the random-resource hint (itself a bit smaller — see
-     .random-hint below) and the clear button. */
-  #search { font-size: 16px; padding: 12px 138px 12px 40px; }
+     padding trimmed from desktop's — just the random-resource hint
+     (itself a bit smaller — see .random-hint below) and the clear
+     button share this end now. */
+  #search { font-size: 16px; padding: 12px 116px 12px 40px; }
 
   .searchbox { flex: 1 1 100%; }
 
   .random-hint { font-size: 11px; gap: 4px; }
-  .random-hint svg { width: 12px; height: 12px; }
+  .random-hint svg { width: 17px; height: 17px; }
 
   /* Hide the (small, compact) search bar on scroll-down, reveal it on
      scroll-up — mobile only, gated by this media query rather than a JS
@@ -1926,14 +1922,14 @@ footer.foot {
         <input id="search" type="search" autocomplete="off" spellcheck="false"
                placeholder="Search resources, creators, descriptions…">
         <span class="search-hints">
+          <button class="clear-search" id="clear-search" type="button" aria-label="Clear search">×</button>
           <!-- Same id/behavior as the old standalone "Random resource"
                button it replaces (see app.js) — just relocated and
-               restyled to sit inline here instead. -->
+               restyled to sit inline here instead. Last/rightmost in
+               this row so it lands at the far right of the search bar. -->
           <button class="random-hint" id="random" type="button" aria-label="Show a random resource">
             <span class="random-hint-text">random resource</span>
           </button>
-          <button class="clear-search" id="clear-search" type="button" aria-label="Clear search">×</button>
-          <kbd>/</kbd>
         </span>
       </div>
     </div>
