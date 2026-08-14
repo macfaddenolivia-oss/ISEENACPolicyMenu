@@ -28,7 +28,7 @@ CSV_IN = os.path.join(ROOT, "data", "resources.csv")
 HTML_IN = os.path.join(ROOT, "index.html")
 CSS_IN = os.path.join(ROOT, "styles.css")
 JS_IN = os.path.join(ROOT, "app.js")
-LOGO_IN = os.path.join(ROOT, "img", "isee-logo.png")
+LOGO_IN = os.path.join(ROOT, "img", "isee-logo-2.png")
 OUT = os.path.join(ROOT, "dist", "resources-app.html")
 
 FIELDS = {
@@ -174,12 +174,12 @@ def main():
     js = read_text(JS_IN)
 
     # Inline the header logo so the standalone file has no external assets.
-    if 'src="img/isee-logo.png"' not in html:
-        raise SystemExit('Could not find the logo <img src="img/isee-logo.png"> tag in index.html')
+    if 'src="img/isee-logo-2.png"' not in html:
+        raise SystemExit('Could not find the logo <img src="img/isee-logo-2.png"> tag in index.html')
     if not os.path.exists(LOGO_IN):
         raise SystemExit("Missing required file: %s" % LOGO_IN)
     html = html.replace(
-        'src="img/isee-logo.png"',
+        'src="img/isee-logo-2.png"',
         'src="%s"' % data_uri(LOGO_IN, "image/png"),
     )
 
