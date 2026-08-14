@@ -773,6 +773,12 @@ kbd {
    treatment untouched. */
 .org-mobile-toggle { display: none; }
 
+/* Type's mobile-only disclosure button — same reasoning as Organization's
+   above. Its show/hide interaction with Subtype (which shares its panel)
+   is handled in app.js, not here; this only keeps the button itself
+   invisible/inert above 720px. */
+.type-mobile-toggle { display: none; }
+
 .fgroup {
   display: grid;
   /* Wide enough for the uppercase, letter-spaced "ORGANIZATION" label
@@ -1617,13 +1623,17 @@ mark {
      label+chevron row — Organization has by far the most values and the
      longest labels of the three facets, so even a capped preview row ate
      the most vertical space for the facet visitors reach for least
-     first. Decoupled entirely from "Browse filters" (unlike Type/Subtype,
-     which are unaffected by this and keep their preview as-is): the
+     first. Decoupled entirely from "Browse filters": the
      #org-filter-box/#org-mobile-toggle id selectors below outrank
      .filter-bar.filters-open .filters in specificity, so Organization
      stays collapsed even while Browse filters is open, and only this
-     button's own aria-expanded reveals it. */
-  .org-mobile-toggle {
+     button's own aria-expanded reveals it. Type gets the same collapsed-
+     by-default treatment further down (shares its panel with Subtype,
+     so it's coordinated in app.js instead of pure CSS); Subtype itself
+     is the only facet still following the plain preview + Browse-filters
+     behavior all three used to share. */
+  .org-mobile-toggle,
+  .type-mobile-toggle {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1634,14 +1644,16 @@ mark {
     cursor: pointer;
     text-align: left;
   }
-  .org-mobile-toggle .chevron {
+  .org-mobile-toggle .chevron,
+  .type-mobile-toggle .chevron {
     flex: none;
     width: 14px;
     height: 14px;
     color: var(--text-3);
     transition: transform 0.2s ease;
   }
-  .org-mobile-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+  .org-mobile-toggle[aria-expanded="true"] .chevron,
+  .type-mobile-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 
   #org-filter-box .filters-preview { display: none; }
   #org-filter-box .filters { display: none; }
@@ -1653,6 +1665,24 @@ mark {
      labelledby target's text still counts even while display:none, so
      screen readers still get "Organization" as the group's name. */
   #org-fgroup > .flabel { display: none; }
+
+  /* Type: same collapsed-by-default treatment as Organization, but its
+     preview/full panels are shared with Subtype (#filters-preview-typesub
+     / #filters-typesub), so a `~`-sibling CSS rule like Organization's
+     can't reach it — Type's fgroup is nested inside that shared panel,
+     not a direct sibling of this button. #type-fgroup-preview is hidden
+     unconditionally (CSS-only, matching Organization, so there's no
+     flash of the old preview before JS runs); #type-fgroup's own
+     show/hide and the shared panel's visibility are instead driven by
+     app.js (syncTypeSubtypeMobilePanel) via inline styles, which always
+     win over these stylesheet rules regardless of specificity — so
+     Subtype's own visibility here (governed entirely by
+     .filter-bar.filters-open, untouched) can't be exposed as a side
+     effect of Type's toggle opening the shared panel. */
+  #type-fgroup-preview { display: none; }
+  /* Same duplicate-label fix as Organization's #org-fgroup, applied
+     preemptively here too. */
+  #type-fgroup > .flabel { display: none; }
 
   /* Desktop's Match-any Type emphasis (.pill-type-muted, right above —
      same class, same condition) only dims the rest; mobile hides them
@@ -2044,8 +2074,24 @@ footer.foot {
 
       <div class="filter-bar-tags">
         <div class="filter-group-box">
+          <!-- Mobile-only disclosure for Type specifically. Unlike
+               Organization (its own dedicated box), Type shares this box
+               with Subtype, which stays completely untouched on mobile —
+               it keeps its existing preview + shared "Browse filters"
+               behavior. Because Type and Subtype's panels are one shared
+               #filters-typesub element, showing/hiding just Type's half
+               independently of Subtype is coordinated in app.js
+               (syncTypeSubtypeMobilePanel) via inline styles rather than
+               pure CSS, rather than a `~`-sibling rule like Organization's
+               (Type's fgroup isn't a direct sibling of this button — it's
+               nested a level deeper, inside #filters-typesub). -->
+          <button class="type-mobile-toggle" id="type-mobile-toggle" type="button" aria-expanded="false" aria-controls="filters-typesub">
+            <span class="flabel">Type</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
           <div class="filters-preview" id="filters-preview-typesub">
-            <div class="fgroup">
+            <div class="fgroup" id="type-fgroup-preview">
               <span class="flabel" id="lbl-type-preview">Type</span>
               <div class="pills" id="type-pills-preview" role="group" aria-labelledby="lbl-type-preview"></div>
             </div>
@@ -2056,7 +2102,7 @@ footer.foot {
           </div>
 
           <div class="filters" id="filters-typesub">
-            <div class="fgroup">
+            <div class="fgroup" id="type-fgroup">
               <span class="flabel" id="lbl-type">Type</span>
               <div class="pills" id="type-pills" role="group" aria-labelledby="lbl-type"></div>
             </div>
@@ -3279,6 +3325,56 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
       el.orgMobileToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 
+    // Type's mobile-only disclosure works like Organization's above, but
+    // Type and Subtype share one #filters-typesub panel (Organization has
+    // its own), so a CSS attribute selector alone can't show just Type's
+    // half without also exposing Subtype. Inline styles always win over
+    // the stylesheet regardless of selector specificity, so setting them
+    // here layers safely on top of — never fights — the existing
+    // .filter-bar.filters-open rule that still solely governs Subtype.
+    var mobileFiltersQuery =
+      window.matchMedia && window.matchMedia("(max-width: 720px)");
+
+    function syncTypeSubtypeMobilePanel() {
+      if (!mobileFiltersQuery || !mobileFiltersQuery.matches) {
+        // Desktop (or matchMedia unsupported): strip any inline styles a
+        // prior mobile-width visit left behind, so the stylesheet is the
+        // only thing governing this panel again, same as before this
+        // feature existed.
+        el.filtersTypesub.style.display = "";
+        el.typeFgroup.style.display = "";
+        el.subFgroup.style.display = "";
+        return;
+      }
+      var browseOpen = el.filterBar.classList.contains("filters-open");
+      var typeOpen = el.typeMobileToggle.getAttribute("aria-expanded") === "true";
+      el.filtersTypesub.style.display = browseOpen || typeOpen ? "grid" : "";
+      el.typeFgroup.style.display = typeOpen ? "grid" : "none";
+      // "" (defer to the stylesheet), not an explicit value, whenever
+      // Browse filters is closed and Type isn't open either — combined
+      // with the panel itself also reverting to "" in that same case,
+      // the existing .filters{display:none} rule takes back over, so
+      // Subtype (and its own separate zero-subtypes .hidden toggle in
+      // renderFilters) ends up exactly as untouched as if this feature
+      // didn't exist.
+      el.subFgroup.style.display = browseOpen ? "" : "none";
+    }
+
+    syncTypeSubtypeMobilePanel();
+    if (mobileFiltersQuery) {
+      if (mobileFiltersQuery.addEventListener) {
+        mobileFiltersQuery.addEventListener("change", syncTypeSubtypeMobilePanel);
+      } else if (mobileFiltersQuery.addListener) {
+        mobileFiltersQuery.addListener(syncTypeSubtypeMobilePanel); // Safari < 14
+      }
+    }
+
+    el.typeMobileToggle.addEventListener("click", function () {
+      var willOpen = el.typeMobileToggle.getAttribute("aria-expanded") !== "true";
+      el.typeMobileToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      syncTypeSubtypeMobilePanel();
+    });
+
     // "Start Here" pathway cards: pre-apply Type/Subtype filters as a
     // guided shortcut into the same filter system the pills use, replacing
     // whatever filters/search were already active for a clean result.
@@ -3430,6 +3526,11 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
       el.filterBar.classList.toggle("filters-open", open);
       el.filterToggle.setAttribute("aria-expanded", open ? "true" : "false");
       el.filterToggleLabel.textContent = open ? "Hide filters" : "Browse filters";
+      // Re-sync Subtype's inline-style-driven visibility (see
+      // syncTypeSubtypeMobilePanel above) against this new filters-open
+      // state — a no-op on desktop, where that function immediately
+      // bails out and clears any inline styles instead.
+      syncTypeSubtypeMobilePanel();
     });
 
     // Random resource: narrows the grid to a single pick drawn from the
@@ -3748,6 +3849,9 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
       subFgroup: $("sub-fgroup"),
       subFgroupPreview: $("sub-fgroup-preview"),
       orgMobileToggle: $("org-mobile-toggle"),
+      typeMobileToggle: $("type-mobile-toggle"),
+      filtersTypesub: $("filters-typesub"),
+      typeFgroup: $("type-fgroup"),
       clearFilters: $("clear-filters"),
       filterToggle: $("filter-toggle"),
       filterToggleLabel: $("filter-toggle-label"),

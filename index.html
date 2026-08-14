@@ -107,8 +107,24 @@
 
       <div class="filter-bar-tags">
         <div class="filter-group-box">
+          <!-- Mobile-only disclosure for Type specifically. Unlike
+               Organization (its own dedicated box), Type shares this box
+               with Subtype, which stays completely untouched on mobile —
+               it keeps its existing preview + shared "Browse filters"
+               behavior. Because Type and Subtype's panels are one shared
+               #filters-typesub element, showing/hiding just Type's half
+               independently of Subtype is coordinated in app.js
+               (syncTypeSubtypeMobilePanel) via inline styles rather than
+               pure CSS, rather than a `~`-sibling rule like Organization's
+               (Type's fgroup isn't a direct sibling of this button — it's
+               nested a level deeper, inside #filters-typesub). -->
+          <button class="type-mobile-toggle" id="type-mobile-toggle" type="button" aria-expanded="false" aria-controls="filters-typesub">
+            <span class="flabel">Type</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
           <div class="filters-preview" id="filters-preview-typesub">
-            <div class="fgroup">
+            <div class="fgroup" id="type-fgroup-preview">
               <span class="flabel" id="lbl-type-preview">Type</span>
               <div class="pills" id="type-pills-preview" role="group" aria-labelledby="lbl-type-preview"></div>
             </div>
@@ -119,7 +135,7 @@
           </div>
 
           <div class="filters" id="filters-typesub">
-            <div class="fgroup">
+            <div class="fgroup" id="type-fgroup">
               <span class="flabel" id="lbl-type">Type</span>
               <div class="pills" id="type-pills" role="group" aria-labelledby="lbl-type"></div>
             </div>

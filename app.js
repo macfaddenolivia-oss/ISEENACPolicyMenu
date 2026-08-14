@@ -1052,6 +1052,56 @@
       el.orgMobileToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 
+    // Type's mobile-only disclosure works like Organization's above, but
+    // Type and Subtype share one #filters-typesub panel (Organization has
+    // its own), so a CSS attribute selector alone can't show just Type's
+    // half without also exposing Subtype. Inline styles always win over
+    // the stylesheet regardless of selector specificity, so setting them
+    // here layers safely on top of — never fights — the existing
+    // .filter-bar.filters-open rule that still solely governs Subtype.
+    var mobileFiltersQuery =
+      window.matchMedia && window.matchMedia("(max-width: 720px)");
+
+    function syncTypeSubtypeMobilePanel() {
+      if (!mobileFiltersQuery || !mobileFiltersQuery.matches) {
+        // Desktop (or matchMedia unsupported): strip any inline styles a
+        // prior mobile-width visit left behind, so the stylesheet is the
+        // only thing governing this panel again, same as before this
+        // feature existed.
+        el.filtersTypesub.style.display = "";
+        el.typeFgroup.style.display = "";
+        el.subFgroup.style.display = "";
+        return;
+      }
+      var browseOpen = el.filterBar.classList.contains("filters-open");
+      var typeOpen = el.typeMobileToggle.getAttribute("aria-expanded") === "true";
+      el.filtersTypesub.style.display = browseOpen || typeOpen ? "grid" : "";
+      el.typeFgroup.style.display = typeOpen ? "grid" : "none";
+      // "" (defer to the stylesheet), not an explicit value, whenever
+      // Browse filters is closed and Type isn't open either — combined
+      // with the panel itself also reverting to "" in that same case,
+      // the existing .filters{display:none} rule takes back over, so
+      // Subtype (and its own separate zero-subtypes .hidden toggle in
+      // renderFilters) ends up exactly as untouched as if this feature
+      // didn't exist.
+      el.subFgroup.style.display = browseOpen ? "" : "none";
+    }
+
+    syncTypeSubtypeMobilePanel();
+    if (mobileFiltersQuery) {
+      if (mobileFiltersQuery.addEventListener) {
+        mobileFiltersQuery.addEventListener("change", syncTypeSubtypeMobilePanel);
+      } else if (mobileFiltersQuery.addListener) {
+        mobileFiltersQuery.addListener(syncTypeSubtypeMobilePanel); // Safari < 14
+      }
+    }
+
+    el.typeMobileToggle.addEventListener("click", function () {
+      var willOpen = el.typeMobileToggle.getAttribute("aria-expanded") !== "true";
+      el.typeMobileToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      syncTypeSubtypeMobilePanel();
+    });
+
     // "Start Here" pathway cards: pre-apply Type/Subtype filters as a
     // guided shortcut into the same filter system the pills use, replacing
     // whatever filters/search were already active for a clean result.
@@ -1203,6 +1253,11 @@
       el.filterBar.classList.toggle("filters-open", open);
       el.filterToggle.setAttribute("aria-expanded", open ? "true" : "false");
       el.filterToggleLabel.textContent = open ? "Hide filters" : "Browse filters";
+      // Re-sync Subtype's inline-style-driven visibility (see
+      // syncTypeSubtypeMobilePanel above) against this new filters-open
+      // state — a no-op on desktop, where that function immediately
+      // bails out and clears any inline styles instead.
+      syncTypeSubtypeMobilePanel();
     });
 
     // Random resource: narrows the grid to a single pick drawn from the
@@ -1521,6 +1576,9 @@
       subFgroup: $("sub-fgroup"),
       subFgroupPreview: $("sub-fgroup-preview"),
       orgMobileToggle: $("org-mobile-toggle"),
+      typeMobileToggle: $("type-mobile-toggle"),
+      filtersTypesub: $("filters-typesub"),
+      typeFgroup: $("type-fgroup"),
       clearFilters: $("clear-filters"),
       filterToggle: $("filter-toggle"),
       filterToggleLabel: $("filter-toggle-label"),

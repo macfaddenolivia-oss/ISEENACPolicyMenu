@@ -765,6 +765,12 @@ kbd {
    treatment untouched. */
 .org-mobile-toggle { display: none; }
 
+/* Type's mobile-only disclosure button — same reasoning as Organization's
+   above. Its show/hide interaction with Subtype (which shares its panel)
+   is handled in app.js, not here; this only keeps the button itself
+   invisible/inert above 720px. */
+.type-mobile-toggle { display: none; }
+
 .fgroup {
   display: grid;
   /* Wide enough for the uppercase, letter-spaced "ORGANIZATION" label
@@ -1609,13 +1615,17 @@ mark {
      label+chevron row — Organization has by far the most values and the
      longest labels of the three facets, so even a capped preview row ate
      the most vertical space for the facet visitors reach for least
-     first. Decoupled entirely from "Browse filters" (unlike Type/Subtype,
-     which are unaffected by this and keep their preview as-is): the
+     first. Decoupled entirely from "Browse filters": the
      #org-filter-box/#org-mobile-toggle id selectors below outrank
      .filter-bar.filters-open .filters in specificity, so Organization
      stays collapsed even while Browse filters is open, and only this
-     button's own aria-expanded reveals it. */
-  .org-mobile-toggle {
+     button's own aria-expanded reveals it. Type gets the same collapsed-
+     by-default treatment further down (shares its panel with Subtype,
+     so it's coordinated in app.js instead of pure CSS); Subtype itself
+     is the only facet still following the plain preview + Browse-filters
+     behavior all three used to share. */
+  .org-mobile-toggle,
+  .type-mobile-toggle {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1626,14 +1636,16 @@ mark {
     cursor: pointer;
     text-align: left;
   }
-  .org-mobile-toggle .chevron {
+  .org-mobile-toggle .chevron,
+  .type-mobile-toggle .chevron {
     flex: none;
     width: 14px;
     height: 14px;
     color: var(--text-3);
     transition: transform 0.2s ease;
   }
-  .org-mobile-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+  .org-mobile-toggle[aria-expanded="true"] .chevron,
+  .type-mobile-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 
   #org-filter-box .filters-preview { display: none; }
   #org-filter-box .filters { display: none; }
@@ -1645,6 +1657,24 @@ mark {
      labelledby target's text still counts even while display:none, so
      screen readers still get "Organization" as the group's name. */
   #org-fgroup > .flabel { display: none; }
+
+  /* Type: same collapsed-by-default treatment as Organization, but its
+     preview/full panels are shared with Subtype (#filters-preview-typesub
+     / #filters-typesub), so a `~`-sibling CSS rule like Organization's
+     can't reach it — Type's fgroup is nested inside that shared panel,
+     not a direct sibling of this button. #type-fgroup-preview is hidden
+     unconditionally (CSS-only, matching Organization, so there's no
+     flash of the old preview before JS runs); #type-fgroup's own
+     show/hide and the shared panel's visibility are instead driven by
+     app.js (syncTypeSubtypeMobilePanel) via inline styles, which always
+     win over these stylesheet rules regardless of specificity — so
+     Subtype's own visibility here (governed entirely by
+     .filter-bar.filters-open, untouched) can't be exposed as a side
+     effect of Type's toggle opening the shared panel. */
+  #type-fgroup-preview { display: none; }
+  /* Same duplicate-label fix as Organization's #org-fgroup, applied
+     preemptively here too. */
+  #type-fgroup > .flabel { display: none; }
 
   /* Desktop's Match-any Type emphasis (.pill-type-muted, right above —
      same class, same condition) only dims the rest; mobile hides them
