@@ -1550,6 +1550,33 @@
       /* icons are decorative — never block startup on them */
     }
 
+    try {
+      // Mobile: drop the placeholder text so the search bar reads clean
+      // and uncluttered next to the random-resource hint; desktop keeps
+      // it. Purely cosmetic — the visually-hidden <label for="search">
+      // already gives the input its accessible name either way, and
+      // typing/searching is unaffected. Same 720px breakpoint used
+      // elsewhere in this file and in styles.css. Listens for the query
+      // crossing rather than every resize so it also handles rotation
+      // and desktop windows being resized past the breakpoint live.
+      var mobileQuery =
+        window.matchMedia && window.matchMedia("(max-width: 720px)");
+      if (mobileQuery) {
+        var searchPlaceholder = el.search.placeholder;
+        var syncSearchPlaceholder = function () {
+          el.search.placeholder = mobileQuery.matches ? "" : searchPlaceholder;
+        };
+        syncSearchPlaceholder();
+        if (mobileQuery.addEventListener) {
+          mobileQuery.addEventListener("change", syncSearchPlaceholder);
+        } else if (mobileQuery.addListener) {
+          mobileQuery.addListener(syncSearchPlaceholder); // Safari < 14
+        }
+      }
+    } catch (e) {
+      /* placeholder text is cosmetic — never block startup on it */
+    }
+
     setupFeedbackModal();
 
     // Standalone build: the data is already here, so render synchronously.

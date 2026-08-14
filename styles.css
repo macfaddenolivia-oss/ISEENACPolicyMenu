@@ -411,13 +411,16 @@ kbd {
 }
 
 /* Small, muted hint replacing the old standalone "Random resource"
-   button — deliberately subtle (light, italic, no fill/border by
-   default) so it reads as a hint alongside clear/slash rather than
-   competing with the search input for attention. Padding well beyond
-   the visible icon+text gives it a real hit target despite the small
-   footprint; the matching negative margin cancels that padding back
-   out of .search-hints' layout so it doesn't visually push the other
-   hints further right than the icon+text alone would. */
+   button — deliberately subtle (light, no fill/border by default) so
+   it reads as a hint alongside clear/slash rather than competing with
+   the search input for attention. font-style intentionally left at
+   the inherited normal (not italic) so it reads as the same font as
+   the search placeholder beside it, not a visually distinct one.
+   Padding well beyond the visible icon+text gives it a real hit
+   target despite the small footprint; the matching negative margin
+   cancels that padding back out of .search-hints' layout so it
+   doesn't visually push the other hints further right than the
+   icon+text alone would. */
 .random-hint {
   display: inline-flex;
   align-items: center;
@@ -430,7 +433,6 @@ kbd {
   color: var(--text-3);
   font: inherit;
   font-size: 12px;
-  font-style: italic;
   white-space: nowrap;
   border-radius: 6px;
   transition: color 0.15s ease, background 0.15s ease;
