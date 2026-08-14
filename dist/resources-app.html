@@ -1646,6 +1646,13 @@ mark {
   #org-filter-box .filters-preview { display: none; }
   #org-filter-box .filters { display: none; }
   #org-mobile-toggle[aria-expanded="true"] ~ .filters { display: grid; }
+  /* #org-pills' own "Organization" flabel would otherwise repeat right
+     below the toggle button's identical label when expanded. Safe to
+     hide outright rather than just visually: #org-pills keeps
+     aria-labelledby="lbl-org", and per the accessible-name spec a
+     labelledby target's text still counts even while display:none, so
+     screen readers still get "Organization" as the group's name. */
+  #org-fgroup > .flabel { display: none; }
 
   /* Desktop's Match-any Type emphasis (.pill-type-muted, right above —
      same class, same condition) only dims the rest; mobile hides them
