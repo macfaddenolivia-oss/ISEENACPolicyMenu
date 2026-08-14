@@ -2022,8 +2022,8 @@ footer.foot {
       <div class="match-row">
         <span class="flabel" id="lbl-match">Match</span>
         <div class="segmented" id="match-mode" role="group" aria-labelledby="lbl-match">
-          <button class="seg-btn" id="match-all-btn" type="button" data-mode="all" aria-pressed="true">Match all</button>
-          <button class="seg-btn" id="match-any-btn" type="button" data-mode="any" aria-pressed="false">Match any</button>
+          <button class="seg-btn" id="match-all-btn" type="button" data-mode="all" aria-pressed="false">Match all</button>
+          <button class="seg-btn" id="match-any-btn" type="button" data-mode="any" aria-pressed="true">Match any</button>
         </div>
         <button class="info-btn" id="match-info" type="button" aria-label="What do Match all and Match any mean?">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2481,7 +2481,7 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
     types: [], // selected Type values (OR within group)
     subs: [],  // selected Subtype values (OR within group)
     orgs: [],  // selected Organization (Creator) values (OR within group)
-    matchMode: "all", // "all" (every active facet must match) or "any" (at least one does)
+    matchMode: "any", // "all" (every active facet must match) or "any" (at least one does) — "any" is the default
   };
 
   var el = {};
@@ -2561,7 +2561,7 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
     state.types.length = 0;
     state.subs.length = 0;
     state.orgs.length = 0;
-    state.matchMode = "all";
+    state.matchMode = "any";
     setSearch("");
     el.search.value = "";
   }
