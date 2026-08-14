@@ -1039,6 +1039,19 @@
       el.startHereToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 
+    // Organization's mobile-only disclosure: aria-expanded is the whole
+    // source of truth here (unlike startHereSection's .hidden above) —
+    // the CSS attribute selector in styles.css does the actual
+    // showing/hiding, since #filters-org's display is otherwise governed
+    // by .filter-bar.filters-open, and toggling .hidden here would just
+    // fight that existing rule instead of overriding it. Invisible and
+    // inert above 720px (.org-mobile-toggle{display:none}), so this
+    // listener is harmless to leave attached at every width.
+    el.orgMobileToggle.addEventListener("click", function () {
+      var willOpen = el.orgMobileToggle.getAttribute("aria-expanded") !== "true";
+      el.orgMobileToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+
     // "Start Here" pathway cards: pre-apply Type/Subtype filters as a
     // guided shortcut into the same filter system the pills use, replacing
     // whatever filters/search were already active for a clean result.
@@ -1507,6 +1520,7 @@
       orgPillsPreview: $("org-pills-preview"),
       subFgroup: $("sub-fgroup"),
       subFgroupPreview: $("sub-fgroup-preview"),
+      orgMobileToggle: $("org-mobile-toggle"),
       clearFilters: $("clear-filters"),
       filterToggle: $("filter-toggle"),
       filterToggleLabel: $("filter-toggle-label"),

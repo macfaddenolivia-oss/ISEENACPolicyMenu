@@ -766,6 +766,13 @@ kbd {
 .filters { display: none; gap: 5px; }
 .filter-bar.filters-open .filters { display: grid; }
 
+/* Organization's mobile-only disclosure button — see the mobile media
+   query below for its actual layout/behavior. Hidden outright here so
+   it never renders (or gets focus) above 720px, where Organization
+   keeps Type/Subtype's existing preview + shared Browse-filters
+   treatment untouched. */
+.org-mobile-toggle { display: none; }
+
 .fgroup {
   display: grid;
   /* Wide enough for the uppercase, letter-spaced "ORGANIZATION" label
@@ -1606,6 +1613,40 @@ mark {
   .fgroup { grid-template-columns: 1fr; gap: 6px; }
   .fgroup > .flabel { padding-top: 0; }
 
+  /* Organization on mobile: no preview tags/count by default, just this
+     label+chevron row — Organization has by far the most values and the
+     longest labels of the three facets, so even a capped preview row ate
+     the most vertical space for the facet visitors reach for least
+     first. Decoupled entirely from "Browse filters" (unlike Type/Subtype,
+     which are unaffected by this and keep their preview as-is): the
+     #org-filter-box/#org-mobile-toggle id selectors below outrank
+     .filter-bar.filters-open .filters in specificity, so Organization
+     stays collapsed even while Browse filters is open, and only this
+     button's own aria-expanded reveals it. */
+  .org-mobile-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+  }
+  .org-mobile-toggle .chevron {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--text-3);
+    transition: transform 0.2s ease;
+  }
+  .org-mobile-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+
+  #org-filter-box .filters-preview { display: none; }
+  #org-filter-box .filters { display: none; }
+  #org-mobile-toggle[aria-expanded="true"] ~ .filters { display: grid; }
+
   /* Desktop's Match-any Type emphasis (.pill-type-muted, right above —
      same class, same condition) only dims the rest; mobile hides them
      outright instead. Vertical space is tighter here, and once a Type is
@@ -2019,7 +2060,18 @@ footer.foot {
           </div>
         </div>
 
-        <div class="filter-group-box">
+        <div class="filter-group-box" id="org-filter-box">
+          <!-- Mobile-only disclosure: hidden entirely on desktop (see
+               .org-mobile-toggle in styles.css), where Organization keeps
+               the same preview + shared "Browse filters" behavior as Type
+               and Subtype. On mobile it replaces the preview row below —
+               tapping it reveals the same full #org-pills list "Browse
+               filters" already shows, independent of that button's state. -->
+          <button class="org-mobile-toggle" id="org-mobile-toggle" type="button" aria-expanded="false" aria-controls="filters-org">
+            <span class="flabel">Organization</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
           <div class="filters-preview" id="filters-preview-org">
             <div class="fgroup">
               <span class="flabel" id="lbl-org-preview">Organization</span>
@@ -2141,7 +2193,7 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
       <a class="btn feedback-cta-btn" href="https://forms.cloud.microsoft/r/tTeDeizsYL" target="_blank" rel="noopener noreferrer">Share feedback</a>
     </div>
     <div class="foot-hint">
-      <span>Click a card to open the resource · hover for full details |  Created and curated by <a href="https://www.linkedin.com/in/olivia-macfadden/" target="_blank" rel="noopener noreferrer"> Olivia Macfadden</a> and Ryan Dalforno on behalf of the <a href="https://www.isee-northamerica.org/policy.php" target="_blank" rel="noopener noreferrer"> International Society for Environmental Epidemiology - North America Chapter's Policy Committee</a></span>
+      <span>Created and curated by <a href="https://www.linkedin.com/in/olivia-macfadden/" target="_blank" rel="noopener noreferrer"> Olivia Macfadden</a> and Ryan Dalforno on behalf of the <a href="https://www.isee-northamerica.org/policy.php" target="_blank" rel="noopener noreferrer"> International Society for Environmental Epidemiology - North America Chapter's Policy Committee</a></span>
       <span id="stamp"></span>
     </div>
   </footer>
@@ -3207,6 +3259,19 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
       el.startHereToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 
+    // Organization's mobile-only disclosure: aria-expanded is the whole
+    // source of truth here (unlike startHereSection's .hidden above) —
+    // the CSS attribute selector in styles.css does the actual
+    // showing/hiding, since #filters-org's display is otherwise governed
+    // by .filter-bar.filters-open, and toggling .hidden here would just
+    // fight that existing rule instead of overriding it. Invisible and
+    // inert above 720px (.org-mobile-toggle{display:none}), so this
+    // listener is harmless to leave attached at every width.
+    el.orgMobileToggle.addEventListener("click", function () {
+      var willOpen = el.orgMobileToggle.getAttribute("aria-expanded") !== "true";
+      el.orgMobileToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+
     // "Start Here" pathway cards: pre-apply Type/Subtype filters as a
     // guided shortcut into the same filter system the pills use, replacing
     // whatever filters/search were already active for a clean result.
@@ -3675,6 +3740,7 @@ The ATS Research News Quarterly, written by the ATS Research Advocacy Committe
       orgPillsPreview: $("org-pills-preview"),
       subFgroup: $("sub-fgroup"),
       subFgroupPreview: $("sub-fgroup-preview"),
+      orgMobileToggle: $("org-mobile-toggle"),
       clearFilters: $("clear-filters"),
       filterToggle: $("filter-toggle"),
       filterToggleLabel: $("filter-toggle-label"),

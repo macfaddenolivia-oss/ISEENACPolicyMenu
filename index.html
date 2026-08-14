@@ -130,7 +130,18 @@
           </div>
         </div>
 
-        <div class="filter-group-box">
+        <div class="filter-group-box" id="org-filter-box">
+          <!-- Mobile-only disclosure: hidden entirely on desktop (see
+               .org-mobile-toggle in styles.css), where Organization keeps
+               the same preview + shared "Browse filters" behavior as Type
+               and Subtype. On mobile it replaces the preview row below —
+               tapping it reveals the same full #org-pills list "Browse
+               filters" already shows, independent of that button's state. -->
+          <button class="org-mobile-toggle" id="org-mobile-toggle" type="button" aria-expanded="false" aria-controls="filters-org">
+            <span class="flabel">Organization</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
           <div class="filters-preview" id="filters-preview-org">
             <div class="fgroup">
               <span class="flabel" id="lbl-org-preview">Organization</span>
@@ -182,7 +193,7 @@
       <a class="btn feedback-cta-btn" href="https://forms.cloud.microsoft/r/tTeDeizsYL" target="_blank" rel="noopener noreferrer">Share feedback</a>
     </div>
     <div class="foot-hint">
-      <span>Click a card to open the resource · hover for full details |  Created and curated by <a href="https://www.linkedin.com/in/olivia-macfadden/" target="_blank" rel="noopener noreferrer"> Olivia Macfadden</a> and Ryan Dalforno on behalf of the <a href="https://www.isee-northamerica.org/policy.php" target="_blank" rel="noopener noreferrer"> International Society for Environmental Epidemiology - North America Chapter's Policy Committee</a></span>
+      <span>Created and curated by <a href="https://www.linkedin.com/in/olivia-macfadden/" target="_blank" rel="noopener noreferrer"> Olivia Macfadden</a> and Ryan Dalforno on behalf of the <a href="https://www.isee-northamerica.org/policy.php" target="_blank" rel="noopener noreferrer"> International Society for Environmental Epidemiology - North America Chapter's Policy Committee</a></span>
       <span id="stamp"></span>
     </div>
   </footer>

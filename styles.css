@@ -758,6 +758,13 @@ kbd {
 .filters { display: none; gap: 5px; }
 .filter-bar.filters-open .filters { display: grid; }
 
+/* Organization's mobile-only disclosure button — see the mobile media
+   query below for its actual layout/behavior. Hidden outright here so
+   it never renders (or gets focus) above 720px, where Organization
+   keeps Type/Subtype's existing preview + shared Browse-filters
+   treatment untouched. */
+.org-mobile-toggle { display: none; }
+
 .fgroup {
   display: grid;
   /* Wide enough for the uppercase, letter-spaced "ORGANIZATION" label
@@ -1597,6 +1604,40 @@ mark {
 
   .fgroup { grid-template-columns: 1fr; gap: 6px; }
   .fgroup > .flabel { padding-top: 0; }
+
+  /* Organization on mobile: no preview tags/count by default, just this
+     label+chevron row — Organization has by far the most values and the
+     longest labels of the three facets, so even a capped preview row ate
+     the most vertical space for the facet visitors reach for least
+     first. Decoupled entirely from "Browse filters" (unlike Type/Subtype,
+     which are unaffected by this and keep their preview as-is): the
+     #org-filter-box/#org-mobile-toggle id selectors below outrank
+     .filter-bar.filters-open .filters in specificity, so Organization
+     stays collapsed even while Browse filters is open, and only this
+     button's own aria-expanded reveals it. */
+  .org-mobile-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+  }
+  .org-mobile-toggle .chevron {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--text-3);
+    transition: transform 0.2s ease;
+  }
+  .org-mobile-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+
+  #org-filter-box .filters-preview { display: none; }
+  #org-filter-box .filters { display: none; }
+  #org-mobile-toggle[aria-expanded="true"] ~ .filters { display: grid; }
 
   /* Desktop's Match-any Type emphasis (.pill-type-muted, right above —
      same class, same condition) only dims the rest; mobile hides them
