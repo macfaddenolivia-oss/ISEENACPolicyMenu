@@ -4,7 +4,7 @@ A searchable, filterable card-based browser for the resource list. Builds to a
 single self-contained HTML file you can email to people — it works offline with
 no internet connection and no external files.
 
-Created by Olivia Macfadden and Ryan Dalforno on behalf of the International Society of Environmental Epidemiologists - North America Chapter's Policy Committee (https://www.isee-northamerica.org/policy.php).
+Created by Olivia Macfadden and Ryan Dalforno on behalf of the International Society for Environmental Epidemiology - North America Chapter's Policy Committee (https://www.isee-northamerica.org/policy.php).
 
 ---
 
