@@ -1,5 +1,5 @@
 # Private source spreadsheet — never publish this.
-# data/resources.csv is the published copy; this original stays local.
+# legacy-offline-build/resources.csv is the exported copy; this original stays local.
 ListofResources.xlsx
 *.xlsx
 
@@ -19,15 +19,6 @@ ListofResources.xlsx
 *.swp
 .claude/
 
-# Stale hand-renamed build from 2026-08-09. It predates the no-JavaScript
-# fallback and the mobile fixes, so it hangs on "Loading…" in some viewers.
-# Delete it, or regenerate it from dist/resources-app.html, then remove this line.
-dist/PolicyMenu.html
-
 # Python
 __pycache__/
 *.py[cod]
-
-# Local source copy of the header logo — img/isee-logo.png is the tracked
-# asset the site actually references.
-/ISEENAC.png

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-One-way export: ListofResources.xlsx  ->  data/resources.csv
+LEGACY / NOT PART OF THE CURRENT WORKFLOW. See build.py in this folder for
+why — this feeds that script's local resources.csv, not the live site.
+
+One-way export: ListofResources.xlsx  ->  legacy-offline-build/resources.csv
 
 Reads the ORIGINAL spreadsheet strictly read-only and writes a clean 7-column
 working copy. The original .xlsx is never modified.
@@ -12,9 +15,9 @@ Those five are coalesced into a single "Subtype" column here.
 
 Uses only the Python standard library (an .xlsx is a zip of XML).
 
-Usage:
-    python3 tools/xlsx_to_csv.py                  # default paths
-    python3 tools/xlsx_to_csv.py in.xlsx out.csv
+Usage (run from the repo root, where ListofResources.xlsx lives):
+    python3 legacy-offline-build/xlsx_to_csv.py                  # default paths
+    python3 legacy-offline-build/xlsx_to_csv.py in.xlsx out.csv
 """
 
 import csv
@@ -109,7 +112,7 @@ def read_rows(path):
 
 def main():
     src = sys.argv[1] if len(sys.argv) > 1 else "ListofResources.xlsx"
-    dst = sys.argv[2] if len(sys.argv) > 2 else os.path.join("data", "resources.csv")
+    dst = sys.argv[2] if len(sys.argv) > 2 else os.path.join("legacy-offline-build", "resources.csv")
 
     if not os.path.exists(src):
         raise SystemExit("Source spreadsheet not found: %s" % src)

@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 """
+LEGACY / NOT PART OF THE CURRENT WORKFLOW.
+
+This predates the switch to fetching resources live from a published Google
+Sheet (see CSV_PATH in app.js). It was the old approach: an embedded,
+single-file offline build that read from a local resources.csv. It's kept
+here (in legacy-offline-build/, alongside its input CSV and last output) in
+case that offline-file approach is ever needed again, not because it's still
+in use — the live site does not depend on this script or its output.
+
 Build a single self-contained HTML file from the working CSV.
 
-Reads:   data/resources.csv, index.html, styles.css, app.js
-Writes:  dist/resources-app.html
+Reads:   resources.csv (this folder), index.html, styles.css, app.js (repo root)
+Writes:  resources-app.html (this folder)
 
 The output embeds the data as JavaScript and inlines all CSS/JS, so it has no
 external files, makes no network requests, and works offline from a double-click.
@@ -11,7 +20,7 @@ external files, makes no network requests, and works offline from a double-click
 Standard library only.
 
 Usage:
-    python3 tools/build.py
+    python3 legacy-offline-build/build.py
 """
 
 import base64
@@ -22,14 +31,15 @@ import os
 import re
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
 
-CSV_IN = os.path.join(ROOT, "data", "resources.csv")
+CSV_IN = os.path.join(HERE, "resources.csv")
 HTML_IN = os.path.join(ROOT, "index.html")
 CSS_IN = os.path.join(ROOT, "styles.css")
 JS_IN = os.path.join(ROOT, "app.js")
 LOGO_IN = os.path.join(ROOT, "img", "isee-logo-2.png")
-OUT = os.path.join(ROOT, "dist", "resources-app.html")
+OUT = os.path.join(HERE, "resources-app.html")
 
 FIELDS = {
     "resource": "Resource",
@@ -53,7 +63,7 @@ def load_records(path):
     """Parse the CSV into records, tolerating blank cells and ragged rows."""
     if not os.path.exists(path):
         raise SystemExit(
-            "Missing %s\nGenerate it first with:  python3 tools/xlsx_to_csv.py" % path
+            "Missing %s\nGenerate it first with:  python3 legacy-offline-build/xlsx_to_csv.py" % path
         )
 
     with open(path, "r", encoding="utf-8-sig", newline="") as fh:
