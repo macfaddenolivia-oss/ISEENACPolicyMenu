@@ -273,34 +273,50 @@ a:focus-visible {
   padding: 10px 14px 12px;
 }
 
-/* quick-read-toggle's dropdown — same box treatment as .start-here
-   above (light accent fill, same border/radius) but simpler content: a
-   live description plus a single link, side by side on desktop and
-   wrapping to their own lines once the row gets too narrow to fit both
-   (mobile override further down forces the stack unconditionally). */
+/* Positioning context for the dropdown panel below — a plain wrapper
+   (not .header-ctas itself) so the panel anchors to this one button
+   specifically rather than spanning both stacked pills. display:flex
+   with the default align-items:stretch lets the button inside still
+   fill the width .header-ctas stretches this wrapper to (see
+   .header-ctas above) — the panel itself doesn't count toward that
+   width since position:absolute pulls it out of normal flow. */
+.quick-read-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* quick-read-toggle's dropdown menu — floats directly under the button
+   (like a real nav dropdown) instead of pushing page content down.
+   Same light accent-fill box treatment as .start-here above, just
+   narrower (matches the trigger button's own width, via left/right:0
+   against .quick-read-wrap) and stacked column-wise since that width
+   is too narrow for the description and link to sit side by side. */
 .quick-read-panel {
-  margin: 0 0 10px;
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--brand-green) 22%, var(--border));
   border-radius: calc(var(--radius) + 4px);
   padding: 14px 16px;
+  box-shadow: var(--shadow-md);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 14px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
 }
 
 .quick-read-panel-desc {
   margin: 0;
-  flex: 1 1 320px;
-  min-width: 0;
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
 }
 
-.quick-read-panel .btn { flex: none; }
+.quick-read-panel .btn { justify-content: center; }
 
 .start-here-title {
   margin: 0 0 8px;
@@ -1683,17 +1699,8 @@ mark {
   .start-here-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   .start-card { padding: 9px 10px; }
 
-  /* Same tighter treatment as .start-here just above, plus forcing the
-     description/link to stack (rather than flex-wrap's already-usual
-     mobile behavior) so the link reads as a clear full-width CTA under
-     the text instead of a small trailing chip beside its last line. */
-  .quick-read-panel {
-    margin: 0 0 8px;
-    padding: 10px 12px;
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .quick-read-panel .btn { justify-content: center; }
+  /* Same tighter treatment as .start-here just above. */
+  .quick-read-panel { padding: 10px 12px; }
 
   /* Header's two stacked pills both go full-width here, same as
      .start-here-toggle already did alone before quick-read-toggle

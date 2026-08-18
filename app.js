@@ -1060,11 +1060,22 @@
     });
 
     // Quick-read disclosure: same collapsed-by-default, hidden-is-the-
-    // source-of-truth pattern as Start Here just above.
-    el.quickReadToggle.addEventListener("click", function () {
+    // source-of-truth pattern as Start Here just above, but this one
+    // floats as an anchored dropdown (see .quick-read-panel in
+    // styles.css) rather than pushing page content down — so, unlike
+    // Start Here, it also closes on an outside click/tap, matching how
+    // a real menu behaves.
+    el.quickReadToggle.addEventListener("click", function (e) {
+      e.stopPropagation();
       var willOpen = el.quickReadPanel.hidden;
       el.quickReadPanel.hidden = !willOpen;
       el.quickReadToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+    document.addEventListener("click", function (e) {
+      if (el.quickReadPanel.hidden) return;
+      if (e.target.closest(".quick-read-wrap")) return;
+      el.quickReadPanel.hidden = true;
+      el.quickReadToggle.setAttribute("aria-expanded", "false");
     });
 
     // Organization's mobile-only disclosure: aria-expanded is the whole
