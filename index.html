@@ -68,9 +68,13 @@
                not hardcoded here). Styled identically to random-hint
                (shared class) so the two read as one family of subtle
                search-bar hints; placed before it so random-hint keeps its
-               documented rightmost position. -->
+               documented rightmost position. The tooltip span is filled
+               in by app.js with that resource's live Description cell,
+               same hover/keyboard-focus reveal as the Match all/any
+               info-btn tooltip (see .tooltip in styles.css). -->
           <button class="random-hint" id="quick-read" type="button" aria-label="Open a quick resource you can read in 5 minutes" hidden>
             <span class="random-hint-text">Only have 5 minutes?</span>
+            <span class="tooltip" role="tooltip" id="quick-read-tooltip"></span>
           </button>
           <!-- Same id/behavior as the old standalone "Random resource"
                button it replaces (see app.js) — just relocated and

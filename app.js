@@ -1590,6 +1590,13 @@
     })[0];
     quickReadUrl = quickReadRecord ? safeUrl(quickReadRecord.link) : "";
     el.quickRead.hidden = !quickReadUrl;
+    // Plain text (not the highlight()/esc() HTML path cardHTML uses) —
+    // there's no search-term highlighting relevant here, and textContent
+    // means the Description cell can't inject markup even accidentally.
+    if (quickReadUrl) {
+      el.quickReadTooltip.textContent =
+        quickReadRecord.description || "No description provided.";
+    }
 
     wire();
     render();
@@ -1629,6 +1636,7 @@
       count: $("count"),
       grid: $("grid"),
       quickRead: $("quick-read"),
+      quickReadTooltip: $("quick-read-tooltip"),
       random: $("random"),
       anotherRandom: $("another-random"),
       backToAll: $("back-to-all"),
