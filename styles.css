@@ -199,11 +199,15 @@ a:focus-visible {
 /* Holds both header pills (Start Here + quick-read), stacked vertically
    at the header's far right, opposite .brand — replaces
    .start-here-toggle's old position as a lone flex:none child of
-   .site-header-inner now that there are two. */
+   .site-header-inner now that there are two. align-items: stretch (not
+   flex-end) makes both pills the same width: a column flex container
+   with auto width sizes itself to its widest child's content, then
+   stretches every child to that width — so the shorter-text pill grows
+   to match the longer one instead of each hugging its own text. */
 .header-ctas {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 10px;
   flex: none;
 }
@@ -215,11 +219,16 @@ a:focus-visible {
    Collapsed by default on every load (app.js sets no persisted state),
    so this is the only way back into Start Here once dismissed. Shared
    by quick-read-toggle below it — same color/size/chevron treatment,
-   just a second instance of this class rather than a variant. */
+   just a second instance of this class rather than a variant.
+   justify-content: center keeps its text+chevron centered once
+   .header-ctas stretches it wider than its own content (see above) —
+   inline-flex's default flex-start would otherwise left-hug the text
+   inside the now-wider pill instead of centering it. */
 .start-here-toggle {
   flex: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 16px 27px;
   font: inherit;
