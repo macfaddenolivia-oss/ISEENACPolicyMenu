@@ -221,6 +221,20 @@
     },
   ];
 
+  // "Only have 5 minutes?" hint next to search: a fixed shortcut to one
+  // specific, short resource ("Federal Register" — note the sheet's
+  // Resource cell is actually misspelled "Federal Reister"). Matched on
+  // Creator/Type/Subtype rather than the resource name so that typo can't
+  // break the lookup; this combination is unique in the live data (see
+  // start() below), which resolves the link from the sheet at runtime
+  // rather than duplicating it here — if the row is ever removed or
+  // renamed, the hint just stays hidden instead of pointing at stale data.
+  var QUICK_READ = {
+    creator: "United States Government",
+    type: "Letter writing",
+    subtype: "Letter writing and signing petitions",
+  };
+
   function findPathway(id) {
     for (var i = 0; i < PATHWAYS.length; i++) {
       if (PATHWAYS[i].id === id) return PATHWAYS[i];
@@ -278,6 +292,10 @@
     randomPick = null;
     rollId++;
   }
+
+  // Resolved once data loads (see start()) — the safe, validated link for
+  // QUICK_READ, or "" if that resource can't be found in the live sheet.
+  var quickReadUrl = "";
 
   function $(id) {
     return document.getElementById(id);
@@ -420,6 +438,8 @@
       '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>',
     dice:
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>',
+    clock:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
     compass:
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
     close:
@@ -1322,6 +1342,14 @@
     el.random.addEventListener("click", pickRandom);
     el.anotherRandom.addEventListener("click", pickRandom);
 
+    // "Only have 5 minutes?" — opens QUICK_READ the same way clicking a
+    // resource card does (see the .card[data-url] handler above), rather
+    // than a special-cased navigation of its own.
+    el.quickRead.addEventListener("click", function () {
+      if (!quickReadUrl) return;
+      window.open(quickReadUrl, "_blank", "noopener");
+    });
+
     // Leaves the single-pick view without touching search/filter state.
     el.backToAll.addEventListener("click", function () {
       exitRandomPick();
@@ -1553,6 +1581,16 @@
       return;
     }
 
+    var quickReadRecord = ALL.filter(function (r) {
+      return (
+        norm(r.creator) === norm(QUICK_READ.creator) &&
+        norm(r.type) === norm(QUICK_READ.type) &&
+        norm(r.subtype) === norm(QUICK_READ.subtype)
+      );
+    })[0];
+    quickReadUrl = quickReadRecord ? safeUrl(quickReadRecord.link) : "";
+    el.quickRead.hidden = !quickReadUrl;
+
     wire();
     render();
   }
@@ -1590,6 +1628,7 @@
       crumbs: $("crumbs"),
       count: $("count"),
       grid: $("grid"),
+      quickRead: $("quick-read"),
       random: $("random"),
       anotherRandom: $("another-random"),
       backToAll: $("back-to-all"),
@@ -1613,6 +1652,7 @@
       // "beforeend" (not "afterbegin" like below) — text first, dice
       // icon after, on the right side of the label.
       el.random.insertAdjacentHTML("beforeend", ICON.dice);
+      el.quickRead.insertAdjacentHTML("beforeend", ICON.clock);
       // Same dice icon as "Random resource" — visually ties the two
       // random-pick actions together now that "Another random resource"
       // has its own distinct pink/magenta styling (see .btn-random).

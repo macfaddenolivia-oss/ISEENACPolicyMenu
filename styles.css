@@ -368,9 +368,10 @@ a:focus-visible {
    rest of the page's accent color has moved to teal. */
 #search {
   width: 100%;
-  /* Right padding sized to clear .search-hints below (clear-search +
-     the random-resource hint, now the last/rightmost item there). */
-  padding: 12px 144px 12px 40px;
+  /* Right padding sized to clear .search-hints below (clear-search, the
+     quick-read hint, and the random-resource hint — rightmost item
+     there). */
+  padding: 12px 288px 12px 40px;
   font: inherit;
   font-size: 15.5px;
   color: var(--text);
@@ -1734,12 +1735,21 @@ mark {
      padding trimmed from desktop's — just the random-resource hint
      (itself a bit smaller — see .random-hint below) and the clear
      button share this end now. */
-  #search { font-size: 16px; padding: 12px 116px 12px 40px; }
+  #search { font-size: 16px; padding: 12px 150px 12px 40px; }
 
   .searchbox { flex: 1 1 100%; }
 
   .random-hint { font-size: 11px; gap: 4px; }
   .random-hint svg { width: 17px; height: 17px; }
+
+  /* Icon-only on narrow screens — "Only have 5 minutes?" is long enough
+     next to "random resource" to crowd the compact mobile search bar;
+     the aria-label still gives it an accessible name with no visible
+     text. random-hint itself keeps its text at every width, so this is
+     scoped to quick-read specifically rather than changing that shared
+     pattern. */
+  #quick-read .random-hint-text { display: none; }
+  #quick-read { padding: 8px; margin: -8px; }
 
   /* Hide the (small, compact) search bar on scroll-down, reveal it on
      scroll-up — mobile only, gated by this media query rather than a JS
