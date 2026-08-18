@@ -268,7 +268,7 @@
     types: [], // selected Type values (OR within group)
     subs: [],  // selected Subtype values (OR within group)
     orgs: [],  // selected Organization (Creator) values (OR within group)
-    matchMode: "any", // "all" (every active facet must match) or "any" (at least one does) — "any" is the default
+    matchMode: "all", // "all" (every active facet must match) or "any" (at least one does) — "all" is the default
   };
 
   var el = {};
@@ -352,7 +352,7 @@
     state.types.length = 0;
     state.subs.length = 0;
     state.orgs.length = 0;
-    state.matchMode = "any";
+    state.matchMode = "all";
     setSearch("");
     el.search.value = "";
   }
