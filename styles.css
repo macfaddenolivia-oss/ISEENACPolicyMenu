@@ -436,10 +436,9 @@ a:focus-visible {
    rest of the page's accent color has moved to teal. */
 #search {
   width: 100%;
-  /* Right padding sized to clear .search-hints below (clear-search, the
-     quick-read hint, and the random-resource hint — rightmost item
-     there). */
-  padding: 12px 288px 12px 40px;
+  /* Right padding sized to clear .search-hints below (clear-search +
+     the random-resource hint, now the last/rightmost item there). */
+  padding: 12px 144px 12px 40px;
   font: inherit;
   font-size: 15.5px;
   color: var(--text);
@@ -728,14 +727,10 @@ kbd {
 }
 .info-btn:focus-visible { outline: none; box-shadow: var(--ring); }
 
-/* Tooltip box, shared with #quick-read's resource-description tooltip
-   below (same visual treatment — dark bubble, hover/focus reveal — just
-   anchored to a different edge per button; see the left/right split
-   right after this rule). */
-.info-btn .tooltip,
-#quick-read .tooltip {
+.info-btn .tooltip {
   position: absolute;
   z-index: 40;
+  left: 0;
   top: calc(100% + 8px);
   width: max-content;
   max-width: min(320px, 80vw);
@@ -745,12 +740,6 @@ kbd {
   font-weight: 400;
   line-height: 1.45;
   text-align: left;
-  /* #quick-read's own .random-hint white-space: nowrap would otherwise
-     be inherited here, letting long descriptions overflow the bubble
-     one-liner-style instead of wrapping — invisibly, since the
-     overflowing text is still --bg-colored past the dark background it
-     needs for contrast. */
-  white-space: normal;
   padding: 8px 11px;
   border-radius: 8px;
   box-shadow: var(--shadow-md);
@@ -759,25 +748,13 @@ kbd {
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.info-btn .tooltip { left: 0; }
-/* quick-read sits near the right edge of the search bar (just left of
-   random-hint), not the left edge .info-btn anchors from — right:0 lets
-   the bubble grow leftward off the button instead of running past the
-   edge of the search box. */
-#quick-read .tooltip { right: 0; }
-#quick-read { position: relative; }
 
-/* Hover/focus cover mouse and keyboard; .info-open (toggled in app.js
-   for .info-btn only — quick-read's own click already navigates, so it
-   doesn't get a tap-to-toggle: on touch, the tooltip simply isn't
-   reachable before the tap opens the resource, same as a native link
-   title) covers touch, where :hover can't be relied on to open *and*
-   close it again on a second tap. */
+/* Hover/focus cover mouse and keyboard; .info-open (toggled in app.js)
+   covers touch, where :hover can't be relied on to open *and* close it
+   again on a second tap. */
 .info-btn:hover .tooltip,
 .info-btn:focus-visible .tooltip,
-.info-btn.info-open .tooltip,
-#quick-read:hover .tooltip,
-#quick-read:focus-visible .tooltip {
+.info-btn.info-open .tooltip {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -1834,21 +1811,12 @@ mark {
      padding trimmed from desktop's — just the random-resource hint
      (itself a bit smaller — see .random-hint below) and the clear
      button share this end now. */
-  #search { font-size: 16px; padding: 12px 150px 12px 40px; }
+  #search { font-size: 16px; padding: 12px 116px 12px 40px; }
 
   .searchbox { flex: 1 1 100%; }
 
   .random-hint { font-size: 11px; gap: 4px; }
   .random-hint svg { width: 17px; height: 17px; }
-
-  /* Icon-only on narrow screens — "Only have 5 minutes?" is long enough
-     next to "random resource" to crowd the compact mobile search bar;
-     the aria-label still gives it an accessible name with no visible
-     text. random-hint itself keeps its text at every width, so this is
-     scoped to quick-read specifically rather than changing that shared
-     pattern. */
-  #quick-read .random-hint-text { display: none; }
-  #quick-read { padding: 8px; margin: -8px; }
 
   /* Hide the (small, compact) search bar on scroll-down, reveal it on
      scroll-up — mobile only, gated by this media query rather than a JS
