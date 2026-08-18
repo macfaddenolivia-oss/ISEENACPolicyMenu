@@ -20,10 +20,20 @@
         <p class="brand-subtitle">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action.</p>
       </div>
     </div>
-    <button class="start-here-toggle" id="start-here-toggle" type="button" aria-expanded="false" aria-controls="start-here-section">
-      <span class="start-here-toggle-text">New to advocacy? Click here!</span>
-      <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </button>
+    <!-- Two stacked header pills, same size/color/chevron treatment —
+         start-here-toggle on top (unconditional), quick-read-toggle
+         below it (hidden until app.js confirms the resource it points
+         to still exists in the live sheet — see boot()/start()). -->
+    <div class="header-ctas">
+      <button class="start-here-toggle" id="start-here-toggle" type="button" aria-expanded="false" aria-controls="start-here-section">
+        <span class="start-here-toggle-text">New to advocacy? Click here!</span>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <button class="start-here-toggle" id="quick-read-toggle" type="button" aria-expanded="false" aria-controls="quick-read-panel" hidden>
+        <span class="start-here-toggle-text">Only have 5 minutes? Click here!</span>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -52,6 +62,15 @@
         <span class="start-card-desc">Networks and programs where you can plug in and take part.</span>
       </button>
     </div>
+  </section>
+
+  <!-- Dropdown for quick-read-toggle above: description text filled in
+       live from the sheet's Description cell, plus a real link (not a
+       JS window.open) to the resource itself — same as the resource
+       cards' own title link. -->
+  <section class="quick-read-panel" id="quick-read-panel" aria-labelledby="quick-read-toggle" hidden>
+    <p class="quick-read-panel-desc" id="quick-read-panel-desc"></p>
+    <a class="btn" id="quick-read-panel-link" target="_blank" rel="noopener noreferrer">Open this resource</a>
   </section>
 
   <div class="controls" id="controls">

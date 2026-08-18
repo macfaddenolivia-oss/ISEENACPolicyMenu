@@ -1059,6 +1059,14 @@
       el.startHereToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 
+    // Quick-read disclosure: same collapsed-by-default, hidden-is-the-
+    // source-of-truth pattern as Start Here just above.
+    el.quickReadToggle.addEventListener("click", function () {
+      var willOpen = el.quickReadPanel.hidden;
+      el.quickReadPanel.hidden = !willOpen;
+      el.quickReadToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+
     // Organization's mobile-only disclosure: aria-expanded is the whole
     // source of truth here (unlike startHereSection's .hidden above) —
     // the CSS attribute selector in styles.css does the actual
@@ -1590,12 +1598,15 @@
     })[0];
     quickReadUrl = quickReadRecord ? safeUrl(quickReadRecord.link) : "";
     el.quickRead.hidden = !quickReadUrl;
+    el.quickReadToggle.hidden = !quickReadUrl;
     // Plain text (not the highlight()/esc() HTML path cardHTML uses) —
     // there's no search-term highlighting relevant here, and textContent
     // means the Description cell can't inject markup even accidentally.
     if (quickReadUrl) {
-      el.quickReadTooltip.textContent =
-        quickReadRecord.description || "No description provided.";
+      var quickReadDesc = quickReadRecord.description || "No description provided.";
+      el.quickReadTooltip.textContent = quickReadDesc;
+      el.quickReadPanelDesc.textContent = quickReadDesc;
+      el.quickReadPanelLink.href = quickReadUrl;
     }
 
     wire();
@@ -1609,6 +1620,10 @@
       startHere: $("start-here"),
       startHereToggle: $("start-here-toggle"),
       startHereSection: $("start-here-section"),
+      quickReadToggle: $("quick-read-toggle"),
+      quickReadPanel: $("quick-read-panel"),
+      quickReadPanelDesc: $("quick-read-panel-desc"),
+      quickReadPanelLink: $("quick-read-panel-link"),
       search: $("search"),
       searchbox: $("searchbox"),
       clearSearch: $("clear-search"),

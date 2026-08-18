@@ -196,12 +196,26 @@ a:focus-visible {
 
 /* ---------- Start Here ---------- */
 
+/* Holds both header pills (Start Here + quick-read), stacked vertically
+   at the header's far right, opposite .brand — replaces
+   .start-here-toggle's old position as a lone flex:none child of
+   .site-header-inner now that there are two. */
+.header-ctas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex: none;
+}
+
 /* Pill living inside the header bar itself (see .site-header-inner's
    justify-content:space-between), opposite the logo/title, rather than
    its own full-width bar below it. Solid --accent fill (the site's teal
    accent) reads clearly against the header's white background.
    Collapsed by default on every load (app.js sets no persisted state),
-   so this is the only way back into Start Here once dismissed. */
+   so this is the only way back into Start Here once dismissed. Shared
+   by quick-read-toggle below it — same color/size/chevron treatment,
+   just a second instance of this class rather than a variant. */
 .start-here-toggle {
   flex: none;
   display: inline-flex;
@@ -249,6 +263,35 @@ a:focus-visible {
   border-radius: calc(var(--radius) + 4px);
   padding: 10px 14px 12px;
 }
+
+/* quick-read-toggle's dropdown — same box treatment as .start-here
+   above (light accent fill, same border/radius) but simpler content: a
+   live description plus a single link, side by side on desktop and
+   wrapping to their own lines once the row gets too narrow to fit both
+   (mobile override further down forces the stack unconditionally). */
+.quick-read-panel {
+  margin: 0 0 10px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--brand-green) 22%, var(--border));
+  border-radius: calc(var(--radius) + 4px);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.quick-read-panel-desc {
+  margin: 0;
+  flex: 1 1 320px;
+  min-width: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.quick-read-panel .btn { flex: none; }
 
 .start-here-title {
   margin: 0 0 8px;
@@ -1630,6 +1673,24 @@ mark {
   .start-here-title { margin: 0 0 6px; font-size: 17px; }
   .start-here-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   .start-card { padding: 9px 10px; }
+
+  /* Same tighter treatment as .start-here just above, plus forcing the
+     description/link to stack (rather than flex-wrap's already-usual
+     mobile behavior) so the link reads as a clear full-width CTA under
+     the text instead of a small trailing chip beside its last line. */
+  .quick-read-panel {
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .quick-read-panel .btn { justify-content: center; }
+
+  /* Header's two stacked pills both go full-width here, same as
+     .start-here-toggle already did alone before quick-read-toggle
+     existed (see that rule further down) — .header-ctas itself just
+     needs to claim the full wrapped row for them to stretch into. */
+  .header-ctas { width: 100%; align-items: stretch; }
 
   .fgroup { grid-template-columns: 1fr; gap: 6px; }
   .fgroup > .flabel { padding-top: 0; }
