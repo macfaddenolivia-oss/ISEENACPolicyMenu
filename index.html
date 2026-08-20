@@ -256,10 +256,14 @@
      session (sessionStorage — see setupFeedbackModal in app.js) or the
      footer CTA above already covers the same ask for anyone who scrolls
      that far without needing a popup at all. Two separate asks stacked
-     in one modal: the email signup (primary — a real form, so it's
-     first) and the existing feedback-survey link (secondary, below a
-     divider) — kept as two distinct blocks rather than merged into one
-     form so neither ask reads as a required field of the other. -->
+     in one modal: the email signup (primary — first) and the existing
+     feedback-survey link (secondary, below a divider) — kept as two
+     distinct links rather than one merged form so neither ask reads as
+     a required field of the other. Signup opens the Google Form in its
+     own tab rather than embedding it here — an embedded iframe showed
+     Google's own account-switcher bar and a second copy of the form's
+     own title/description, which duplicated this modal's own heading
+     and copy right below it. -->
 <div class="feedback-modal-backdrop" id="feedback-modal-backdrop" hidden>
   <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
     <button class="feedback-modal-close" id="feedback-modal-close" type="button" aria-label="Close">
@@ -267,9 +271,7 @@
     </button>
     <h2 class="feedback-modal-title" id="feedback-modal-title">Stay in the Loop</h2>
     <p class="feedback-modal-text">Leave your email to get notified when we add new resources to the ISEE NAC Policy Engagement Resource Menu. We may also occasionally reach out for feedback on the tool, but we'll keep it infrequent.</p>
-    <div class="feedback-modal-form-wrap">
-      <iframe class="feedback-modal-form" src="https://docs.google.com/forms/d/e/1FAIpQLSfSkQJeiw1Yd5cddSESTvEnDISDD2yO10ucS1zlzdKKWmveMg/viewform?embedded=true" width="400" height="500" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-    </div>
+    <a class="btn btn-primary feedback-modal-btn" id="feedback-modal-signup-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfSkQJeiw1Yd5cddSESTvEnDISDD2yO10ucS1zlzdKKWmveMg/viewform" target="_blank" rel="noopener noreferrer">Sign up</a>
     <hr class="feedback-modal-divider">
     <p class="feedback-modal-secondary-text">Have feedback on the tool right now?</p>
     <a class="btn feedback-modal-btn" id="feedback-modal-link" href="https://forms.cloud.microsoft/r/tTeDeizsYL" target="_blank" rel="noopener noreferrer">Share feedback</a>

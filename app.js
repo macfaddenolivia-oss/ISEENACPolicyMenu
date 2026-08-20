@@ -1502,6 +1502,7 @@
       var closeBtn = document.getElementById("feedback-modal-close");
       var closeIcon = document.getElementById("feedback-modal-close-icon");
       var link = document.getElementById("feedback-modal-link");
+      var signupLink = document.getElementById("feedback-modal-signup-link");
       if (!backdrop || !closeBtn || !link) return;
 
       if (closeIcon) closeIcon.innerHTML = ICON.close;
@@ -1537,6 +1538,7 @@
 
       closeBtn.addEventListener("click", dismiss);
       link.addEventListener("click", dismiss);
+      if (signupLink) signupLink.addEventListener("click", dismiss);
       backdrop.addEventListener("click", function (e) {
         if (e.target === backdrop) dismiss();
       });

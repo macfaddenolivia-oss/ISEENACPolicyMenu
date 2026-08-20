@@ -1623,12 +1623,11 @@ mark {
 .feedback-modal {
   position: relative;
   width: 100%;
-  /* Wide enough to fit the embedded Google Form (400px) with a little
-     breathing room on either side. */
-  max-width: 440px;
-  /* The form + both asks can run taller than short viewports (mobile
-     landscape especially) — scroll the modal itself rather than letting
-     it overflow the backdrop or the screen. */
+  max-width: 380px;
+  /* Belt-and-suspenders on short viewports (mobile landscape especially)
+     — scroll the modal itself rather than letting it overflow the
+     backdrop or the screen, even though the compact content here is in
+     practice never close to tall enough to need it. */
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   background: var(--surface);
@@ -1679,26 +1678,11 @@ mark {
   line-height: 1.5;
 }
 
-/* Centers the iframe within the modal's text-align:center while still
-   letting the iframe itself shrink via max-width:100% below — a block
-   wrapper is needed since width:auto centering doesn't apply to the
-   iframe's own inline layout the same way. */
-.feedback-modal-form-wrap {
-  margin: 0 0 20px;
-}
-
-.feedback-modal-form {
-  display: block;
-  max-width: 100%;
-  margin: 0 auto;
-  border-radius: var(--radius-sm);
-}
-
 /* Separates the email signup (primary ask above) from the existing
    feedback-survey link (secondary ask below) so the two don't read as
    one long form. */
 .feedback-modal-divider {
-  margin: 0 0 16px;
+  margin: 20px 0 16px;
   border: 0;
   border-top: 1px solid var(--border);
 }
