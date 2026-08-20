@@ -356,9 +356,12 @@ a:focus-visible {
 
 .start-here-icon { display: inline-flex; flex: none; }
 
+/* Fixed 2 columns (not auto-fit) so the panel's four cards always land
+   2x2 rather than however many 220px columns happen to fit the
+   dropdown's ~720px width (auto-fit was giving 3-then-1). */
 .start-here-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: clamp(6px, 1vw, 10px);
 }
 
@@ -1689,17 +1692,14 @@ mark {
      keeps scaling smoothly instead of jumping at this one breakpoint. */
   .wrap { padding-top: 10px; padding-bottom: 72px; }
 
-  /* Start Here: tighter box padding, and 2 cards per row instead of 1 so
-     the panel takes roughly half the vertical space it did stacked
-     full-width. Cards with longer copy (e.g. "Explore organizations...")
-     will run a couple of lines taller than their row-mate — an
-     acceptable trade-off for halving the row count. No margin override
-     here (unlike the old in-flow layout) since the panel is absolutely
-     positioned now — margin would just offset it from its top/right
-     anchor instead of doing anything useful. */
+  /* Start Here: tighter box padding. No margin override here (unlike the
+     old in-flow layout) since the panel is absolutely positioned now —
+     margin would just offset it from its top/right anchor instead of
+     doing anything useful. .start-here-grid's own 2-column layout and
+     gap already apply unchanged from the base rule above, so no override
+     needed here. */
   .start-here { padding: 8px 10px 10px; }
   .start-here-title { margin: 0 0 6px; font-size: 17px; }
-  .start-here-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   .start-card { padding: 9px 10px; }
 
   /* Same tighter treatment as .start-here just above. */
