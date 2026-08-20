@@ -265,12 +265,35 @@ a:focus-visible {
   transform: rotate(180deg);
 }
 
+/* Positioning context for start-here-section below — same role as
+   .quick-read-wrap further down, just wider since this one has to fit
+   the four-card grid rather than a couple lines of text. */
+.start-here-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* start-here-toggle's dropdown menu — floats directly under the button
+   (like a real nav dropdown) instead of pushing page content down.
+   right:0 (not left:0 like quick-read-panel) anchors it to the button's
+   right edge and lets it grow leftward, since .header-ctas sits at the
+   header's far right and a left-anchored panel this wide would run off
+   the viewport. Width is capped both by a fixed max (comfortably fits
+   the grid's four 220–340px cards in 2–3 columns) and by viewport width
+   (calc(100vw - 32px)) so it never overflows a narrow screen. */
 .start-here {
-  margin: 0 0 10px;
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(720px, calc(100vw - 32px));
+  margin: 0;
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--brand-green) 22%, var(--border));
   border-radius: calc(var(--radius) + 4px);
   padding: 10px 14px 12px;
+  box-shadow: var(--shadow-md);
 }
 
 /* Positioning context for the dropdown panel below — a plain wrapper
@@ -1666,12 +1689,15 @@ mark {
      keeps scaling smoothly instead of jumping at this one breakpoint. */
   .wrap { padding-top: 10px; padding-bottom: 72px; }
 
-  /* Start Here: tighter box padding/margins, and 2 cards per row instead
-     of 1 so the section takes roughly half the vertical space it did
-     stacked full-width. Cards with longer copy (e.g. "Explore
-     organizations...") will run a couple of lines taller than their
-     row-mate — an acceptable trade-off for halving the row count. */
-  .start-here { margin: 0 0 8px; padding: 8px 10px 10px; }
+  /* Start Here: tighter box padding, and 2 cards per row instead of 1 so
+     the panel takes roughly half the vertical space it did stacked
+     full-width. Cards with longer copy (e.g. "Explore organizations...")
+     will run a couple of lines taller than their row-mate — an
+     acceptable trade-off for halving the row count. No margin override
+     here (unlike the old in-flow layout) since the panel is absolutely
+     positioned now — margin would just offset it from its top/right
+     anchor instead of doing anything useful. */
+  .start-here { padding: 8px 10px 10px; }
   .start-here-title { margin: 0 0 6px; font-size: 17px; }
   .start-here-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   .start-card { padding: 9px 10px; }

@@ -23,12 +23,48 @@
     <!-- Two stacked header pills, same size/color/chevron treatment —
          start-here-toggle on top (unconditional), quick-read-toggle
          below it (hidden until app.js confirms the resource it points
-         to still exists in the live sheet — see boot()/start()). -->
+         to still exists in the live sheet — see boot()/start()). Both
+         now open a floating dropdown anchored under their own button
+         (position:absolute in styles.css) rather than pushing page
+         content down — same wrap-around-button-and-panel pattern for
+         each. -->
     <div class="header-ctas">
-      <button class="start-here-toggle" id="start-here-toggle" type="button" aria-expanded="false" aria-controls="start-here-section">
-        <span class="start-here-toggle-text">New to advocacy? Click here!</span>
-        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </button>
+      <!-- Wrapper is the positioning context for the dropdown panel
+           below — floats directly under this button (position:absolute
+           in styles.css) like a real menu, rather than being a
+           full-width block pushed into the page's normal flow. Wider
+           than quick-read-panel's wrap since this one has to fit the
+           four-card grid, not just a couple lines of text. -->
+      <div class="start-here-wrap">
+        <button class="start-here-toggle" id="start-here-toggle" type="button" aria-expanded="false" aria-controls="start-here-section">
+          <span class="start-here-toggle-text">New to advocacy? Click here!</span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <section class="start-here" id="start-here-section" aria-labelledby="start-here-heading" hidden>
+          <h2 id="start-here-heading" class="start-here-title">
+            <span class="start-here-icon" id="start-here-icon" aria-hidden="true"></span>
+            Curated selections to get started:
+          </h2>
+          <div class="start-here-grid" id="start-here">
+            <button class="start-card" type="button" data-pathway="new-to-advocacy" aria-pressed="false">
+              <span class="start-card-title">Don't know where to start?</span>
+              <span class="start-card-desc">Foundational guides to get oriented about the policy-making process.</span>
+            </button>
+            <button class="start-card" type="button" data-pathway="contact-policymaker" aria-pressed="false">
+              <span class="start-card-title">Want to contact a policymaker?</span>
+              <span class="start-card-desc">Tools and templates for reaching elected officials directly.</span>
+            </button>
+            <button class="start-card" type="button" data-pathway="guides" aria-pressed="false">
+              <span class="start-card-title">Looking for topic-specific guides?</span>
+              <span class="start-card-desc">Step-by-step how-tos on advocacy, communication, and civic engagement.</span>
+            </button>
+            <button class="start-card" type="button" data-pathway="organizations" aria-pressed="false">
+              <span class="start-card-title">Explore organizations to get involved with:</span>
+              <span class="start-card-desc">Networks and programs where you can plug in and take part.</span>
+            </button>
+          </div>
+        </section>
+      </div>
       <!-- Wrapper is the positioning context for the dropdown panel
            below — floats directly under this button (position:absolute
            in styles.css) like a real menu, rather than being a
@@ -52,31 +88,6 @@
 </header>
 
 <div class="wrap">
-
-  <section class="start-here" id="start-here-section" aria-labelledby="start-here-heading" hidden>
-    <h2 id="start-here-heading" class="start-here-title">
-      <span class="start-here-icon" id="start-here-icon" aria-hidden="true"></span>
-      Curated selections to get started:
-    </h2>
-    <div class="start-here-grid" id="start-here">
-      <button class="start-card" type="button" data-pathway="new-to-advocacy" aria-pressed="false">
-        <span class="start-card-title">Don't know where to start?</span>
-        <span class="start-card-desc">Foundational guides to get oriented about the policy-making process.</span>
-      </button>
-      <button class="start-card" type="button" data-pathway="contact-policymaker" aria-pressed="false">
-        <span class="start-card-title">Want to contact a policymaker?</span>
-        <span class="start-card-desc">Tools and templates for reaching elected officials directly.</span>
-      </button>
-      <button class="start-card" type="button" data-pathway="guides" aria-pressed="false">
-        <span class="start-card-title">Looking for topic-specific guides?</span>
-        <span class="start-card-desc">Step-by-step how-tos on advocacy, communication, and civic engagement.</span>
-      </button>
-      <button class="start-card" type="button" data-pathway="organizations" aria-pressed="false">
-        <span class="start-card-title">Explore organizations to get involved with:</span>
-        <span class="start-card-desc">Networks and programs where you can plug in and take part.</span>
-      </button>
-    </div>
-  </section>
 
   <div class="controls" id="controls">
     <div class="searchrow">
