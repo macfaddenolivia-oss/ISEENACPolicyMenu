@@ -1593,7 +1593,7 @@ mark {
 
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* Feedback popup — shown once, ~60s after load, unless already
+/* Feedback popup — shown once, ~45s after load, unless already
    dismissed this session (see setupFeedbackModal in app.js). [hidden]
    keeps it fully out of layout/tab order until then; app.js removes
    that attribute first and adds .show on the next frame so the
@@ -1623,7 +1623,14 @@ mark {
 .feedback-modal {
   position: relative;
   width: 100%;
-  max-width: 380px;
+  /* Wide enough to fit the embedded Google Form (400px) with a little
+     breathing room on either side. */
+  max-width: 440px;
+  /* The form + both asks can run taller than short viewports (mobile
+     landscape especially) — scroll the modal itself rather than letting
+     it overflow the backdrop or the screen. */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
@@ -1669,6 +1676,37 @@ mark {
   margin: 0 0 20px;
   color: var(--text-2);
   font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Centers the iframe within the modal's text-align:center while still
+   letting the iframe itself shrink via max-width:100% below — a block
+   wrapper is needed since width:auto centering doesn't apply to the
+   iframe's own inline layout the same way. */
+.feedback-modal-form-wrap {
+  margin: 0 0 20px;
+}
+
+.feedback-modal-form {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: var(--radius-sm);
+}
+
+/* Separates the email signup (primary ask above) from the existing
+   feedback-survey link (secondary ask below) so the two don't read as
+   one long form. */
+.feedback-modal-divider {
+  margin: 0 0 16px;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.feedback-modal-secondary-text {
+  margin: 0 0 12px;
+  color: var(--text-2);
+  font-size: 13px;
   line-height: 1.5;
 }
 

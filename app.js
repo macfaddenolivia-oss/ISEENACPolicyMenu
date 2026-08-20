@@ -1470,7 +1470,7 @@
     });
   }
 
-  // Feedback popup: shown once, ~60s after page load, unless already
+  // Feedback popup: shown once, ~45s after page load, unless already
   // dismissed this session (sessionStorage, not localStorage — it comes
   // back on a future visit, not just a future page load in the same
   // one). Entirely self-contained — its own element lookups, wrapped in
@@ -1557,7 +1557,7 @@
         });
         document.addEventListener("keydown", onKeydown);
         closeBtn.focus();
-      }, 60000);
+      }, 45000);
     } catch (e) {
       // Never let a feedback-popup issue affect the rest of the app —
       // still logged (not thrown/shown to the visitor) so a real
