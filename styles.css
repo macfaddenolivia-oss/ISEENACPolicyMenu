@@ -1963,6 +1963,7 @@ mark {
      space-between, which would otherwise squeeze the button into a
      cramped second line under just a sliver of leftover width. */
   .feedback-cta { flex-direction: column; text-align: center; padding: 14px 16px; }
+  .feedback-cta-actions { flex-direction: column; width: 100%; }
   .feedback-cta-btn { width: 100%; justify-content: center; }
 
   /* Less outer padding and a touch less inner padding so the card has
@@ -2076,6 +2077,18 @@ footer.foot {
 .feedback-cta-text {
   color: var(--text-2);
   font-size: 13.5px;
+}
+
+/* Holds both CTA buttons side by side, right-aligned as a single unit
+   against .feedback-cta-text via the parent's justify-content:
+   space-between — same role .header-ctas plays for the two header
+   pills. */
+.feedback-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  flex-wrap: wrap;
 }
 
 .feedback-cta-btn { flex: none; white-space: nowrap; }
