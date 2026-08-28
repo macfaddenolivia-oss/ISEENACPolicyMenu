@@ -2155,3 +2155,74 @@ footer.foot {
   display: inline-flex;
   margin-bottom: 22px;
 }
+
+/* ---------- Temporary ISEE 2026 announcement banner ----------
+   Scrolling marquee shown for the ISEE 2026 conference window only —
+   isee2026-banner.js removes the element outside that window, so no
+   manual takedown is needed. Safe to delete this whole block (and the
+   markup + script tag on each page) after 2026-09-03. */
+.isee2026-banner {
+  height: 56px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: #A3C9E0;
+  color: #14374d;
+}
+
+.isee2026-banner-track {
+  display: flex;
+  width: max-content;
+  animation: isee2026-marquee 18s linear infinite;
+}
+
+.isee2026-banner-seq {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.isee2026-banner-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  padding: 0 32px;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.isee2026-banner-logo {
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+@keyframes isee2026-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Two identical .isee2026-banner-seq copies sit side by side so the
+   0%→-50% translate loops seamlessly; the second copy is decorative
+   (aria-hidden in the markup), so for reduced motion we drop it and
+   just center the first copy statically instead of animating. */
+@media (prefers-reduced-motion: reduce) {
+  .isee2026-banner {
+    height: auto;
+    min-height: 56px;
+  }
+  .isee2026-banner-track {
+    animation: none;
+    transform: none;
+    width: 100%;
+  }
+  .isee2026-banner-seq {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  .isee2026-banner-seq[aria-hidden="true"] {
+    display: none;
+  }
+}
