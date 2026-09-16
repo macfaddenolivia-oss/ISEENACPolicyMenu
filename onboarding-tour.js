@@ -21,11 +21,11 @@
     },
     {
       selector: "#start-here-toggle",
-      text: "New to advocacy? This surfaces a curated subset of resources aimed at people who are new to policy engagement."
+      text: "This surfaces a curated subset of resources aimed at people who are new to policy engagement."
     },
     {
       selector: "#quick-read-toggle",
-      text: "Only have 5 minutes? This takes you straight to the Federal Register, already pre-filtered, so you can take quick action without digging through it yourself."
+      text: "This takes you straight to the Federal Register, already pre-filtered, so you can take quick action without digging through it yourself."
     }
   ];
 
