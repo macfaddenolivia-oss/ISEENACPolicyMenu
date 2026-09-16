@@ -329,6 +329,45 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- "New here?" onboarding prompt — shown once, 5s after page load,
+     unless already dismissed or the tour was already completed/skipped
+     this session (sessionStorage key "onboardingTourSeen" — a separate
+     key from the feedback popup's "feedbackModalDismissed" above, and a
+     separate timer, so the two popups can never trigger off each
+     other or fight over the same flag). See onboarding-tour.js. -->
+<div class="onboarding-modal-backdrop" id="onboarding-modal-backdrop" hidden>
+  <div class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-modal-title">
+    <h2 class="onboarding-modal-title" id="onboarding-modal-title">New here?</h2>
+    <p class="onboarding-modal-text">Want a quick tour of how this tool works?</p>
+    <div class="onboarding-modal-actions">
+      <button class="btn" id="onboarding-modal-no" type="button">No thanks</button>
+      <button class="btn btn-primary" id="onboarding-modal-yes" type="button">Yes, show me</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guided tour overlay: a dark backdrop with a moving cutout/highlight
+     around whatever element the current step targets, plus a tooltip
+     box positioned near it. This markup is just the tooltip's chrome —
+     step count/text and which element to highlight are filled in live
+     by onboarding-tour.js (TOUR_STEPS). -->
+<div class="tour-overlay" id="tour-overlay" hidden>
+  <div class="tour-highlight" id="tour-highlight"></div>
+  <div class="tour-tooltip" id="tour-tooltip" role="dialog" aria-modal="true" aria-label="Guided tour">
+    <button class="tour-close" id="tour-close" type="button" aria-label="Close tour">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+    </button>
+    <p class="tour-step-count" id="tour-step-count" aria-live="polite"></p>
+    <p class="tour-tooltip-text" id="tour-tooltip-text"></p>
+    <div class="tour-tooltip-actions">
+      <button class="btn" id="tour-back" type="button" hidden>Back</button>
+      <button class="btn" id="tour-skip" type="button">Skip</button>
+      <button class="btn btn-primary" id="tour-next" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
+<script src="onboarding-tour.js"></script>
 </body>
 </html>

@@ -2226,3 +2226,188 @@ footer.foot {
     display: none;
   }
 }
+
+/* ---------------------------------------------------------------------
+   First-time-visitor onboarding (see onboarding-tour.js): a "New here?"
+   prompt shown once, 5s after load, offering a step-by-step guided tour
+   of the filters and the two curated-resource shortcuts. Entirely
+   separate from the feedback popup above — own classes, own
+   sessionStorage key, own timer — so the two can never interfere.
+
+   Sizing throughout uses clamp()/min()/vw rather than fixed pixel
+   breakpoints, so the popup and tour tooltip scale fluidly across
+   phone/tablet/desktop and both orientations instead of jumping at a
+   couple of fixed widths. -------------------------------------------- */
+
+.onboarding-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 23, 32, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(14px, 4vw, 20px);
+  z-index: 210;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.onboarding-modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.onboarding-modal {
+  width: 100%;
+  max-width: min(340px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(20px, 5vw, 28px) clamp(18px, 5vw, 24px) clamp(18px, 4vw, 22px);
+  text-align: center;
+  transform: translateY(10px) scale(0.98);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onboarding-modal-backdrop.show .onboarding-modal { transform: none; }
+
+.onboarding-modal-title {
+  margin: 0 0 8px;
+  font-size: clamp(17px, 4.2vw, 18px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.onboarding-modal-text {
+  margin: 0 0 20px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.onboarding-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* min 44px tall and flex-wrap above so both buttons stay comfortably
+   tappable — stacking full-width instead of squeezing side by side —
+   on the narrowest phone widths. */
+.onboarding-modal-actions .btn {
+  flex: 1 1 120px;
+  justify-content: center;
+  min-height: 44px;
+}
+
+/* ---------------- guided tour ---------------- */
+
+/* Full-viewport layer, above everything else on the page (including the
+   feedback/onboarding popups' own backdrops). Deliberately has no click
+   handler and no background image of its own — the dark scrim comes
+   entirely from .tour-highlight's box-shadow below — but simply sitting
+   on top with default pointer-events (auto) already blocks taps on the
+   page underneath, so tapping outside the tooltip is a no-op by design,
+   not an accidental way to lose your place in the tour. Only
+   Back/Skip/Next/"Got it", the × button, or Escape end the tour. */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tour-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The "cutout": a transparent box sized/positioned in JS to match the
+   current step's target element, with a huge box-shadow spread that
+   paints the dark scrim over the rest of the viewport around it — one
+   element to keep in sync instead of four separate backdrop panels.
+   Repositions with a short transition as the tour moves between steps
+   or the viewport resizes/scrolls. */
+.tour-highlight {
+  position: fixed;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(15, 19, 27, 0.62);
+  pointer-events: none;
+  transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+}
+
+.tour-tooltip {
+  position: fixed;
+  width: min(320px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(18px, 5vw, 22px) clamp(16px, 5vw, 20px) clamp(14px, 4vw, 16px);
+  transition: top 0.25s ease, left 0.25s ease;
+}
+
+.tour-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tour-close:hover { background: var(--border-strong); color: var(--text); }
+.tour-close:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.tour-step-count {
+  margin: 0 0 6px;
+  padding-right: 26px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.tour-tooltip-text {
+  margin: 0 0 18px;
+  padding-right: 26px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tour-tooltip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* min 44px tall, generous horizontal padding and gap above — comfortable
+   tap targets that don't invite mis-taps between Back/Skip/Next. */
+.tour-tooltip-actions .btn {
+  min-height: 44px;
+  padding: 10px 16px;
+}
+
+/* Pushes Skip/Next to the row's right edge when Back is present (steps
+   2+); on step 1, Back is [hidden] and Skip/Next simply start the row. */
+#tour-back { margin-right: auto; }
