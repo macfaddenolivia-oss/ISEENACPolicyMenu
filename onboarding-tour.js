@@ -21,11 +21,11 @@
     },
     {
       selector: "#start-here-toggle",
-      text: "This surfaces a curated subset of resources aimed at people who are new to policy engagement."
+      text: "A curated set of resources for people just getting started with policy engagement."
     },
     {
       selector: "#quick-read-toggle",
-      text: "This takes you straight to the Federal Register, already pre-filtered, so you can take quick action without digging through it yourself."
+      text: "Jumps straight to the Federal Register, pre-filtered so you can act fast without digging."
     }
   ];
 
