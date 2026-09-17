@@ -1991,46 +1991,6 @@ mark {
 
 .nojs-note strong { color: var(--text); }
 
-.nojs-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 13px;
-}
-
-.nojs-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-}
-
-.nojs-item a {
-  font-weight: 640;
-  font-size: 15px;
-  color: var(--text);
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.nojs-item a:hover { color: var(--accent-2); text-decoration: underline; }
-
-.nojs-kind {
-  display: block;
-  margin: 5px 0 7px;
-  font-size: 12px;
-  color: var(--text-3);
-}
-
-.nojs-item p {
-  margin: 0;
-  font-size: 13.5px;
-  color: var(--text-2);
-  line-height: 1.55;
-}
-
 /* Long titles must never push the layout sideways */
 .card h3, .desc { overflow-wrap: anywhere; }
 

@@ -71,20 +71,3 @@ copy always shows live data; there's nothing to seed or sync locally.
 Basic traffic is tracked with [GoatCounter](https://www.goatcounter.com/),
 loaded via a small script tag in `index.html`. The dashboard lives at
 `isee-policy-menu.goatcounter.com` — ask Olivia or Ryan for access.
-
----
-
-## Legacy / unused
-
-`legacy-offline-build/` holds an earlier approach: a script that built a
-single self-contained offline HTML file from a local CSV export of the
-spreadsheet. That predates the switch to fetching resources live from the
-published Google Sheet, and none of it is used by the live site today. It's
-kept around (not deleted) in case the offline-file approach is ever needed
-again — see the note at the top of `legacy-offline-build/build.py` for
-details. Contents:
-
-- `build.py` — builds `resources-app.html` (a self-contained, emailable copy)
-- `xlsx_to_csv.py` — one-way export from `ListofResources.xlsx` to `resources.csv`
-- `resources.csv` — working CSV, `build.py`'s input
-- `resources-app.html` — last-generated output

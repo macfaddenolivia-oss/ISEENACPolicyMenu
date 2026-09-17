@@ -1,5 +1,4 @@
 # Private source spreadsheet — never publish this.
-# legacy-offline-build/resources.csv is the exported copy; this original stays local.
 ListofResources.xlsx
 *.xlsx
 
@@ -18,7 +17,3 @@ ListofResources.xlsx
 .idea/
 *.swp
 .claude/
-
-# Python
-__pycache__/
-*.py[cod]

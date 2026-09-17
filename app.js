@@ -1,8 +1,6 @@
 /* Resource Menu — shared app logic.
  *
- * Runs in two modes with no changes:
- *   hosted     -> fetches the published Google Sheet CSV at runtime (GitHub Pages, local server) [active]
- *   standalone -> reads window.__RESOURCES__ injected by legacy-offline-build/build.py [legacy, unused]
+ * Fetches the published Google Sheet CSV at runtime (GitHub Pages, local server).
  */
 (function () {
   "use strict";
@@ -10,9 +8,7 @@
   // Published Google Sheets CSV export — the team edits resources directly
   // in the Sheet, and the hosted site re-fetches this on every page load.
   // Google's publish endpoint sends Access-Control-Allow-Origin: * and
-  // Cache-Control: private, max-age=300 (~5 min edge cache), confirmed via
-  // curl; a stale local copy at legacy-offline-build/resources.csv remains
-  // only as input to the unused legacy/build.py standalone build.
+  // Cache-Control: private, max-age=300 (~5 min edge cache), confirmed via curl.
   var CSV_PATH =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFj-hZ-z0t1PGu6iK7VR4rOKfDsFtRiJuoWnoje-tiZ21fF7eC10hmPlTXt8PpsvGDypkh9Fi60qQh/pub?output=csv";
 
@@ -1712,21 +1708,8 @@
 
     setupFeedbackModal();
 
-    // Standalone build: the data is already here, so render synchronously.
-    // No promises, no network, nothing that can leave the page hanging.
-    var embedded = typeof window !== "undefined" && window.__RESOURCES__;
-    if (embedded && embedded.length) {
-      try {
-        start(embedded);
-      } catch (e) {
-        showError("Couldn't display the resources.", errText(e));
-      }
-      return;
-    }
-
     // Fetches the published Google Sheet at runtime (hosted and dev-server
-    // modes both hit the network here; only the standalone build above
-    // skips this in favor of embedded data).
+    // modes both hit the network here).
     var devHint = function (err) {
       var viaFile =
         typeof location !== "undefined" && location.protocol === "file:";
@@ -1735,8 +1718,7 @@
         (viaFile
           ? "Some browsers block cross-origin fetches from local files, so this page " +
             "needs to be served over HTTP — run <code>python3 -m http.server 8000</code> " +
-            "from the project folder and open <code>http://localhost:8000/</code>. For an " +
-            "offline copy you can email, use <code>legacy-offline-build/resources-app.html</code> instead."
+            "from the project folder and open <code>http://localhost:8000/</code>."
           : "Check that the Google Sheet is still published to the web (File → Share → " +
             "Publish to web) and try reloading.")
       );
