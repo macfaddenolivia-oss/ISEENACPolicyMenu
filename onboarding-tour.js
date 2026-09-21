@@ -286,10 +286,10 @@
 
     // Only steps whose target actually exists and is visible right now.
     // (In practice they're all resolved by the time anyone can reach
-    // them — the prompt itself waits 5s, and research.js's cards are
-    // explicitly waited for via whenResearchCardsReady below — but this
-    // keeps the tour honest instead of pointing at a hidden/missing
-    // element in the rare case one isn't.)
+    // them — both pages' cards are explicitly waited for via
+    // whenGridHasCards below — but this keeps the tour honest instead
+    // of pointing at a hidden/missing element in the rare case one
+    // isn't.)
     var steps = buildSteps(!returnTo).filter(function (step) {
       var target = document.querySelector(step.selector);
       return !!(target && !target.hidden && target.offsetParent !== null);
@@ -563,17 +563,26 @@
     }
   }
 
-  // Waits for research.js's fetch to finish rendering real cards (not
-  // just the loading skeleton) before starting the tour, since one step
-  // targets ".status-badge" — a resumed tour landing here right after
-  // navigation would otherwise almost always race that fetch. Falls
-  // back to just calling cb() after timeoutMs regardless (the existing
-  // per-step visibility filter in runTour() already drops a step whose
-  // target never showed up, so this never hangs the tour, just possibly
-  // starts it one step short in the rare case the fetch is unusually
-  // slow or fails).
-  function whenResearchCardsReady(cb, timeoutMs) {
-    var grid = document.getElementById("rr-grid");
+  // Waits for either page's own script (app.js or research.js) to
+  // finish its fetch and render real cards (not just the loading
+  // skeleton) before starting the tour. Both pages have a step whose
+  // target only exists/unhides once that fetch resolves — Research
+  // Resources' ".status-badge" (only renders inside a real card), and
+  // the Policy Menu's own "#quick-read-toggle" (starts with the static
+  // `hidden` attribute in the HTML; app.js's start() — called only
+  // after its fetch resolves — is what clears it). A *resumed* (second-
+  // leg) tour starts immediately on page load with no user-driven
+  // delay to mask the race, unlike a fresh first-leg start via the 5s-
+  // delayed prompt — that's what let this go unnoticed on the Policy
+  // Menu side: #quick-read-toggle was still hidden when the resumed
+  // tour's per-step visibility filter ran, silently dropping it and
+  // leaving only 2 of the Policy Menu's 3 core steps. Falls back to
+  // just calling cb() after timeoutMs regardless (the existing per-step
+  // visibility filter in runTour() already drops a step whose target
+  // never showed up, so this never hangs the tour, just possibly starts
+  // it short in the rare case the fetch is unusually slow or fails).
+  function whenGridHasCards(gridId, cb, timeoutMs) {
+    var grid = document.getElementById(gridId);
     if (!grid || grid.querySelector(".card")) {
       cb();
       return;
@@ -595,16 +604,12 @@
 
   // Single entry point for starting the tour on this page, fresh or
   // resumed — used by the "Yes, show me" prompt and the cross-page
-  // resume below, so both go through the same research-data wait
-  // rather than each remembering to.
+  // resume below, so both go through the same data wait rather than
+  // each remembering to.
   function beginTour(returnTo) {
-    if (IS_RESEARCH_PAGE) {
-      whenResearchCardsReady(function () {
-        startTour(returnTo);
-      });
-    } else {
+    whenGridHasCards(IS_RESEARCH_PAGE ? "rr-grid" : "grid", function () {
       startTour(returnTo);
-    }
+    });
   }
 
   try {
