@@ -110,11 +110,12 @@
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
       var topicsRaw = pick(row, "Topics");
+      var onlineRaw = pick(row, "Is it still online");
       var rec = {
         resource: pick(row, "Resource"),
         creator: pick(row, "Creator"),
         type: pick(row, "Type"),
-        subtype: pick(row, "Subtype"),
+        subtype: pick(row, "Subtype"), // kept in the data; not rendered on the card
         description: pick(row, "Description"),
         topics: topicsRaw
           .split(";")
@@ -125,7 +126,12 @@
         level: pick(row, "Level"),
         location: pick(row, "Location"),
         govSite: pick(row, "Is it a governmental site?"),
-        online: pick(row, "Is it still online"),
+        online: onlineRaw,
+        // Groups "Yes" and "Yes, only data through 2020" together for
+        // the filter pill (see ONLINE_BUCKET_CLASS/pillHTML) — the card
+        // badge still shows the raw value's own qualifier via
+        // onlineLabel(r.online), unaffected by this grouping.
+        onlineBucket: classifyOnline(onlineRaw),
         link: pick(row, "Link"),
       };
       if (!rec.resource && !rec.link) continue; // nothing renderable
@@ -249,7 +255,7 @@
   function passes(r) {
     if (!matchesSearch(r)) return false;
     if (state.types.length && state.types.indexOf(r.type) === -1) return false;
-    if (state.onlineValues.length && state.onlineValues.indexOf(r.online) === -1) return false;
+    if (state.onlineValues.length && state.onlineValues.indexOf(r.onlineBucket) === -1) return false;
     if (state.creators.length && state.creators.indexOf(r.creator) === -1) return false;
     return true;
   }
@@ -368,31 +374,27 @@
     );
   }
 
-  // Buckets an "Is it still online" value into which pill color variant
-  // it gets — reuses classifyOnline() (the same online/offline/unknown
-  // split the card badge uses), plus one extra distinction: a qualified
-  // "Yes, ..." stays in the green family but gets .pill-qualified for a
-  // slightly deeper tint (see styles.css), so it reads as related to but
-  // distinct from a plain "Live" pill.
-  function onlinePillClass(value) {
-    var cls = classifyOnline(value);
-    if (cls === "offline") return " pill-offline";
-    if (cls === "unknown") return " pill-unknown";
-    return value.trim().toLowerCase() === "yes" ? "" : " pill-qualified";
-  }
+  // Maps an "onlineBucket" value ("online"/"offline"/"unknown") to its
+  // pill color variant and label. The filter pill groups every raw sheet
+  // value sharing a bucket together (e.g. "Yes" and "Yes, only data
+  // through 2020" both count toward one "Live" pill) — the per-row
+  // qualifier stays on the card badge (onlineLabel(r.online), using the
+  // raw value), just not on this collapsed filter pill.
+  var ONLINE_BUCKET_CLASS = { offline: " pill-offline", unknown: " pill-unknown" };
+  var ONLINE_BUCKET_LABEL = { online: "Live", offline: "Offline", unknown: "Unknown" };
 
   // kind is "type" (hue dot, data-filter="type"), "org" (Creator,
   // data-filter="org"), or "online" (Is it still online, data-filter=
-  // "online", green/red via onlinePillClass) — each picks up the Policy
-  // Menu's/this page's existing pill color treatment for that kind
-  // directly, see styles.css. "online" pills show the same transformed
-  // label the card badge uses (onlineLabel), not the raw CSV value.
+  // "online", green/red via ONLINE_BUCKET_CLASS) — each picks up the
+  // Policy Menu's/this page's existing pill color treatment for that
+  // kind directly, see styles.css. "online" pills show the bucket label
+  // (Live/Offline), not a raw CSV value — value here is the bucket key.
   function pillHTML(value, count, active, kind) {
     var isEmpty = count === 0;
     var hue = kind === "type" ? typeHue[value] : null;
     var style = hue != null ? ' style="--type-h:' + hue + '"' : "";
-    var extraClass = kind === "online" ? onlinePillClass(value) : "";
-    var displayText = kind === "online" ? onlineLabel(value) : value;
+    var extraClass = kind === "online" ? ONLINE_BUCKET_CLASS[value] || "" : "";
+    var displayText = kind === "online" ? ONLINE_BUCKET_LABEL[value] || value : value;
     return (
       '<button class="pill' + (isEmpty ? " is-empty" : "") + extraClass + '"' +
       ' type="button"' +
@@ -516,7 +518,7 @@
   // computed once by render() and passed in so the Type filter pill and
   // each card's Type tag (see cardHTML) always show the same number.
   function renderFilterPills(typeCounts) {
-    renderFacetPills("onlineValues", "online", "online", "Online status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
+    renderFacetPills("onlineValues", "onlineBucket", "online", "Online status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
     renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview, typeCounts);
     renderFacetPills("creators", "creator", "org", "Creator", PREVIEW_CREATOR_COUNT, el.creatorPills, el.creatorPillsPreview);
 
@@ -552,7 +554,6 @@
         ' <span class="n">' + typeCount + "</span>" +
         "</span>";
     }
-    if (r.subtype) tags += '<span class="tag sub tag-static">' + esc(r.subtype) + "</span>";
 
     var meta = "";
     if (r.creator) meta += metaItem(ICON_PERSON, r.creator);
@@ -578,7 +579,7 @@
       : esc(r.resource);
 
     return (
-      '<article class="card">' +
+      '<article class="card rr-card">' +
       '<div class="card-head"><h3>' + title + "</h3>" +
       '<span class="status-badge status-' + onlineClass + '">' + esc(badgeText) + "</span>" +
       "</div>" +

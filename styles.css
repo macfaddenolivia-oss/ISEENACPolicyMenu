@@ -1087,8 +1087,11 @@ kbd {
    teal, since this facet's meaning is inherently good/bad, not just a
    category. Same soft-tint/solid-on-select shape as Organization above,
    just recolored. Base rule is the "online" (green) look; .pill-offline
-   and .pill-unknown override it for those buckets — see onlinePillClass
-   in research.js. */
+   and .pill-unknown override it for those buckets — see
+   ONLINE_BUCKET_CLASS in research.js. Every raw sheet value sharing a
+   bucket (e.g. "Yes" and "Yes, only data through 2020") renders as one
+   collapsed pill here, unlike the card badge which still shows each
+   row's own qualifier. */
 .pill[data-filter="online"] {
   color: #0a7d55;
   background: #e3f7ee;
@@ -1110,17 +1113,6 @@ kbd {
 .pill[data-filter="online"][aria-pressed="true"] .n {
   background: rgba(255, 255, 255, 0.22);
   color: #fff;
-}
-
-/* A qualified "Yes, ..." (e.g. "Live (data through 2020)") stays in the
-   green/live family but with a slightly deeper tint, so it reads as
-   distinct from a plain "Live" pill without introducing a third color. */
-.pill[data-filter="online"].pill-qualified {
-  background: #cdeee0;
-}
-
-.pill[data-filter="online"].pill-qualified[aria-pressed="true"] {
-  background: #078a5c;
 }
 
 .pill[data-filter="online"].pill-offline {
@@ -2453,11 +2445,34 @@ footer.foot {
 
 /* ---------- Research Resources page ---------- */
 
+/* Vertical rhythm from the top of .wrap down to the filter bar: a
+   single consistent ~12px step (back-link -> intro -> search controls),
+   matching the tighter 6-8px rhythm the search/filter-bar/statusbar
+   stack below it already uses, rather than the much larger gap a plain
+   .btn sitting directly above a paragraph would otherwise leave. */
+.rr-back-link {
+  margin-bottom: 12px;
+}
+
 .rr-intro {
-  margin: 4px 0 16px;
+  margin: 0 0 12px;
   color: var(--text-2);
   font-size: 14px;
   line-height: 1.6;
+}
+
+/* Widens the label column for this page's filter rows (Is it still
+   online / Type / Creator) so "IS IT STILL ONLINE?" — much longer than
+   "ORGANIZATION", which the shared 118px .fgroup column was sized for
+   — fits on one line. Scoped to this page's filter bar rather than the
+   shared .fgroup rule, so the Policy Menu's own Type/Subtype/
+   Organization columns are untouched. Desktop-only: mobile already
+   stacks the label above its pills via the generic .fgroup override in
+   that breakpoint, which this must not fight. */
+@media (min-width: 721px) {
+  #rr-filter-bar .fgroup {
+    grid-template-columns: 190px 1fr;
+  }
 }
 
 /* Type/Subtype tags on a research card are informational, not clickable
@@ -2472,6 +2487,15 @@ footer.foot {
   transform: none;
   filter: none;
   box-shadow: none;
+}
+
+/* Research cards show only the Type tag now (no Subtype), so the row
+   holding it is usually a single small pill — the shared .tagrow's
+   10px margin-bottom (sized for the Policy Menu's usual two-tag row)
+   reads as a touch loose above that lighter row; tightened slightly
+   just on this page's cards. */
+.rr-card .tagrow {
+  margin-bottom: 8px;
 }
 
 /* Type tag's count badge — mirrors .pill .n's look (tabular numerals, a
