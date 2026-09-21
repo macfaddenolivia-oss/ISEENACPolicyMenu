@@ -911,6 +911,22 @@ kbd {
   padding-top: 7px;
 }
 
+/* Wraps a .flabel together with an .info-btn (Research Resources' "Is
+   it still online" row) so the pair sits as one unit in .fgroup's label
+   column. Carries the baseline-alignment padding-top itself, since the
+   nested .flabel is no longer a direct child of .fgroup and so no
+   longer matches the rule above. */
+.fgroup-label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.fgroup-label-row .flabel {
+  padding-top: 0;
+}
+
 /* row-gap trimmed separately from column-gap: shrinks the vertical space
    between wrapped pill lines without crowding pills within the same line. */
 .pills { display: flex; flex-wrap: wrap; row-gap: 4px; column-gap: 7px; }

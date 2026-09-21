@@ -688,6 +688,28 @@
       render();
     });
 
+    // "Is it still online" info tooltip — same open-on-hover/focus (CSS)
+    // plus toggle-on-tap (here) pattern as the Policy Menu's own Match
+    // all/any info button (#match-info in app.js), reusing the same
+    // .info-btn/.tooltip classes rather than a new component. Two
+    // instances exist (preview row + full row), so this is delegated
+    // across all .info-btn elements rather than hardcoded to one id.
+    document.querySelectorAll(".info-btn").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var wasOpen = btn.classList.contains("info-open");
+        document.querySelectorAll(".info-btn.info-open").forEach(function (b) {
+          b.classList.remove("info-open");
+        });
+        if (!wasOpen) btn.classList.add("info-open");
+      });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".info-btn.info-open").forEach(function (b) {
+        b.classList.remove("info-open");
+      });
+    });
+
     // Online/Type/Creator pills (delegated on the filter bar, same
     // pattern app.js uses for its Type/Subtype/Organization pills).
     // data-filter tells us which facet a given pill belongs to.
@@ -873,6 +895,32 @@
       el.anotherRandom.insertAdjacentHTML("afterbegin", ICON_DICE);
     } catch (e) {
       /* icons are decorative — never block startup on them */
+    }
+
+    try {
+      // Mobile: drop the placeholder text so the search bar reads clean
+      // and uncluttered next to the random-resource hint — ported from
+      // app.js's identical boot() step, which this page was missing
+      // (that's what was actually cramping the mobile search bar, not a
+      // missing "hide the button" rule — the random-hint markup/CSS here
+      // already matches app.js's exactly). Same 720px breakpoint used
+      // elsewhere on this page and in styles.css.
+      var mobileQuery =
+        window.matchMedia && window.matchMedia("(max-width: 720px)");
+      if (mobileQuery) {
+        var searchPlaceholder = el.search.placeholder;
+        var syncSearchPlaceholder = function () {
+          el.search.placeholder = mobileQuery.matches ? "" : searchPlaceholder;
+        };
+        syncSearchPlaceholder();
+        if (mobileQuery.addEventListener) {
+          mobileQuery.addEventListener("change", syncSearchPlaceholder);
+        } else if (mobileQuery.addListener) {
+          mobileQuery.addListener(syncSearchPlaceholder); // Safari < 14
+        }
+      }
+    } catch (e) {
+      /* placeholder text is cosmetic — never block startup on it */
     }
 
     var devHint = function (err) {

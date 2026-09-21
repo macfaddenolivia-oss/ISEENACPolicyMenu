@@ -71,13 +71,33 @@
       <div class="filter-group-box" id="rr-online-filter-box">
         <div class="filters-preview" id="rr-online-preview">
           <div class="fgroup">
-            <span class="flabel" id="rr-lbl-online-preview">Is it still online?</span>
+            <span class="fgroup-label-row">
+              <span class="flabel" id="rr-lbl-online-preview">Is it still online?</span>
+              <button class="info-btn" type="button" aria-label="What does &quot;Is it still online&quot; mean?" aria-describedby="rr-online-tooltip-preview">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="11" x2="12" y2="16"></line>
+                  <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"></circle>
+                </svg>
+                <span class="tooltip" id="rr-online-tooltip-preview" role="tooltip">Some government-hosted resources have been taken offline. Where that's happened, we link to a mirror hosted by groups who archived the data before it was lost. "Offline" means the original government site is down, not that the resource is unavailable.</span>
+              </button>
+            </span>
             <div class="pills" id="rr-online-pills-preview" role="group" aria-labelledby="rr-lbl-online-preview"></div>
           </div>
         </div>
         <div class="filters" id="rr-online-filters">
           <div class="fgroup">
-            <span class="flabel" id="rr-lbl-online">Is it still online?</span>
+            <span class="fgroup-label-row">
+              <span class="flabel" id="rr-lbl-online">Is it still online?</span>
+              <button class="info-btn" type="button" aria-label="What does &quot;Is it still online&quot; mean?" aria-describedby="rr-online-tooltip">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="11" x2="12" y2="16"></line>
+                  <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"></circle>
+                </svg>
+                <span class="tooltip" id="rr-online-tooltip" role="tooltip">Some government-hosted resources have been taken offline. Where that's happened, we link to a mirror hosted by groups who archived the data before it was lost. "Offline" means the original government site is down, not that the resource is unavailable.</span>
+              </button>
+            </span>
             <div class="pills" id="rr-online-pills" role="group" aria-labelledby="rr-lbl-online"></div>
           </div>
         </div>
@@ -155,6 +175,29 @@
 
 <div class="toast" id="rr-toast" role="status" aria-live="polite"></div>
 
+<!-- Guided tour overlay: continues here when a visitor clicks "Continue"
+     on the Policy Menu's own tour (see onboarding-tour.js) — same
+     markup as index.html's, reused verbatim rather than a second
+     tour component. This page never shows the "New here?" prompt
+     itself; the tour only resumes here when arriving from that
+     cross-page handoff. -->
+<div class="tour-overlay" id="tour-overlay" hidden>
+  <div class="tour-highlight" id="tour-highlight"></div>
+  <div class="tour-tooltip" id="tour-tooltip" role="dialog" aria-modal="true" aria-label="Guided tour">
+    <button class="tour-close" id="tour-close" type="button" aria-label="Close tour">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+    </button>
+    <p class="tour-step-count" id="tour-step-count" aria-live="polite"></p>
+    <p class="tour-tooltip-text" id="tour-tooltip-text"></p>
+    <div class="tour-tooltip-actions">
+      <button class="btn" id="tour-back" type="button" hidden>Back</button>
+      <button class="btn" id="tour-skip" type="button">Skip</button>
+      <button class="btn btn-primary" id="tour-next" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
 <script src="research.js"></script>
+<script src="onboarding-tour.js"></script>
 </body>
 </html>
