@@ -206,7 +206,7 @@
     q: "",
     terms: [],
     types: [], // selected Type values (OR within this facet, same as the Policy Menu's Type pills)
-    online: "",
+    onlineValues: [], // selected "Is it still online" raw values (OR within this facet)
     creators: [], // selected Creator values (OR within this facet, same as the Policy Menu's Organization pills)
   };
   var el = {};
@@ -216,8 +216,8 @@
   // null means show the normal filtered results — same pattern as
   // app.js's own random-pick feature on the Policy Menu. Any real
   // search/filter change (not the random actions themselves) clears
-  // this — see exitRandomPick, used by setSearch, the online dropdown's
-  // change handler, and the Type/Creator pill click handler.
+  // this — see exitRandomPick, used by setSearch and the pill click
+  // handler (Type/Online/Creator all share one delegated listener).
   var randomPick = null;
 
   // Bumped by exitRandomPick() so pickRandom()'s in-flight flicker chain
@@ -249,7 +249,7 @@
   function passes(r) {
     if (!matchesSearch(r)) return false;
     if (state.types.length && state.types.indexOf(r.type) === -1) return false;
-    if (state.online && r.online !== state.online) return false;
+    if (state.onlineValues.length && state.onlineValues.indexOf(r.online) === -1) return false;
     if (state.creators.length && state.creators.indexOf(r.creator) === -1) return false;
     return true;
   }
@@ -262,7 +262,7 @@
     return !!(
       state.q.trim() ||
       state.types.length ||
-      state.online ||
+      state.onlineValues.length ||
       state.creators.length
     );
   }
@@ -284,10 +284,10 @@
     }, 1900);
   }
 
-  /* -------- Type/Creator pill filters (ported from app.js's own Type
-     and Organization pills — one generic implementation shared by both
-     facets here, the same way app.js's countIncluding/pillHTML already
-     serve Type, Subtype, and Organization there). -------- */
+  /* -------- Online/Type/Creator pill filters (ported from app.js's own
+     Type and Organization pills — one generic implementation shared by
+     all three facets here, the same way app.js's countIncluding/
+     pillHTML already serve Type, Subtype, and Organization there). -------- */
 
   // Live count per candidate value in `field` under the *other* active
   // filters — same simulate-add approach as app.js's countIncluding.
@@ -368,16 +368,33 @@
     );
   }
 
-  // kind is "type" (gets the hue dot, via data-filter="type") or "org"
-  // (Creator, via data-filter="org") so these pills pick up the Policy
-  // Menu's existing Type/Organization pill styling directly — see
-  // .pill[data-filter="type"] / .pill[data-filter="org"] in styles.css.
+  // Buckets an "Is it still online" value into which pill color variant
+  // it gets — reuses classifyOnline() (the same online/offline/unknown
+  // split the card badge uses), plus one extra distinction: a qualified
+  // "Yes, ..." stays in the green family but gets .pill-qualified for a
+  // slightly deeper tint (see styles.css), so it reads as related to but
+  // distinct from a plain "Live" pill.
+  function onlinePillClass(value) {
+    var cls = classifyOnline(value);
+    if (cls === "offline") return " pill-offline";
+    if (cls === "unknown") return " pill-unknown";
+    return value.trim().toLowerCase() === "yes" ? "" : " pill-qualified";
+  }
+
+  // kind is "type" (hue dot, data-filter="type"), "org" (Creator,
+  // data-filter="org"), or "online" (Is it still online, data-filter=
+  // "online", green/red via onlinePillClass) — each picks up the Policy
+  // Menu's/this page's existing pill color treatment for that kind
+  // directly, see styles.css. "online" pills show the same transformed
+  // label the card badge uses (onlineLabel), not the raw CSV value.
   function pillHTML(value, count, active, kind) {
     var isEmpty = count === 0;
     var hue = kind === "type" ? typeHue[value] : null;
     var style = hue != null ? ' style="--type-h:' + hue + '"' : "";
+    var extraClass = kind === "online" ? onlinePillClass(value) : "";
+    var displayText = kind === "online" ? onlineLabel(value) : value;
     return (
-      '<button class="pill' + (isEmpty ? " is-empty" : "") + '"' +
+      '<button class="pill' + (isEmpty ? " is-empty" : "") + extraClass + '"' +
       ' type="button"' +
       ' aria-pressed="' + (active ? "true" : "false") + '"' +
       ' data-filter="' + kind + '"' +
@@ -385,7 +402,7 @@
       style +
       ">" +
       (kind === "type" ? '<span class="dot"></span>' : "") +
-      "<span>" + esc(value) + "</span>" +
+      "<span>" + esc(displayText) + "</span>" +
       '<span class="n">' + count + "</span>" +
       "</button>"
     );
@@ -395,6 +412,7 @@
   // laid-out DOM, trimming real pills from the end (skipping active
   // ones) until "+N more" lands within the row budget — ported as-is
   // from app.js's fitPreviewRow.
+  var PREVIEW_ONLINE_COUNT = 6;
   var PREVIEW_TYPE_COUNT = 6;
   var PREVIEW_CREATOR_COUNT = 3;
 
@@ -457,11 +475,15 @@
     }
   }
 
-  // One facet's pills, full wall + preview row — shared by Type and
-  // Creator below, same as app.js reuses its own rendering for Type/
-  // Subtype/Organization rather than writing one version per facet.
-  function renderFacetPills(listKey, field, kind, label, previewCount, pillsEl, previewEl) {
-    var counts = countIncluding(listKey, field);
+  // One facet's pills, full wall + preview row — shared by Online, Type,
+  // and Creator below, same as app.js reuses its own rendering for
+  // Type/Subtype/Organization rather than writing one version per
+  // facet. `precomputedCounts`, when given, is used instead of calling
+  // countIncluding again — render() passes the Type counts it already
+  // computed for itself, so the same numbers reach the Type filter
+  // pills and each card's Type tag without computing them twice.
+  function renderFacetPills(listKey, field, kind, label, previewCount, pillsEl, previewEl, precomputedCounts) {
+    var counts = precomputedCounts || countIncluding(listKey, field);
     var values = Object.keys(
       ALL.reduce(function (acc, r) {
         if (r[field]) acc[r[field]] = true;
@@ -489,13 +511,16 @@
   }
 
   // Combined badge on the single "Browse filters" button — total active
-  // pills across both facets, same as app.js's #filter-badge counting
-  // Type + Subtype + Organization together.
-  function renderFilterPills() {
-    renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview);
+  // pills across all three facets, same as app.js's #filter-badge
+  // counting Type + Subtype + Organization together. typeCounts is
+  // computed once by render() and passed in so the Type filter pill and
+  // each card's Type tag (see cardHTML) always show the same number.
+  function renderFilterPills(typeCounts) {
+    renderFacetPills("onlineValues", "online", "online", "Online status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
+    renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview, typeCounts);
     renderFacetPills("creators", "creator", "org", "Creator", PREVIEW_CREATOR_COUNT, el.creatorPills, el.creatorPillsPreview);
 
-    var activePills = state.types.length + state.creators.length;
+    var activePills = state.types.length + state.onlineValues.length + state.creators.length;
     el.filterBadge.textContent = activePills ? String(activePills) : "";
   }
 
@@ -507,13 +532,26 @@
     );
   }
 
-  function cardHTML(r) {
+  function cardHTML(r, typeCounts) {
     var url = safeUrl(r.link);
     var onlineClass = classifyOnline(r.online);
     var badgeText = onlineLabel(r.online);
 
     var tags = "";
-    if (r.type) tags += '<span class="tag type tag-static">' + esc(r.type) + "</span>";
+    if (r.type) {
+      // Same --type-h this type's filter pill uses (see pillHTML) so
+      // .tag.type's existing hue-based color rules pick it up here too,
+      // and the same live count that pill currently shows, so the tag
+      // and the pill never disagree.
+      var hue = typeHue[r.type];
+      var hueStyle = hue != null ? ' style="--type-h:' + hue + '"' : "";
+      var typeCount = (typeCounts && typeCounts[r.type]) || 0;
+      tags +=
+        '<span class="tag type tag-static"' + hueStyle + '>' +
+        esc(r.type) +
+        ' <span class="n">' + typeCount + "</span>" +
+        "</span>";
+    }
     if (r.subtype) tags += '<span class="tag sub tag-static">' + esc(r.subtype) + "</span>";
 
     var meta = "";
@@ -553,7 +591,11 @@
   }
 
   function render() {
-    renderFilterPills();
+    // Computed once here (not inside renderFilterPills) so the exact
+    // same numbers reach the Type filter pills and every card's Type
+    // tag below — see cardHTML.
+    var typeCounts = countIncluding("types", "type");
+    renderFilterPills(typeCounts);
 
     var filtered = currentResults();
     var results = randomPick ? [randomPick] : filtered;
@@ -593,7 +635,11 @@
     }
 
     el.grid.className = "grid";
-    el.grid.innerHTML = results.map(cardHTML).join("");
+    el.grid.innerHTML = results
+      .map(function (r) {
+        return cardHTML(r, typeCounts);
+      })
+      .join("");
   }
 
   /* ---------------- interactions ---------------- */
@@ -607,53 +653,10 @@
 
   function clearAll() {
     state.types.length = 0;
+    state.onlineValues.length = 0;
     state.creators.length = 0;
-    state.online = "";
-    el.onlineFilter.value = "";
-    syncOnlineFilterColor();
     setSearch("");
     el.search.value = "";
-  }
-
-  // Maps the same online/offline/unknown bucket classifyOnline() uses for
-  // the card badge to the exact color that badge renders in, so the
-  // dropdown's option text can match it. The <option value="..."> stays
-  // the raw CSV value (e.g. "Yes, only data through 2020") — only the
-  // displayed text and color change; filtering still matches on that
-  // raw value (see passes()).
-  var ONLINE_OPTION_COLOR = {
-    online: "#0a7d55",
-    offline: "#b3261e",
-    unknown: "var(--text-2)",
-  };
-
-  function populateOnlineSelect(select, values, placeholder) {
-    select.innerHTML =
-      '<option value="">' + esc(placeholder) + "</option>" +
-      values
-        .map(function (v) {
-          var color = ONLINE_OPTION_COLOR[classifyOnline(v)];
-          return (
-            '<option value="' + esc(v) + '" style="color:' + color + '">' +
-            esc(onlineLabel(v)) +
-            "</option>"
-          );
-        })
-        .join("");
-  }
-
-  // Progressive enhancement: syncs the *closed* select box's own text
-  // color to the selected option's color. Browsers that already color
-  // individual <option> rows in the open dropdown (Chrome, Firefox, Edge
-  // desktop) get this for free from populateOnlineSelect above; this
-  // extra step is what makes the closed box reflect it too, since a
-  // <select> always renders its own color for the closed state, not the
-  // selected <option>'s. Known gap: Safari (desktop and iOS) and mobile
-  // OS-native pickers generally ignore <option> color styling entirely,
-  // so there this select just stays plain text in all states.
-  function syncOnlineFilterColor() {
-    var opt = el.onlineFilter.options[el.onlineFilter.selectedIndex];
-    el.onlineFilter.style.color = (opt && opt.style.color) || "";
   }
 
   function wire() {
@@ -668,16 +671,9 @@
       render();
     });
 
-    el.onlineFilter.addEventListener("change", function () {
-      state.online = el.onlineFilter.value;
-      syncOnlineFilterColor();
-      exitRandomPick();
-      render();
-    });
-
-    // Type/Creator pills (delegated on the filter bar, same pattern
-    // app.js uses for its Type/Subtype/Organization pills). data-filter
-    // tells us which facet a given pill belongs to ("type" or "org").
+    // Online/Type/Creator pills (delegated on the filter bar, same
+    // pattern app.js uses for its Type/Subtype/Organization pills).
+    // data-filter tells us which facet a given pill belongs to.
     el.filterBar.addEventListener("click", function (e) {
       var more = e.target.closest(".pill-more");
       if (more) {
@@ -690,13 +686,14 @@
       var value = p.getAttribute("data-value");
       if (kind === "type") toggleIn(state.types, value);
       else if (kind === "org") toggleIn(state.creators, value);
+      else if (kind === "online") toggleIn(state.onlineValues, value);
       exitRandomPick();
       render();
     });
 
-    // "Browse filters" disclosure — reveals both facets' full pill walls
-    // at once, same as the Policy Menu's single toggle for its two boxes
-    // (Type+Subtype and Organization).
+    // "Browse filters" disclosure — reveals all three facets' full pill
+    // walls at once, same as the Policy Menu's single toggle for its two
+    // boxes (Type+Subtype and Organization).
     el.filterToggle.addEventListener("click", function () {
       var open = !el.filterBar.classList.contains("filters-open");
       el.filterBar.classList.toggle("filters-open", open);
@@ -811,15 +808,6 @@
         typeHue[t] = (HUES[i % HUES.length] + shift) % 360;
       });
 
-    var onlineValues = Object.keys(
-      ALL.reduce(function (acc, r) {
-        if (r.online) acc[r.online] = true;
-        return acc;
-      }, {})
-    ).sort();
-    populateOnlineSelect(el.onlineFilter, onlineValues, "All");
-    syncOnlineFilterColor();
-
     wire();
     render();
   }
@@ -830,13 +818,14 @@
       search: $("rr-search"),
       clearSearch: $("rr-clear-search"),
       random: $("rr-random"),
-      onlineFilter: $("rr-online-filter"),
       count: $("rr-count"),
       grid: $("rr-grid"),
       backToAll: $("rr-back-to-all"),
       anotherRandom: $("rr-another-random"),
       toast: $("rr-toast"),
       filterBar: $("rr-filter-bar"),
+      onlinePills: $("rr-online-pills"),
+      onlinePillsPreview: $("rr-online-pills-preview"),
       typePills: $("rr-type-pills"),
       typePillsPreview: $("rr-type-pills-preview"),
       creatorPills: $("rr-creator-pills"),

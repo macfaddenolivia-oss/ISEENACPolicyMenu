@@ -1081,6 +1081,82 @@ kbd {
   color: var(--accent);
 }
 
+/* "Is it still online" pills (Research Resources page only) — green/red
+   family matching the card status badge's own colors (.status-online/
+   .status-offline) rather than Type's rotating hue or Organization's
+   teal, since this facet's meaning is inherently good/bad, not just a
+   category. Same soft-tint/solid-on-select shape as Organization above,
+   just recolored. Base rule is the "online" (green) look; .pill-offline
+   and .pill-unknown override it for those buckets — see onlinePillClass
+   in research.js. */
+.pill[data-filter="online"] {
+  color: #0a7d55;
+  background: #e3f7ee;
+  border-color: color-mix(in srgb, #0a7d55 32%, transparent);
+}
+
+.pill[data-filter="online"] .n {
+  background: color-mix(in srgb, #0a7d55 16%, var(--surface));
+  color: #0a7d55;
+}
+
+.pill[data-filter="online"][aria-pressed="true"] {
+  color: #fff;
+  background: #0a7d55;
+  border-color: #0a7d55;
+  font-weight: 560;
+}
+
+.pill[data-filter="online"][aria-pressed="true"] .n {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+/* A qualified "Yes, ..." (e.g. "Live (data through 2020)") stays in the
+   green/live family but with a slightly deeper tint, so it reads as
+   distinct from a plain "Live" pill without introducing a third color. */
+.pill[data-filter="online"].pill-qualified {
+  background: #cdeee0;
+}
+
+.pill[data-filter="online"].pill-qualified[aria-pressed="true"] {
+  background: #078a5c;
+}
+
+.pill[data-filter="online"].pill-offline {
+  color: #b3261e;
+  background: #fdecea;
+  border-color: color-mix(in srgb, #b3261e 32%, transparent);
+}
+
+.pill[data-filter="online"].pill-offline .n {
+  background: color-mix(in srgb, #b3261e 16%, var(--surface));
+  color: #b3261e;
+}
+
+.pill[data-filter="online"].pill-offline[aria-pressed="true"] {
+  color: #fff;
+  background: #b3261e;
+  border-color: #b3261e;
+}
+
+.pill[data-filter="online"].pill-offline[aria-pressed="true"] .n {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.pill[data-filter="online"].pill-unknown {
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.pill[data-filter="online"].pill-unknown[aria-pressed="true"] {
+  color: #fff;
+  background: var(--text-2);
+  border-color: var(--text-2);
+}
+
 .pill.is-empty { opacity: 0.34; }
 .pill.is-empty:hover { transform: none; }
 
@@ -2384,40 +2460,8 @@ footer.foot {
   line-height: 1.6;
 }
 
-.rr-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 20px;
-  align-items: center;
-  padding: 4px 0 10px;
-}
-
-.rr-filter {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.rr-select {
-  font: inherit;
-  font-size: 13.5px;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: 9px;
-  padding: 8px 10px;
-  min-width: 190px;
-  cursor: pointer;
-}
-
-.rr-select:focus-visible {
-  outline: none;
-  box-shadow: var(--ring);
-  border-color: var(--accent);
-}
-
 /* Type/Subtype tags on a research card are informational, not clickable
-   filters (the dropdowns above do that job) — same look as the Policy
+   filters (the pill rows above do that job) — same look as the Policy
    Menu's own .tag, minus the pointer/hover affordances that would
    otherwise imply they do something on click. */
 .tag-static {
@@ -2428,6 +2472,21 @@ footer.foot {
   transform: none;
   filter: none;
   box-shadow: none;
+}
+
+/* Type tag's count badge — mirrors .pill .n's look (tabular numerals, a
+   small pill of its own) so the number reads the same way it does on
+   the Type filter pill above, tinted with that same --type-h the tag
+   itself is now colored with (set inline per card — see cardHTML in
+   research.js) rather than a plain neutral gray. */
+.tag.type .n {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  margin-left: 1px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: hsl(var(--type-h) var(--type-s) var(--type-l) / 0.18);
+  color: inherit;
 }
 
 .topic-pills {
