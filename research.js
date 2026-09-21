@@ -202,6 +202,7 @@
     terms: [],
     type: "",
     online: "",
+    creators: [], // selected Creator values (OR within this facet, same as the Policy Menu's Organization pills)
   };
   var el = {};
   var toastTimer = null;
@@ -244,6 +245,7 @@
     if (!matchesSearch(r)) return false;
     if (state.type && r.type !== state.type) return false;
     if (state.online && r.online !== state.online) return false;
+    if (state.creators.length && state.creators.indexOf(r.creator) === -1) return false;
     return true;
   }
 
@@ -252,7 +254,13 @@
   }
 
   function hasActiveFilters() {
-    return !!(state.q.trim() || state.type || state.online);
+    return !!(state.q.trim() || state.type || state.online || state.creators.length);
+  }
+
+  function toggleIn(list, value) {
+    var i = list.indexOf(value);
+    if (i === -1) list.push(value);
+    else list.splice(i, 1);
   }
 
   /* ---------------- rendering ---------------- */
@@ -264,6 +272,201 @@
     toastTimer = setTimeout(function () {
       el.toast.classList.remove("show");
     }, 1900);
+  }
+
+  /* -------- Creator filter (ported from app.js's Organization pills) -------- */
+
+  // Live count per candidate Creator value under the *other* active
+  // filters — same simulate-add approach as app.js's countIncluding,
+  // scoped to this page's single pill facet.
+  function countIncludingCreator() {
+    var counts = Object.create(null);
+    var original = state.creators;
+    var alreadyOn = Object.create(null);
+    original.forEach(function (v) {
+      alreadyOn[v] = true;
+    });
+    var current = currentResults();
+    var facetActive = original.length > 0;
+
+    ALL.forEach(function (r) {
+      var v = r.creator;
+      if (!v || counts[v] !== undefined) return;
+      if (alreadyOn[v]) {
+        counts[v] = current.length;
+        return;
+      }
+      if (!facetActive) {
+        counts[v] = current.filter(function (rr) {
+          return rr.creator === v;
+        }).length;
+        return;
+      }
+      state.creators = original.concat([v]);
+      counts[v] = currentResults().length;
+      state.creators = original;
+    });
+
+    return counts;
+  }
+
+  // Selected values sort first, then everything else by live count desc,
+  // alpha tiebreak — same ordering rule app.js uses for Type/Sub/Org.
+  function bySelectionThenCount(counts, activeList) {
+    return function (a, b) {
+      var aActive = activeList.indexOf(a) !== -1;
+      var bActive = activeList.indexOf(b) !== -1;
+      if (aActive !== bActive) return aActive ? -1 : 1;
+      return (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b);
+    };
+  }
+
+  // Only values worth clicking (non-zero count, or already active) count
+  // toward "+N more" and the preview row — the full wall further down
+  // still lists every value, 0-count ones dimmed via .is-empty.
+  function relevantValues(values, counts, activeList) {
+    return values.filter(function (v) {
+      return (counts[v] || 0) > 0 || activeList.indexOf(v) !== -1;
+    });
+  }
+
+  // Default-visible preview: the top N by count, plus whatever's already
+  // active (so an active filter never silently drops out of view).
+  function previewSubset(sorted, active, count) {
+    var keep = Object.create(null);
+    sorted.slice(0, count).forEach(function (v) {
+      keep[v] = true;
+    });
+    active.forEach(function (v) {
+      keep[v] = true;
+    });
+    return sorted.filter(function (v) {
+      return keep[v];
+    });
+  }
+
+  function moreTagHTML(hiddenCount, label) {
+    if (hiddenCount <= 0) return "";
+    return (
+      '<button class="pill pill-more" type="button" data-more-toggle="true"' +
+      ' aria-label="Show ' + hiddenCount + " more " + esc(label) +
+      " option" + (hiddenCount === 1 ? "" : "s") + '">' +
+      "+" + hiddenCount + " more" +
+      "</button>"
+    );
+  }
+
+  // data-filter="org" (not a new "creator" kind) so these pills pick up
+  // the Policy Menu's existing Organization pill styling directly — see
+  // .pill[data-filter="org"] in styles.css.
+  function creatorPillHTML(value, count, active) {
+    var isEmpty = count === 0;
+    return (
+      '<button class="pill' + (isEmpty ? " is-empty" : "") + '"' +
+      ' type="button"' +
+      ' aria-pressed="' + (active ? "true" : "false") + '"' +
+      ' data-filter="org"' +
+      ' data-value="' + esc(value) + '"' +
+      ">" +
+      "<span>" + esc(value) + "</span>" +
+      '<span class="n">' + count + "</span>" +
+      "</button>"
+    );
+  }
+
+  // Corrects the preview row's guessed pill count against the real,
+  // laid-out DOM, trimming real pills from the end (skipping active
+  // ones) until "+N more" lands within the row budget — ported as-is
+  // from app.js's fitPreviewRow.
+  var PREVIEW_CREATOR_COUNT = 3;
+
+  function fitPreviewRow(container, totalCount, label, isActiveFn) {
+    var maxRows =
+      window.matchMedia && window.matchMedia("(max-width: 720px)").matches ? 2 : 1;
+
+    var pills = Array.prototype.slice
+      .call(container.querySelectorAll(".pill:not(.pill-more)"))
+      .filter(function (p) {
+        return p.offsetParent !== null;
+      });
+    if (!pills.length) return;
+
+    var hidden = totalCount - pills.length;
+    var moreEl = container.querySelector(".pill-more");
+
+    function cutoffTop() {
+      var rows = [];
+      for (var i = 0; i < pills.length; i++) {
+        if (rows.indexOf(pills[i].offsetTop) === -1) rows.push(pills[i].offsetTop);
+      }
+      if (moreEl && rows.indexOf(moreEl.offsetTop) === -1) rows.push(moreEl.offsetTop);
+      rows.sort(function (a, b) {
+        return a - b;
+      });
+      return rows.length > maxRows ? rows[maxRows] : Infinity;
+    }
+
+    function tailOffsetTop() {
+      return moreEl ? moreEl.offsetTop : pills[pills.length - 1].offsetTop;
+    }
+
+    function dropOneRealPill() {
+      var idx = pills.length - 1;
+      while (idx >= 0 && isActiveFn(pills[idx].getAttribute("data-value"))) idx--;
+      if (idx < 0) return false;
+      pills[idx].parentNode.removeChild(pills[idx]);
+      pills.splice(idx, 1);
+      hidden++;
+      return true;
+    }
+
+    while (pills.length && tailOffsetTop() >= cutoffTop()) {
+      if (!dropOneRealPill()) break;
+    }
+
+    if (hidden <= 0) {
+      if (moreEl) moreEl.parentNode.removeChild(moreEl);
+      return;
+    }
+
+    var guard = pills.length + 1;
+    while (guard-- > 0) {
+      if (moreEl) moreEl.parentNode.removeChild(moreEl);
+      container.insertAdjacentHTML("beforeend", moreTagHTML(hidden, label));
+      moreEl = container.querySelector(".pill-more");
+      if (!moreEl || moreEl.offsetTop < cutoffTop()) break;
+      if (!dropOneRealPill()) break;
+    }
+  }
+
+  function renderCreatorFilter() {
+    var counts = countIncludingCreator();
+    var creators = Object.keys(
+      ALL.reduce(function (acc, r) {
+        if (r.creator) acc[r.creator] = true;
+        return acc;
+      }, {})
+    ).sort(bySelectionThenCount(counts, state.creators));
+
+    el.creatorPills.innerHTML = creators
+      .map(function (c) {
+        return creatorPillHTML(c, counts[c] || 0, state.creators.indexOf(c) !== -1);
+      })
+      .join("");
+
+    var forPreview = relevantValues(creators, counts, state.creators);
+    var preview = previewSubset(forPreview, state.creators, PREVIEW_CREATOR_COUNT);
+    el.creatorPillsPreview.innerHTML =
+      preview
+        .map(function (c) {
+          return creatorPillHTML(c, counts[c] || 0, state.creators.indexOf(c) !== -1);
+        })
+        .join("") + moreTagHTML(forPreview.length - preview.length, "Creator");
+    fitPreviewRow(el.creatorPillsPreview, forPreview.length, "Creator", function (v) {
+      return state.creators.indexOf(v) !== -1;
+    });
+
+    el.creatorBadge.textContent = state.creators.length ? String(state.creators.length) : "";
   }
 
   function metaItem(icon, text) {
@@ -320,6 +523,8 @@
   }
 
   function render() {
+    renderCreatorFilter();
+
     var filtered = currentResults();
     var results = randomPick ? [randomPick] : filtered;
 
@@ -396,6 +601,30 @@
       state.online = el.onlineFilter.value;
       exitRandomPick();
       render();
+    });
+
+    // Creator pills (delegated on the filter bar, same pattern app.js
+    // uses for its Type/Subtype/Organization pills).
+    el.filterBar.addEventListener("click", function (e) {
+      var more = e.target.closest(".pill-more");
+      if (more) {
+        el.creatorToggle.click();
+        return;
+      }
+      var p = e.target.closest(".pill");
+      if (!p) return;
+      toggleIn(state.creators, p.getAttribute("data-value"));
+      exitRandomPick();
+      render();
+    });
+
+    // "Browse creators" disclosure — same hidden-is-the-source-of-truth
+    // pattern as the Policy Menu's own "Browse filters" toggle.
+    el.creatorToggle.addEventListener("click", function () {
+      var open = !el.filterBar.classList.contains("filters-open");
+      el.filterBar.classList.toggle("filters-open", open);
+      el.creatorToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      el.creatorToggleLabel.textContent = open ? "Hide creators" : "Browse creators";
     });
 
     // Random resource: narrows the grid to a single pick drawn from the
@@ -512,6 +741,12 @@
       backToAll: $("rr-back-to-all"),
       anotherRandom: $("rr-another-random"),
       toast: $("rr-toast"),
+      filterBar: $("rr-filter-bar"),
+      creatorPills: $("rr-creator-pills"),
+      creatorPillsPreview: $("rr-creator-pills-preview"),
+      creatorToggle: $("rr-creator-toggle"),
+      creatorToggleLabel: $("rr-creator-toggle-label"),
+      creatorBadge: $("rr-creator-badge"),
     };
 
     var missing = [];

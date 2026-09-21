@@ -41,9 +41,9 @@
   <div class="controls" id="rr-controls">
     <div class="searchrow">
       <div class="searchbox" id="rr-searchbox">
-        <span id="rr-search-icon"></span>
+        <span id="rr-search-icon" class="search-icon"></span>
         <label class="visually-hidden" for="rr-search">Search research resources</label>
-        <input id="rr-search" type="search" autocomplete="off" spellcheck="false"
+        <input id="rr-search" class="search-input" type="search" autocomplete="off" spellcheck="false"
                placeholder="Search resources, creators, descriptions, topics…">
         <span class="search-hints">
           <button class="clear-search" id="rr-clear-search" type="button" aria-label="Clear search">×</button>
@@ -67,6 +67,34 @@
           <option value="">All</option>
         </select>
       </label>
+    </div>
+  </div>
+
+  <!-- Creator filter: same pill/preview/"+N more" pattern as the Policy
+       Menu's Organization filter (#org-filter-box in index.html) — the
+       pills below reuse data-filter="org" so they pick up that filter's
+       existing CSS treatment directly, rather than a new pill style. -->
+  <div class="filter-bar" id="rr-filter-bar">
+    <div class="filter-bar-tags">
+      <div class="filter-group-box" id="rr-creator-filter-box">
+        <div class="filters-preview" id="rr-creator-preview">
+          <div class="fgroup">
+            <span class="flabel" id="rr-lbl-creator-preview">Creator</span>
+            <div class="pills" id="rr-creator-pills-preview" role="group" aria-labelledby="rr-lbl-creator-preview"></div>
+          </div>
+        </div>
+        <div class="filters" id="rr-creator-filters">
+          <div class="fgroup">
+            <span class="flabel" id="rr-lbl-creator">Creator</span>
+            <div class="pills" id="rr-creator-pills" role="group" aria-labelledby="rr-lbl-creator"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn" id="rr-creator-toggle" type="button" aria-expanded="false" aria-controls="rr-creator-filters">
+        <span id="rr-creator-toggle-label">Browse creators</span><span class="badge" id="rr-creator-badge"></span>
+      </button>
     </div>
   </div>
 
