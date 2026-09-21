@@ -1,14 +1,43 @@
 // First-time-visitor onboarding: a "New here?" prompt (5s after load,
-// sessionStorage-gated) that offers a step-by-step guided tour, plus a
-// standalone trigger button, on EITHER page — the tour always covers
-// both the Policy Menu and Research Resources, just in whichever order
-// matches where it was started. Entirely self-contained — own storage
-// keys, own element lookups, own try/catch — so it can never interfere
-// with setupFeedbackModal in app.js (separate sessionStorage key,
-// separate timer, no shared state, no calls into app.js/research.js at
-// all). Loaded on both index.html and research-resources.html.
+// sessionStorage-gated) that offers a step-by-step guided tour. Both
+// pages show this popup — subject to the asymmetric suppression rules
+// in shouldPrompt() below — and Research Resources additionally has a
+// standalone trigger button for starting the tour on demand. The tour
+// itself always covers both the Policy Menu and Research Resources,
+// just in whichever order matches where it was started. Entirely
+// self-contained — own storage keys, own element lookups, own
+// try/catch — so it can never interfere with setupFeedbackModal in
+// app.js (separate sessionStorage key, separate timer, no shared
+// state, no calls into app.js/research.js at all). Loaded on both
+// index.html and research-resources.html.
 (function () {
-  var STORAGE_KEY = "onboardingTourSeen";
+  // Three sessionStorage keys, each meaning something distinct — this
+  // used to be one shared "seen" flag, but the popup's suppression
+  // rules are asymmetric between the two pages (see shouldPrompt()
+  // below), so a single flag can no longer represent all of it:
+  //
+  // - ACCEPTED_KEY: the tour was actually started (prompt accepted, or
+  //   the standalone trigger button used) on EITHER page. Once true,
+  //   neither page's prompt shows again this session — this is the one
+  //   truly shared, symmetric flag, matching the tour's existing
+  //   "fully seen" behavior.
+  // - DISMISSED_KEY.policy / DISMISSED_KEY.research: the *popup* (not
+  //   an in-progress tour) was closed/declined on that specific page
+  //   without starting the tour. Dismissing the Policy Menu's popup
+  //   only suppresses that page's own popup; dismissing Research
+  //   Resources' popup suppresses BOTH pages' popups for the rest of
+  //   the session (and also drops Policy Menu's step from any tour
+  //   later started on Research Resources — see buildSteps). This
+  //   asymmetry is intentional, not a bug: declining on the primary
+  //   (Policy Menu) page doesn't rule out the secondary page's own,
+  //   narrower ask; declining on the secondary page is read as "not
+  //   interested in a tour" more broadly.
+  //
+  // Skipping/closing an *in-progress* tour is unrelated to any of this
+  // — see end()'s own markAccepted() call, which already covers that
+  // case as "engaged with," not "dismissed."
+  var ACCEPTED_KEY = "onboardingTourAccepted";
+  var DISMISSED_KEY = { policy: "onboardingTourDismissedPolicy", research: "onboardingTourDismissedResearch" };
   // One-shot cross-page handoff: written right before navigating away
   // from whichever page's own last (crossPage) step, read (and
   // immediately cleared) on the very next page load here. Only carries
@@ -93,15 +122,23 @@
   // isFirstLeg: true for a fresh start (append this page's crossPage
   // step so "Continue" hands off to the other page); false when resuming
   // as the second leg (just this page's own steps, ending the tour).
+  // On Research Resources specifically, if the Policy Menu's popup was
+  // already declined this session, the crossPage step is dropped even
+  // on a first-leg run — the tour stays scoped to this page rather than
+  // looping into a page whose tour was already turned down.
   function buildSteps(isFirstLeg) {
     var steps = CORE_STEPS[PAGE_ID].slice();
-    if (isFirstLeg) steps.push(CROSS_PAGE_STEP[PAGE_ID]);
+    var appendCrossPage = isFirstLeg;
+    if (appendCrossPage && IS_RESEARCH_PAGE && isDismissed("policy")) {
+      appendCrossPage = false;
+    }
+    if (appendCrossPage) steps.push(CROSS_PAGE_STEP[PAGE_ID]);
     return steps;
   }
 
-  function markSeen() {
+  function markAccepted() {
     try {
-      sessionStorage.setItem(STORAGE_KEY, "1");
+      sessionStorage.setItem(ACCEPTED_KEY, "1");
     } catch (e) {
       // private browsing / storage disabled — same acceptable fallback
       // as the feedback popup: it just won't stay dismissed past this
@@ -109,12 +146,39 @@
     }
   }
 
-  function alreadySeen() {
+  function isAccepted() {
     try {
-      return !!sessionStorage.getItem(STORAGE_KEY);
+      return !!sessionStorage.getItem(ACCEPTED_KEY);
     } catch (e) {
       return false;
     }
+  }
+
+  function markDismissed(pageId) {
+    try {
+      sessionStorage.setItem(DISMISSED_KEY[pageId], "1");
+    } catch (e) {
+      // private browsing / storage disabled — same fallback as above.
+    }
+  }
+
+  function isDismissed(pageId) {
+    try {
+      return !!sessionStorage.getItem(DISMISSED_KEY[pageId]);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Whether THIS page's own popup is allowed to show right now — see
+  // the DISMISSED_KEY comment above for why Research Resources' own
+  // dismissal reaches back to suppress the Policy Menu's popup too, but
+  // not the other way around.
+  function shouldPrompt() {
+    if (isAccepted()) return false;
+    if (isDismissed(PAGE_ID)) return false;
+    if (!IS_RESEARCH_PAGE && isDismissed("research")) return false;
+    return true;
   }
 
   /* ---------------- "New here?" prompt ---------------- */
@@ -146,14 +210,14 @@
     function dismiss() {
       if (!shown) return;
       shown = false;
-      markSeen();
+      markDismissed(PAGE_ID);
       hidePrompt();
     }
 
     function accept() {
       if (!shown) return;
       shown = false;
-      markSeen();
+      markAccepted();
       hidePrompt();
       beginTour();
     }
@@ -168,7 +232,7 @@
     });
 
     setTimeout(function () {
-      if (alreadySeen()) return;
+      if (!shouldPrompt()) return;
       shown = true;
       lastFocused = document.activeElement;
       backdrop.hidden = false;
@@ -431,7 +495,7 @@
     }
 
     function end() {
-      markSeen();
+      markAccepted();
       overlay.classList.remove("show");
       setTimeout(function () {
         overlay.hidden = true;
@@ -545,22 +609,19 @@
     }
   }
 
-  // Standalone "New here?" trigger button — lets a visitor who landed
-  // on either page directly (not via the other page's tour) start the
-  // tour from scratch, same as accepting the prompt below.
+  // Standalone "New here?" trigger button (Research Resources only —
+  // the Policy Menu relies on its timed popup alone) — lets a visitor
+  // start the tour on demand, same as accepting the prompt.
   function setupTriggerButton() {
     var btn = document.getElementById("tour-trigger");
     if (!btn) return;
     btn.addEventListener("click", function () {
+      markAccepted();
       beginTour();
     });
   }
 
   try {
-    // The timed auto-popup stays Policy-Menu-only, same as before —
-    // Research Resources' own direct-entry point is the persistent
-    // #tour-trigger button instead (see setupTriggerButton), not a
-    // second copy of this prompt.
     setupTriggerButton();
     var startedOn = readResumeState();
     if (startedOn) {
@@ -568,7 +629,7 @@
       // whichever page the tour began on once it ends — normally or
       // via an early exit — see end()'s returnTo handling.
       beginTour(startedOn);
-    } else if (!IS_RESEARCH_PAGE && !alreadySeen()) {
+    } else if (shouldPrompt()) {
       setupPrompt();
     }
   } catch (e) {

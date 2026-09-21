@@ -184,12 +184,25 @@
 
 <div class="toast" id="rr-toast" role="status" aria-live="polite"></div>
 
-<!-- Guided tour overlay: continues here when a visitor clicks "Continue"
-     on the Policy Menu's own tour (see onboarding-tour.js) — same
-     markup as index.html's, reused verbatim rather than a second
-     tour component. This page never shows the "New here?" prompt
-     itself; the tour only resumes here when arriving from that
-     cross-page handoff. -->
+<!-- Same "New here?" prompt as index.html's, reused verbatim — see
+     onboarding-tour.js for the (per-page) rules on when it's allowed to
+     show. Accepting it starts a tour rooted on this page; #tour-trigger
+     above does the same thing on demand. -->
+<div class="onboarding-modal-backdrop" id="onboarding-modal-backdrop" hidden>
+  <div class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-modal-title">
+    <h2 class="onboarding-modal-title" id="onboarding-modal-title">New here?</h2>
+    <p class="onboarding-modal-text">Want a quick tour of how this tool works?</p>
+    <div class="onboarding-modal-actions">
+      <button class="btn" id="onboarding-modal-no" type="button">No thanks</button>
+      <button class="btn btn-primary" id="onboarding-modal-yes" type="button">Yes, show me</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guided tour overlay — same markup as index.html's, reused verbatim
+     rather than a second tour component. Also resumes here directly
+     (skipping this page's own prompt) when arriving via the Policy
+     Menu's cross-page handoff. -->
 <div class="tour-overlay" id="tour-overlay" hidden>
   <div class="tour-highlight" id="tour-highlight"></div>
   <div class="tour-tooltip" id="tour-tooltip" role="dialog" aria-modal="true" aria-label="Guided tour">
