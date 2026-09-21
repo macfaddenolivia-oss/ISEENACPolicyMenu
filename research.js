@@ -194,13 +194,18 @@
   var ICON_DICE =
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>';
 
+  // Deterministic, well-spaced hues so each Type keeps its color across
+  // rebuilds — same palette app.js uses for its own Type pills/dots.
+  var HUES = [210, 145, 28, 340, 265, 190, 95, 12, 300, 45, 170, 240, 320, 70, 355, 225];
+
   /* ---------------- state ---------------- */
 
   var ALL = [];
+  var typeHue = {};
   var state = {
     q: "",
     terms: [],
-    type: "",
+    types: [], // selected Type values (OR within this facet, same as the Policy Menu's Type pills)
     online: "",
     creators: [], // selected Creator values (OR within this facet, same as the Policy Menu's Organization pills)
   };
@@ -211,8 +216,8 @@
   // null means show the normal filtered results — same pattern as
   // app.js's own random-pick feature on the Policy Menu. Any real
   // search/filter change (not the random actions themselves) clears
-  // this — see exitRandomPick, used by setSearch and the two dropdown
-  // change handlers.
+  // this — see exitRandomPick, used by setSearch, the online dropdown's
+  // change handler, and the Type/Creator pill click handler.
   var randomPick = null;
 
   // Bumped by exitRandomPick() so pickRandom()'s in-flight flicker chain
@@ -243,7 +248,7 @@
 
   function passes(r) {
     if (!matchesSearch(r)) return false;
-    if (state.type && r.type !== state.type) return false;
+    if (state.types.length && state.types.indexOf(r.type) === -1) return false;
     if (state.online && r.online !== state.online) return false;
     if (state.creators.length && state.creators.indexOf(r.creator) === -1) return false;
     return true;
@@ -254,7 +259,12 @@
   }
 
   function hasActiveFilters() {
-    return !!(state.q.trim() || state.type || state.online || state.creators.length);
+    return !!(
+      state.q.trim() ||
+      state.types.length ||
+      state.online ||
+      state.creators.length
+    );
   }
 
   function toggleIn(list, value) {
@@ -274,14 +284,16 @@
     }, 1900);
   }
 
-  /* -------- Creator filter (ported from app.js's Organization pills) -------- */
+  /* -------- Type/Creator pill filters (ported from app.js's own Type
+     and Organization pills — one generic implementation shared by both
+     facets here, the same way app.js's countIncluding/pillHTML already
+     serve Type, Subtype, and Organization there). -------- */
 
-  // Live count per candidate Creator value under the *other* active
-  // filters — same simulate-add approach as app.js's countIncluding,
-  // scoped to this page's single pill facet.
-  function countIncludingCreator() {
+  // Live count per candidate value in `field` under the *other* active
+  // filters — same simulate-add approach as app.js's countIncluding.
+  function countIncluding(listKey, field) {
     var counts = Object.create(null);
-    var original = state.creators;
+    var original = state[listKey];
     var alreadyOn = Object.create(null);
     original.forEach(function (v) {
       alreadyOn[v] = true;
@@ -290,7 +302,7 @@
     var facetActive = original.length > 0;
 
     ALL.forEach(function (r) {
-      var v = r.creator;
+      var v = r[field];
       if (!v || counts[v] !== undefined) return;
       if (alreadyOn[v]) {
         counts[v] = current.length;
@@ -298,13 +310,13 @@
       }
       if (!facetActive) {
         counts[v] = current.filter(function (rr) {
-          return rr.creator === v;
+          return rr[field] === v;
         }).length;
         return;
       }
-      state.creators = original.concat([v]);
+      state[listKey] = original.concat([v]);
       counts[v] = currentResults().length;
-      state.creators = original;
+      state[listKey] = original;
     });
 
     return counts;
@@ -356,18 +368,23 @@
     );
   }
 
-  // data-filter="org" (not a new "creator" kind) so these pills pick up
-  // the Policy Menu's existing Organization pill styling directly — see
-  // .pill[data-filter="org"] in styles.css.
-  function creatorPillHTML(value, count, active) {
+  // kind is "type" (gets the hue dot, via data-filter="type") or "org"
+  // (Creator, via data-filter="org") so these pills pick up the Policy
+  // Menu's existing Type/Organization pill styling directly — see
+  // .pill[data-filter="type"] / .pill[data-filter="org"] in styles.css.
+  function pillHTML(value, count, active, kind) {
     var isEmpty = count === 0;
+    var hue = kind === "type" ? typeHue[value] : null;
+    var style = hue != null ? ' style="--type-h:' + hue + '"' : "";
     return (
       '<button class="pill' + (isEmpty ? " is-empty" : "") + '"' +
       ' type="button"' +
       ' aria-pressed="' + (active ? "true" : "false") + '"' +
-      ' data-filter="org"' +
+      ' data-filter="' + kind + '"' +
       ' data-value="' + esc(value) + '"' +
+      style +
       ">" +
+      (kind === "type" ? '<span class="dot"></span>' : "") +
       "<span>" + esc(value) + "</span>" +
       '<span class="n">' + count + "</span>" +
       "</button>"
@@ -378,6 +395,7 @@
   // laid-out DOM, trimming real pills from the end (skipping active
   // ones) until "+N more" lands within the row budget — ported as-is
   // from app.js's fitPreviewRow.
+  var PREVIEW_TYPE_COUNT = 6;
   var PREVIEW_CREATOR_COUNT = 3;
 
   function fitPreviewRow(container, totalCount, label, isActiveFn) {
@@ -439,34 +457,46 @@
     }
   }
 
-  function renderCreatorFilter() {
-    var counts = countIncludingCreator();
-    var creators = Object.keys(
+  // One facet's pills, full wall + preview row — shared by Type and
+  // Creator below, same as app.js reuses its own rendering for Type/
+  // Subtype/Organization rather than writing one version per facet.
+  function renderFacetPills(listKey, field, kind, label, previewCount, pillsEl, previewEl) {
+    var counts = countIncluding(listKey, field);
+    var values = Object.keys(
       ALL.reduce(function (acc, r) {
-        if (r.creator) acc[r.creator] = true;
+        if (r[field]) acc[r[field]] = true;
         return acc;
       }, {})
-    ).sort(bySelectionThenCount(counts, state.creators));
+    ).sort(bySelectionThenCount(counts, state[listKey]));
 
-    el.creatorPills.innerHTML = creators
-      .map(function (c) {
-        return creatorPillHTML(c, counts[c] || 0, state.creators.indexOf(c) !== -1);
+    pillsEl.innerHTML = values
+      .map(function (v) {
+        return pillHTML(v, counts[v] || 0, state[listKey].indexOf(v) !== -1, kind);
       })
       .join("");
 
-    var forPreview = relevantValues(creators, counts, state.creators);
-    var preview = previewSubset(forPreview, state.creators, PREVIEW_CREATOR_COUNT);
-    el.creatorPillsPreview.innerHTML =
+    var forPreview = relevantValues(values, counts, state[listKey]);
+    var preview = previewSubset(forPreview, state[listKey], previewCount);
+    previewEl.innerHTML =
       preview
-        .map(function (c) {
-          return creatorPillHTML(c, counts[c] || 0, state.creators.indexOf(c) !== -1);
+        .map(function (v) {
+          return pillHTML(v, counts[v] || 0, state[listKey].indexOf(v) !== -1, kind);
         })
-        .join("") + moreTagHTML(forPreview.length - preview.length, "Creator");
-    fitPreviewRow(el.creatorPillsPreview, forPreview.length, "Creator", function (v) {
-      return state.creators.indexOf(v) !== -1;
+        .join("") + moreTagHTML(forPreview.length - preview.length, label);
+    fitPreviewRow(previewEl, forPreview.length, label, function (v) {
+      return state[listKey].indexOf(v) !== -1;
     });
+  }
 
-    el.creatorBadge.textContent = state.creators.length ? String(state.creators.length) : "";
+  // Combined badge on the single "Browse filters" button — total active
+  // pills across both facets, same as app.js's #filter-badge counting
+  // Type + Subtype + Organization together.
+  function renderFilterPills() {
+    renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview);
+    renderFacetPills("creators", "creator", "org", "Creator", PREVIEW_CREATOR_COUNT, el.creatorPills, el.creatorPillsPreview);
+
+    var activePills = state.types.length + state.creators.length;
+    el.filterBadge.textContent = activePills ? String(activePills) : "";
   }
 
   function metaItem(icon, text) {
@@ -523,7 +553,7 @@
   }
 
   function render() {
-    renderCreatorFilter();
+    renderFilterPills();
 
     var filtered = currentResults();
     var results = randomPick ? [randomPick] : filtered;
@@ -545,6 +575,11 @@
     // Re-roll needs at least one match in the filtered set, regardless of
     // whether we're currently narrowed to a single random pick.
     el.random.disabled = filtered.length === 0;
+    // While viewing a random pick, Clear filters exits that view even if
+    // there's otherwise nothing to clear (see its handler below) — so it
+    // must stay enabled in that case too, not just when a real filter is
+    // active.
+    el.clearFilters.disabled = !hasActiveFilters() && !randomPick;
 
     if (!results.length) {
       el.grid.className = "";
@@ -570,14 +605,14 @@
     exitRandomPick();
   }
 
-  function populateSelect(select, values, placeholder) {
-    select.innerHTML =
-      '<option value="">' + esc(placeholder) + "</option>" +
-      values
-        .map(function (v) {
-          return '<option value="' + esc(v) + '">' + esc(v) + "</option>";
-        })
-        .join("");
+  function clearAll() {
+    state.types.length = 0;
+    state.creators.length = 0;
+    state.online = "";
+    el.onlineFilter.value = "";
+    syncOnlineFilterColor();
+    setSearch("");
+    el.search.value = "";
   }
 
   // Maps the same online/offline/unknown bucket classifyOnline() uses for
@@ -633,11 +668,6 @@
       render();
     });
 
-    el.typeFilter.addEventListener("change", function () {
-      state.type = el.typeFilter.value;
-      exitRandomPick();
-      render();
-    });
     el.onlineFilter.addEventListener("change", function () {
       state.online = el.onlineFilter.value;
       syncOnlineFilterColor();
@@ -645,28 +675,47 @@
       render();
     });
 
-    // Creator pills (delegated on the filter bar, same pattern app.js
-    // uses for its Type/Subtype/Organization pills).
+    // Type/Creator pills (delegated on the filter bar, same pattern
+    // app.js uses for its Type/Subtype/Organization pills). data-filter
+    // tells us which facet a given pill belongs to ("type" or "org").
     el.filterBar.addEventListener("click", function (e) {
       var more = e.target.closest(".pill-more");
       if (more) {
-        el.creatorToggle.click();
+        el.filterToggle.click();
         return;
       }
       var p = e.target.closest(".pill");
       if (!p) return;
-      toggleIn(state.creators, p.getAttribute("data-value"));
+      var kind = p.getAttribute("data-filter");
+      var value = p.getAttribute("data-value");
+      if (kind === "type") toggleIn(state.types, value);
+      else if (kind === "org") toggleIn(state.creators, value);
       exitRandomPick();
       render();
     });
 
-    // "Browse creators" disclosure — same hidden-is-the-source-of-truth
-    // pattern as the Policy Menu's own "Browse filters" toggle.
-    el.creatorToggle.addEventListener("click", function () {
+    // "Browse filters" disclosure — reveals both facets' full pill walls
+    // at once, same as the Policy Menu's single toggle for its two boxes
+    // (Type+Subtype and Organization).
+    el.filterToggle.addEventListener("click", function () {
       var open = !el.filterBar.classList.contains("filters-open");
       el.filterBar.classList.toggle("filters-open", open);
-      el.creatorToggle.setAttribute("aria-expanded", open ? "true" : "false");
-      el.creatorToggleLabel.textContent = open ? "Hide creators" : "Browse creators";
+      el.filterToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      el.filterToggleLabel.textContent = open ? "Hide filters" : "Browse filters";
+    });
+
+    // Clear-filters button. While viewing a random pick, this exits that
+    // view only — same as "Back to all resources" — rather than also
+    // clearing search/filters the pick itself doesn't touch; otherwise
+    // it's the normal full clear.
+    el.clearFilters.addEventListener("click", function () {
+      if (randomPick) {
+        exitRandomPick();
+      } else {
+        clearAll();
+      }
+      render();
+      el.search.focus();
     });
 
     // Random resource: narrows the grid to a single pick drawn from the
@@ -750,13 +799,17 @@
       return;
     }
 
-    var types = Object.keys(
+    Object.keys(
       ALL.reduce(function (acc, r) {
-        if (r.type) acc[r.type] = true;
+        if (r.type) acc[r.type] = 1;
         return acc;
       }, {})
-    ).sort();
-    populateSelect(el.typeFilter, types, "All types");
+    )
+      .sort()
+      .forEach(function (t, i) {
+        var shift = 13 * Math.floor(i / HUES.length);
+        typeHue[t] = (HUES[i % HUES.length] + shift) % 360;
+      });
 
     var onlineValues = Object.keys(
       ALL.reduce(function (acc, r) {
@@ -777,7 +830,6 @@
       search: $("rr-search"),
       clearSearch: $("rr-clear-search"),
       random: $("rr-random"),
-      typeFilter: $("rr-type-filter"),
       onlineFilter: $("rr-online-filter"),
       count: $("rr-count"),
       grid: $("rr-grid"),
@@ -785,11 +837,14 @@
       anotherRandom: $("rr-another-random"),
       toast: $("rr-toast"),
       filterBar: $("rr-filter-bar"),
+      typePills: $("rr-type-pills"),
+      typePillsPreview: $("rr-type-pills-preview"),
       creatorPills: $("rr-creator-pills"),
       creatorPillsPreview: $("rr-creator-pills-preview"),
-      creatorToggle: $("rr-creator-toggle"),
-      creatorToggleLabel: $("rr-creator-toggle-label"),
-      creatorBadge: $("rr-creator-badge"),
+      filterToggle: $("rr-filter-toggle"),
+      filterToggleLabel: $("rr-filter-toggle-label"),
+      filterBadge: $("rr-filter-badge"),
+      clearFilters: $("rr-clear-filters"),
     };
 
     var missing = [];

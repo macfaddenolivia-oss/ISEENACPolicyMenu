@@ -56,12 +56,6 @@
 
     <div class="rr-filters">
       <label class="rr-filter">
-        <span class="flabel">Type</span>
-        <select class="rr-select" id="rr-type-filter">
-          <option value="">All types</option>
-        </select>
-      </label>
-      <label class="rr-filter">
         <span class="flabel">Is it still online?</span>
         <select class="rr-select" id="rr-online-filter">
           <option value="">All</option>
@@ -70,12 +64,31 @@
     </div>
   </div>
 
-  <!-- Creator filter: same pill/preview/"+N more" pattern as the Policy
-       Menu's Organization filter (#org-filter-box in index.html) — the
-       pills below reuse data-filter="org" so they pick up that filter's
-       existing CSS treatment directly, rather than a new pill style. -->
+  <!-- Type and Creator filters: same filter-bar/filter-group-box/pill/
+       preview/"+N more"/Browse-filters pattern as the Policy Menu's own
+       Type+Subtype and Organization boxes (see index.html/app.js). Type
+       pills reuse data-filter="type" (hue dot included) and Creator
+       pills reuse data-filter="org" — both pick up that filter's
+       existing CSS treatment directly rather than a new pill style. One
+       shared "Browse filters" toggle opens both boxes' full pill walls
+       at once, same as the Policy Menu's single toggle for its two
+       boxes. -->
   <div class="filter-bar" id="rr-filter-bar">
     <div class="filter-bar-tags">
+      <div class="filter-group-box" id="rr-type-filter-box">
+        <div class="filters-preview" id="rr-type-preview">
+          <div class="fgroup">
+            <span class="flabel" id="rr-lbl-type-preview">Type</span>
+            <div class="pills" id="rr-type-pills-preview" role="group" aria-labelledby="rr-lbl-type-preview"></div>
+          </div>
+        </div>
+        <div class="filters" id="rr-type-filters">
+          <div class="fgroup">
+            <span class="flabel" id="rr-lbl-type">Type</span>
+            <div class="pills" id="rr-type-pills" role="group" aria-labelledby="rr-lbl-type"></div>
+          </div>
+        </div>
+      </div>
       <div class="filter-group-box" id="rr-creator-filter-box">
         <div class="filters-preview" id="rr-creator-preview">
           <div class="fgroup">
@@ -92,9 +105,10 @@
       </div>
     </div>
     <div class="filter-actions">
-      <button class="btn" id="rr-creator-toggle" type="button" aria-expanded="false" aria-controls="rr-creator-filters">
-        <span id="rr-creator-toggle-label">Browse creators</span><span class="badge" id="rr-creator-badge"></span>
+      <button class="btn" id="rr-filter-toggle" type="button" aria-expanded="false" aria-controls="rr-type-filters rr-creator-filters">
+        <span id="rr-filter-toggle-label">Browse filters</span><span class="badge" id="rr-filter-badge"></span>
       </button>
+      <button class="btn" id="rr-clear-filters" type="button" disabled>Clear filters</button>
     </div>
   </div>
 
