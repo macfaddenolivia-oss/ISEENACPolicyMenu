@@ -1,37 +1,40 @@
 // First-time-visitor onboarding: a "New here?" prompt (5s after load,
-// sessionStorage-gated) that offers a step-by-step guided tour of the
-// filters and the two curated-resource shortcuts, then continues onto
-// a second leg on the Research Resources page. Entirely self-contained
-// — own storage keys, own element lookups, own try/catch — so it can
-// never interfere with setupFeedbackModal in app.js (separate
-// sessionStorage key, separate timer, no shared state, no calls into
-// app.js/research.js at all). Loaded on both index.html and
-// research-resources.html; IS_RESEARCH_PAGE below picks which page's
-// step list and entry behavior apply.
+// sessionStorage-gated) that offers a step-by-step guided tour, plus a
+// standalone trigger button, on EITHER page — the tour always covers
+// both the Policy Menu and Research Resources, just in whichever order
+// matches where it was started. Entirely self-contained — own storage
+// keys, own element lookups, own try/catch — so it can never interfere
+// with setupFeedbackModal in app.js (separate sessionStorage key,
+// separate timer, no shared state, no calls into app.js/research.js at
+// all). Loaded on both index.html and research-resources.html.
 (function () {
   var STORAGE_KEY = "onboardingTourSeen";
-  // One-shot cross-page handoff: set right before navigating away from
-  // the Policy Menu's own last (crossPage) step, read (and immediately
-  // cleared) on the very next page load here. This sessionStorage key
-  // is the *entire* mechanism carrying "the tour is mid-way, resume at
-  // step N" across the navigation — nothing else does. If tour steps
-  // are ever reordered, whatever step index gets written here (see the
-  // "Next" handler's crossPage branch below) must still line up with
-  // TOUR_STEPS_RESEARCH's own step 0 (or wherever a future crossPage
-  // step is meant to resume) on the receiving page.
+  // One-shot cross-page handoff: written right before navigating away
+  // from whichever page's own last (crossPage) step, read (and
+  // immediately cleared) on the very next page load here. Only carries
+  // *which page the tour started on* — never a step index. The
+  // receiving page always resumes at the top of its own CORE_STEPS_*
+  // list (see buildSteps below), so there is nothing list-length- or
+  // order-dependent to get wrong here, and nothing to keep in sync if a
+  // step list is ever edited. startedOn also doubles as "where to
+  // navigate back to" once the tour ends — see end()'s returnTo.
   var RESUME_KEY = "onboardingTourResume";
   var PROMPT_DELAY_MS = 5000;
 
   // #rr-grid only exists on research-resources.html — a page marker
   // that's already there rather than adding a new one just for this.
   var IS_RESEARCH_PAGE = !!document.getElementById("rr-grid");
+  var PAGE_ID = IS_RESEARCH_PAGE ? "research" : "policy";
+  var PAGE_URL = { policy: "index.html", research: "research-resources.html" };
 
-  // Targets matched by selector against the live DOM (not cached), since
-  // #quick-read-toggle only becomes visible once app.js resolves a
-  // quick-read resource for the day's data — see the steps filter in
-  // runTour() below, which drops any step whose target isn't there or
-  // visible yet.
-  var TOUR_STEPS_POLICY = [
+  // Each page's own steps, independent of which direction the tour is
+  // running — reused as-is in both directions (see buildSteps below),
+  // never copied. Targets matched by selector against the live DOM (not
+  // cached), since e.g. #quick-read-toggle only becomes visible once
+  // app.js resolves a quick-read resource for the day's data — see the
+  // steps filter in runTour() below, which drops any step whose target
+  // isn't there or visible yet.
+  var CORE_STEPS_POLICY = [
     {
       selector: ".filter-bar-tags",
       text: "Use the Type and Organization filters to narrow the resource list down to specific resource types and specific organizations."
@@ -43,19 +46,13 @@
     {
       selector: "#quick-read-toggle",
       text: "Jumps straight to the Federal Register, pre-filtered so you can act fast without digging."
-    },
-    {
-      selector: '.site-nav a[href="research-resources.html"]',
-      text: "There's also a companion Research Resources page: data sources, databases, and tools for environmental health research. This page covers policy and advocacy resources; Research Resources covers the data behind that work. Click Continue to see it.",
-      crossPage: "research-resources.html"
     }
   ];
 
-  // research-resources.html's own leg of the tour, resumed here after
-  // the crossPage step above. ".status-badge" matches whichever card
-  // happens to render first — always a real, valid example of the
-  // thing being described, so no dedicated id is needed just for this.
-  var TOUR_STEPS_RESEARCH = [
+  // ".status-badge" matches whichever card happens to render first —
+  // always a real, valid example of the thing being described, so no
+  // dedicated id is needed just for this.
+  var CORE_STEPS_RESEARCH = [
     {
       selector: "#rr-searchbox",
       text: "Search across resource names, creators, descriptions, and topics."
@@ -74,7 +71,33 @@
     }
   ];
 
-  var TOUR_STEPS = IS_RESEARCH_PAGE ? TOUR_STEPS_RESEARCH : TOUR_STEPS_POLICY;
+  var CORE_STEPS = { policy: CORE_STEPS_POLICY, research: CORE_STEPS_RESEARCH };
+
+  // The one step whose content genuinely differs by direction — pointing
+  // at "the other page" necessarily means different text/target depending
+  // on which page that is. Appended only to a *first-leg* run (see
+  // buildSteps), never to a resumed second leg.
+  var CROSS_PAGE_STEP = {
+    policy: {
+      selector: '.site-nav a[href="research-resources.html"]',
+      text: "There's also a companion Research Resources page: data sources, databases, and tools for environmental health research. This page covers policy and advocacy resources; Research Resources covers the data behind that work. Click Continue to see it.",
+      crossPage: "research-resources.html"
+    },
+    research: {
+      selector: '.site-nav a[href="index.html"]',
+      text: "There's also the Policy Menu: guides, legal resources, and advocacy tools for turning environmental health science into policy and action. Click Continue to see it.",
+      crossPage: "index.html"
+    }
+  };
+
+  // isFirstLeg: true for a fresh start (append this page's crossPage
+  // step so "Continue" hands off to the other page); false when resuming
+  // as the second leg (just this page's own steps, ending the tour).
+  function buildSteps(isFirstLeg) {
+    var steps = CORE_STEPS[PAGE_ID].slice();
+    if (isFirstLeg) steps.push(CROSS_PAGE_STEP[PAGE_ID]);
+    return steps;
+  }
 
   function markSeen() {
     try {
@@ -132,7 +155,7 @@
       shown = false;
       markSeen();
       hidePrompt();
-      startTour();
+      beginTour();
     }
 
     noBtn.addEventListener("click", dismiss);
@@ -163,9 +186,9 @@
 
   /* ---------------- guided tour ---------------- */
 
-  function startTour(startIndex) {
+  function startTour(returnTo) {
     try {
-      runTour(startIndex);
+      runTour(returnTo);
     } catch (e) {
       // Never let a tour bug strand the visitor mid-page — log it
       // (visible in devtools) rather than throw it into an unhandled
@@ -176,7 +199,13 @@
     }
   }
 
-  function runTour(startIndex) {
+  // returnTo: omitted/falsy for a fresh, first-leg start (this page's
+  // own steps, then a crossPage step handing off to the other page).
+  // Given a page id ("policy"/"research"), this run is the *second*
+  // leg, resumed here after that handoff — just this page's own steps,
+  // no crossPage step, and end() (below) navigates back to returnTo
+  // once the tour finishes or is exited, by any means.
+  function runTour(returnTo) {
     var overlay = document.getElementById("tour-overlay");
     var highlight = document.getElementById("tour-highlight");
     var tooltip = document.getElementById("tour-tooltip");
@@ -194,21 +223,27 @@
     }
 
     // Only steps whose target actually exists and is visible right now.
-    // (In practice all three are resolved by the time anyone can click
-    // "Yes, show me" — the prompt itself waits 5s, and the quick-read
-    // button's visibility is settled well before that — but this keeps
-    // the tour honest instead of pointing at a hidden/missing element
-    // in the rare case it isn't.)
-    var steps = TOUR_STEPS.filter(function (step) {
+    // (In practice they're all resolved by the time anyone can reach
+    // them — the prompt itself waits 5s, and research.js's cards are
+    // explicitly waited for via whenResearchCardsReady below — but this
+    // keeps the tour honest instead of pointing at a hidden/missing
+    // element in the rare case one isn't.)
+    var steps = buildSteps(!returnTo).filter(function (step) {
       var target = document.querySelector(step.selector);
       return !!(target && !target.hidden && target.offsetParent !== null);
     });
-    if (!steps.length) return;
+    if (!steps.length) {
+      // Nothing to show on this leg — still honor a pending return trip
+      // rather than silently stranding the visitor on the wrong page.
+      if (returnTo) window.location.href = PAGE_URL[returnTo];
+      return;
+    }
 
-    // Clamped against the *filtered* list, not raw TOUR_STEPS indices,
-    // so a resumed tour still lands somewhere valid even if a step got
-    // dropped above (missing/hidden target).
-    var index = Math.min(Math.max(startIndex || 0, 0), steps.length - 1);
+    // Always the top of the list just built above — a resumed (second)
+    // leg gets its own fresh steps array starting at 0, never an index
+    // carried over from the other page, so there's nothing to keep in
+    // sync if a step list's order or length ever changes.
+    var index = 0;
     var lastFocused = document.activeElement;
     var repositionPending = false;
 
@@ -343,8 +378,8 @@
       textEl.textContent = step.text;
       backBtn.hidden = index === 0;
       // The crossPage step isn't really "the end" — it continues on the
-      // next page — so it gets its own label rather than "Got it" even
-      // though it's the last entry in TOUR_STEPS_POLICY.
+      // other page — so it gets its own label rather than "Got it" even
+      // though it's the last entry in a first-leg run's steps.
       nextBtn.textContent = step.crossPage
         ? "Continue"
         : index === steps.length - 1
@@ -364,11 +399,15 @@
     function next() {
       var step = steps[index];
       if (step.crossPage) {
-        // The entire cross-page handoff: write where the next page
-        // should resume, then hand off via a normal navigation — no
-        // local end()/render() here, the page unload takes over.
+        // The entire cross-page handoff: record which page THIS leg ran
+        // on (so the other page knows where to eventually return),
+        // then hand off via a normal navigation — no local end()/
+        // render() here, the page unload takes over. Only ever reached
+        // on a first-leg run — buildSteps() never appends a crossPage
+        // step to a resumed (returnTo-having) run — so PAGE_ID here is
+        // always the tour's true starting page.
         try {
-          sessionStorage.setItem(RESUME_KEY, JSON.stringify({ step: 0 }));
+          sessionStorage.setItem(RESUME_KEY, JSON.stringify({ startedOn: PAGE_ID }));
         } catch (e) {
           // private browsing / storage disabled — the tour just won't
           // resume on the next page, same acceptable fallback used
@@ -407,6 +446,14 @@
       if (lastFocused && typeof lastFocused.focus === "function") {
         lastFocused.focus();
       }
+      // Reached by finishing the last step normally OR by an early exit
+      // (Skip/Close/Escape) — same return-trip rule either way. Only a
+      // second-leg run has a returnTo at all; a first-leg run exiting
+      // (for any reason) while still on its own starting page needs no
+      // extra navigation, so this is a no-op there.
+      if (returnTo) {
+        window.location.href = PAGE_URL[returnTo];
+      }
     }
 
     function onKeydown(e) {
@@ -438,14 +485,17 @@
 
   // Reads and immediately clears the cross-page resume flag — one-shot,
   // so a later, unrelated reload of this page never re-triggers the
-  // tour just because a stale flag was left behind.
-  function readResumeStep() {
+  // tour just because a stale flag was left behind. Returns the page id
+  // ("policy"/"research") the tour originally started on, or null.
+  function readResumeState() {
     try {
       var raw = sessionStorage.getItem(RESUME_KEY);
       sessionStorage.removeItem(RESUME_KEY);
       if (!raw) return null;
       var data = JSON.parse(raw);
-      return typeof data.step === "number" ? data.step : 0;
+      return data && (data.startedOn === "policy" || data.startedOn === "research")
+        ? data.startedOn
+        : null;
     } catch (e) {
       return null;
     }
@@ -481,21 +531,44 @@
     var timer = setTimeout(finish, timeoutMs || 4000);
   }
 
-  try {
+  // Single entry point for starting the tour on this page, fresh or
+  // resumed — used by the "Yes, show me" prompt, the standalone trigger
+  // button, and the cross-page resume below, so all three go through
+  // the same research-data wait rather than each remembering to.
+  function beginTour(returnTo) {
     if (IS_RESEARCH_PAGE) {
-      // This page never shows its own "New here?" prompt — the tour
-      // only ever reaches here via the Policy Menu's crossPage step. A
-      // second independent prompt+timer here would duplicate this
-      // whole file's entry logic for a two-page tour that's only meant
-      // to have one starting point; landing on this page directly (not
-      // via the tour) just means no tour runs.
-      var resumeStep = readResumeStep();
-      if (resumeStep !== null) {
-        whenResearchCardsReady(function () {
-          startTour(resumeStep);
-        });
-      }
-    } else if (!alreadySeen()) {
+      whenResearchCardsReady(function () {
+        startTour(returnTo);
+      });
+    } else {
+      startTour(returnTo);
+    }
+  }
+
+  // Standalone "New here?" trigger button — lets a visitor who landed
+  // on either page directly (not via the other page's tour) start the
+  // tour from scratch, same as accepting the prompt below.
+  function setupTriggerButton() {
+    var btn = document.getElementById("tour-trigger");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      beginTour();
+    });
+  }
+
+  try {
+    // The timed auto-popup stays Policy-Menu-only, same as before —
+    // Research Resources' own direct-entry point is the persistent
+    // #tour-trigger button instead (see setupTriggerButton), not a
+    // second copy of this prompt.
+    setupTriggerButton();
+    var startedOn = readResumeState();
+    if (startedOn) {
+      // Second leg: resume this page's own steps, and return to
+      // whichever page the tour began on once it ends — normally or
+      // via an early exit — see end()'s returnTo handling.
+      beginTour(startedOn);
+    } else if (!IS_RESEARCH_PAGE && !alreadySeen()) {
       setupPrompt();
     }
   } catch (e) {

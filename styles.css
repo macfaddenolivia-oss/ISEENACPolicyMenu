@@ -2454,6 +2454,15 @@ footer.foot {
   margin-bottom: 12px;
 }
 
+/* Sits inline beside .rr-back-link (both are .btn, an inline-flex box,
+   so they flow side by side and wrap naturally on narrow screens) —
+   this page's own entry point into the guided tour for a visitor who
+   lands here directly rather than via the Policy Menu's tour. */
+.rr-tour-trigger {
+  margin-left: 8px;
+  margin-bottom: 12px;
+}
+
 .rr-intro {
   margin: 0 0 12px;
   color: var(--text-2);
@@ -2611,15 +2620,21 @@ footer.foot {
   box-shadow: var(--ring), inset 0 0 0 1.5px currentColor;
 }
 
-/* Count badge — same small tabular-number pill the Type/Creator filter
-   pills use for their own counts (see .pill .n), just recolored as a
-   subtle dark-on-light overlay so it reads against either the green or
-   red background here instead of assuming a solid hue fill. */
-.status-badge.status-filter .n {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--fs-meta);
-  background: rgba(0, 0, 0, 0.08);
-  color: inherit;
-  border-radius: 999px;
-  padding: 1px 6px;
+/* Count badge — same shape as the Type/Creator filter pills' own .n
+   (tabular numerals, small pill), but tinted from this pill's own
+   status color via color-mix rather than a flat neutral overlay — the
+   same mechanism .pill[data-filter="org"] .n already uses to derive
+   its teal tint from --accent-2, just fed #0a7d55/#b3261e instead of
+   an accent variable. (Type's own .n, by contrast, is a translucent
+   *white* overlay — right for its solid hue fill, but this pill's
+   background is a pale tint like Organization's, not a solid fill, so
+   a white overlay here would barely register against it.) */
+.pill.status-online .n {
+  background: color-mix(in srgb, #0a7d55 18%, var(--surface));
+  color: #0a7d55;
+}
+
+.pill.status-offline .n {
+  background: color-mix(in srgb, #b3261e 18%, var(--surface));
+  color: #b3261e;
 }
