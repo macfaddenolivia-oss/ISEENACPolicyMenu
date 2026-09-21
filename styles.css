@@ -2375,7 +2375,6 @@ footer.foot {
 /* ---------- Research Resources page ---------- */
 
 .rr-intro {
-  max-width: 760px;
   margin: 4px 0 16px;
   color: var(--text-2);
   font-size: 14px;
