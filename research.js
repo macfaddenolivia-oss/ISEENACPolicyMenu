@@ -128,7 +128,7 @@
         govSite: pick(row, "Is it a governmental site?"),
         online: onlineRaw,
         // Groups "Yes" and "Yes, only data through 2020" together for
-        // the filter pill (see ONLINE_BUCKET_CLASS/pillHTML) — the card
+        // the filter pill (see ONLINE_BUCKET_LABEL/pillHTML) — the card
         // badge still shows the raw value's own qualifier via
         // onlineLabel(r.online), unaffected by this grouping.
         onlineBucket: classifyOnline(onlineRaw),
@@ -375,28 +375,44 @@
   }
 
   // Maps an "onlineBucket" value ("online"/"offline"/"unknown") to its
-  // pill color variant and label. The filter pill groups every raw sheet
-  // value sharing a bucket together (e.g. "Yes" and "Yes, only data
-  // through 2020" both count toward one "Live" pill) — the per-row
-  // qualifier stays on the card badge (onlineLabel(r.online), using the
-  // raw value), just not on this collapsed filter pill.
-  var ONLINE_BUCKET_CLASS = { offline: " pill-offline", unknown: " pill-unknown" };
+  // filter-pill label. The filter pill groups every raw sheet value
+  // sharing a bucket together (e.g. "Yes" and "Yes, only data through
+  // 2020" both count toward one "Live" pill) — the per-row qualifier
+  // stays on the card badge (onlineLabel(r.online), using the raw
+  // value), just not on this collapsed filter pill.
   var ONLINE_BUCKET_LABEL = { online: "Live", offline: "Offline", unknown: "Unknown" };
 
   // kind is "type" (hue dot, data-filter="type"), "org" (Creator,
   // data-filter="org"), or "online" (Is it still online, data-filter=
-  // "online", green/red via ONLINE_BUCKET_CLASS) — each picks up the
-  // Policy Menu's/this page's existing pill color treatment for that
-  // kind directly, see styles.css. "online" pills show the bucket label
-  // (Live/Offline), not a raw CSV value — value here is the bucket key.
+  // "online"). Type/Creator pick up the Policy Menu's existing pill
+  // color treatment for that kind directly, see styles.css. "online" is
+  // built from the exact same classes the card's own status badge uses
+  // (.status-badge status-online/status-offline) rather than a second
+  // color definition — see .pill.status-badge in styles.css — plus
+  // .status-filter for the interactive/selected-state additions a
+  // clickable pill needs on top of that read-only badge look. Its value
+  // is the bucket key ("online"/"offline"), not a raw CSV string.
   function pillHTML(value, count, active, kind) {
     var isEmpty = count === 0;
+
+    if (kind === "online") {
+      return (
+        '<button class="pill status-badge status-' + value + ' status-filter' +
+        (isEmpty ? " is-empty" : "") + '"' +
+        ' type="button"' +
+        ' aria-pressed="' + (active ? "true" : "false") + '"' +
+        ' data-filter="online"' +
+        ' data-value="' + esc(value) + '">' +
+        "<span>" + esc(ONLINE_BUCKET_LABEL[value] || value) + "</span>" +
+        '<span class="n">' + count + "</span>" +
+        "</button>"
+      );
+    }
+
     var hue = kind === "type" ? typeHue[value] : null;
     var style = hue != null ? ' style="--type-h:' + hue + '"' : "";
-    var extraClass = kind === "online" ? ONLINE_BUCKET_CLASS[value] || "" : "";
-    var displayText = kind === "online" ? ONLINE_BUCKET_LABEL[value] || value : value;
     return (
-      '<button class="pill' + (isEmpty ? " is-empty" : "") + extraClass + '"' +
+      '<button class="pill' + (isEmpty ? " is-empty" : "") + '"' +
       ' type="button"' +
       ' aria-pressed="' + (active ? "true" : "false") + '"' +
       ' data-filter="' + kind + '"' +
@@ -404,7 +420,7 @@
       style +
       ">" +
       (kind === "type" ? '<span class="dot"></span>' : "") +
-      "<span>" + esc(displayText) + "</span>" +
+      "<span>" + esc(value) + "</span>" +
       '<span class="n">' + count + "</span>" +
       "</button>"
     );

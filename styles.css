@@ -134,6 +134,14 @@ a:focus-visible {
   /* Vertical padding upped to give the larger logo below room to breathe
      without cramping the bar. */
   padding: 30px clamp(16px, 4vw, 40px);
+  /* Fixed across every page that shares this header (index.html,
+     privacy-policy.html, research-resources.html) so navigating between
+     them never jumps in height just because one page's subtitle wraps
+     to a different number of lines than another's. Sized to comfortably
+     fit a two-line subtitle (the tallest case) without clipping, with
+     align-items:center below keeping a shorter one-line subtitle
+     vertically centered rather than top-aligned in the extra space. */
+  min-height: 150px;
   display: flex;
   align-items: center;
   /* .brand on the left, the Start Here pill (see below) pinned to the
@@ -1081,74 +1089,11 @@ kbd {
   color: var(--accent);
 }
 
-/* "Is it still online" pills (Research Resources page only) — green/red
-   family matching the card status badge's own colors (.status-online/
-   .status-offline) rather than Type's rotating hue or Organization's
-   teal, since this facet's meaning is inherently good/bad, not just a
-   category. Same soft-tint/solid-on-select shape as Organization above,
-   just recolored. Base rule is the "online" (green) look; .pill-offline
-   and .pill-unknown override it for those buckets — see
-   ONLINE_BUCKET_CLASS in research.js. Every raw sheet value sharing a
-   bucket (e.g. "Yes" and "Yes, only data through 2020") renders as one
-   collapsed pill here, unlike the card badge which still shows each
-   row's own qualifier. */
-.pill[data-filter="online"] {
-  color: #0a7d55;
-  background: #e3f7ee;
-  border-color: color-mix(in srgb, #0a7d55 32%, transparent);
-}
-
-.pill[data-filter="online"] .n {
-  background: color-mix(in srgb, #0a7d55 16%, var(--surface));
-  color: #0a7d55;
-}
-
-.pill[data-filter="online"][aria-pressed="true"] {
-  color: #fff;
-  background: #0a7d55;
-  border-color: #0a7d55;
-  font-weight: 560;
-}
-
-.pill[data-filter="online"][aria-pressed="true"] .n {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
-}
-
-.pill[data-filter="online"].pill-offline {
-  color: #b3261e;
-  background: #fdecea;
-  border-color: color-mix(in srgb, #b3261e 32%, transparent);
-}
-
-.pill[data-filter="online"].pill-offline .n {
-  background: color-mix(in srgb, #b3261e 16%, var(--surface));
-  color: #b3261e;
-}
-
-.pill[data-filter="online"].pill-offline[aria-pressed="true"] {
-  color: #fff;
-  background: #b3261e;
-  border-color: #b3261e;
-}
-
-.pill[data-filter="online"].pill-offline[aria-pressed="true"] .n {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
-}
-
-.pill[data-filter="online"].pill-unknown {
-  color: var(--text-2);
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-.pill[data-filter="online"].pill-unknown[aria-pressed="true"] {
-  color: #fff;
-  background: var(--text-2);
-  border-color: var(--text-2);
-}
-
+/* "Is it still online" filter pills (Research Resources page only) —
+   these reuse .status-badge/.status-online/.status-offline/.status-
+   unknown directly (defined once, further down, and shared with the
+   read-only badge on each resource card) rather than a second color
+   definition, per .pill.status-badge below. */
 .pill.is-empty { opacity: 0.34; }
 .pill.is-empty:hover { transform: none; }
 
@@ -2567,4 +2512,59 @@ footer.foot {
 .status-unknown {
   color: var(--text-2);
   background: var(--surface-2);
+}
+
+/* Filter-pill use of the status badge above (class="pill status-badge
+   status-online status-filter", built in pillHTML in research.js) —
+   color, dot, shape, and padding all come from .status-badge/.status-*
+   as-is, completely unduplicated. .pill is kept only for the mechanics
+   a clickable filter needs (click delegation, the shared .pills flex
+   row, the "+N more" preview-row measurement) — every visual property
+   it would otherwise contribute is reset or outranked below so the
+   rendered pill is indistinguishable from the card's own badge except
+   for being clickable and carrying a count. */
+.pill.status-badge {
+  border: none;
+  cursor: pointer;
+}
+
+/* Locks in the correct status color in the selected (aria-pressed)
+   state too — .pill[aria-pressed="true"] (defined earlier, for the
+   Organization pill) would otherwise repaint this element with the
+   generic accent fill instead. Equal specificity, declared later, so
+   this wins in both the pressed and unpressed states without needing a
+   separate pressed-state duplicate of these two colors. */
+.pill.status-online {
+  color: #0a7d55;
+  background: #e3f7ee;
+}
+
+.pill.status-offline {
+  color: #b3261e;
+  background: #fdecea;
+}
+
+/* Selection shown as a thin ring in the badge's own color (same inset-
+   ring technique already used for the Type pill's selected state)
+   rather than any fill/color change, so the badge reads identically to
+   the card's whether or not it's currently an active filter. */
+.status-badge.status-filter[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.status-badge.status-filter[aria-pressed="true"]:focus-visible {
+  box-shadow: var(--ring), inset 0 0 0 1.5px currentColor;
+}
+
+/* Count badge — same small tabular-number pill the Type/Creator filter
+   pills use for their own counts (see .pill .n), just recolored as a
+   subtle dark-on-light overlay so it reads against either the green or
+   red background here instead of assuming a solid hue fill. */
+.status-badge.status-filter .n {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  border-radius: 999px;
+  padding: 1px 6px;
 }
