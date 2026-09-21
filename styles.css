@@ -61,6 +61,43 @@
   --random-h: 340;
   --random-s: 68%;
   --random-l: 38%;
+
+  /* Type scale — every font-size on the site maps to one of these seven
+     steps, chosen for what the text IS, not which element happens to
+     render it. Two elements serving the same purpose (a card title, a
+     filter pill, a caption) always share the same variable, on both
+     pages. This replaced ~18 one-off px values (10px-20px, plus three
+     slightly different clamp() formulas) that had accumulated with no
+     shared reasoning behind them.
+       --fs-page-title  the <h1> site title (Policy Menu, Research
+                         Resources, Privacy Policy)
+       --fs-heading      a section or modal heading one level down from
+                         the page title (modal titles/subtitles, "Start
+                         Here", an empty-state heading, policy page h2s)
+       --fs-card-title   a resource card's own title (.card h3)
+       --fs-control      a primary, standalone interactive control's own
+                         text — currently just the search input and the
+                         "New to advocacy?" toggle
+       --fs-body         paragraph/description text meant to be read,
+                         not scanned — card descriptions, intro
+                         paragraphs, modal/tooltip copy, error text
+       --fs-label        short, scannable UI text: pill/tag labels, the
+                         result count, breadcrumbs, nav links, toast
+       --fs-meta         the smallest tier — captions, counts-on-counts
+                         (a pill's own number badge), filter section
+                         labels (TYPE/CREATOR), footer/timestamp text
+     Mobile-only overrides that compress one of these for a tight
+     viewport (search input, some pill/tag padding) are left as their
+     own literal values rather than routed through a smaller variable —
+     they're a responsive adjustment to an already-tokenized size, not a
+     distinct purpose of their own. */
+  --fs-page-title: clamp(20px, 3vw, 28px);
+  --fs-heading: 17px;
+  --fs-card-title: 16px;
+  --fs-control: 15px;
+  --fs-body: 14px;
+  --fs-label: 13px;
+  --fs-meta: 11px;
 }
 
 /* Deliberately no @media (prefers-color-scheme: dark) override anywhere
@@ -86,7 +123,7 @@ body {
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  font-size: 15px;
+  font-size: var(--fs-body);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -180,7 +217,7 @@ a:focus-visible {
 
 .brand-name {
   margin: 0;
-  font-size: clamp(19px, 3vw, 28px);
+  font-size: var(--fs-page-title);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.25;
@@ -198,7 +235,7 @@ a:focus-visible {
   max-width: 640px;
   color: var(--brand-navy-data);
   opacity: 0.82;
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.45;
 }
 
@@ -240,7 +277,7 @@ a:focus-visible {
   gap: 8px;
   padding: 16px 27px;
   font: inherit;
-  font-size: 16px;
+  font-size: var(--fs-control);
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -343,7 +380,7 @@ a:focus-visible {
 .quick-read-panel-desc {
   margin: 0;
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.5;
 }
 
@@ -355,7 +392,7 @@ a:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  font-size: 20px;
+  font-size: var(--fs-heading);
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--brand-navy);
@@ -396,8 +433,8 @@ a:focus-visible {
 .start-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent-2); }
 .start-card:focus-visible { outline: none; box-shadow: var(--ring); }
 
-.start-card-title { font-size: 14.5px; font-weight: 640; letter-spacing: -0.005em; }
-.start-card-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+.start-card-title { font-size: var(--fs-body); font-weight: 640; letter-spacing: -0.005em; }
+.start-card-desc { font-size: var(--fs-meta); color: var(--text-2); line-height: 1.5; }
 
 .start-card[aria-pressed="true"] {
   border-color: var(--accent);
@@ -477,7 +514,7 @@ a:focus-visible {
      the random-resource hint, now the last/rightmost item there). */
   padding: 12px 144px 12px 40px;
   font: inherit;
-  font-size: 15.5px;
+  font-size: var(--fs-control);
   color: var(--text);
   background: var(--surface);
   border: 1.5px solid var(--search-border);
@@ -537,7 +574,7 @@ kbd {
   cursor: pointer;
   color: var(--text-3);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   white-space: nowrap;
   border-radius: 6px;
   transition: color 0.15s ease, background 0.15s ease;
@@ -576,7 +613,7 @@ kbd {
   height: 22px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1;
   display: none;
   align-items: center;
@@ -658,7 +695,7 @@ kbd {
 }
 
 .badge {
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   background: var(--accent);
@@ -782,7 +819,7 @@ kbd {
   max-width: min(320px, 80vw);
   background: var(--text);
   color: var(--bg);
-  font-size: 12px;
+  font-size: var(--fs-body);
   font-weight: 400;
   line-height: 1.45;
   text-align: left;
@@ -897,7 +934,7 @@ kbd {
 /* Plain .flabel (not just .fgroup > .flabel) so the same label style
    works in .match-row too, which isn't a .fgroup. */
 .flabel {
-  font-size: 11px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -933,7 +970,7 @@ kbd {
 
 .pill {
   font: inherit;
-  font-size: 13px;
+  font-size: var(--fs-label);
   line-height: 1.2;
   color: var(--text-2);
   background: var(--surface);
@@ -959,7 +996,7 @@ kbd {
 
 .pill .n {
   font-variant-numeric: tabular-nums;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: var(--text-3);
   background: var(--surface-2);
   border-radius: 999px;
@@ -1156,7 +1193,7 @@ kbd {
 
 .seg-btn {
   font: inherit;
-  font-size: 13px;
+  font-size: var(--fs-label);
   font-weight: 560;
   color: var(--text-2);
   background: transparent;
@@ -1209,14 +1246,14 @@ kbd {
   min-height: 30px;
 }
 
-.count { font-size: 13.5px; color: var(--text-2); }
+.count { font-size: var(--fs-label); color: var(--text-2); }
 .count strong { color: var(--text); font-variant-numeric: tabular-nums; }
 
 .crumbs { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
 
 .crumb {
   font: inherit;
-  font-size: 12.5px;
+  font-size: var(--fs-label);
   color: var(--text);
   background: var(--accent-soft);
   border: 1px solid transparent;
@@ -1239,7 +1276,7 @@ kbd {
   height: 17px;
   border-radius: 50%;
   background: rgba(127, 127, 127, 0.18);
-  font-size: 12px;
+  font-size: var(--fs-meta);
   line-height: 1;
 }
 .crumb:hover { background: var(--surface); border-color: var(--border-strong); }
@@ -1338,7 +1375,7 @@ kbd {
 
 .card h3 {
   margin: 0 0 9px;
-  font-size: 15.5px;
+  font-size: var(--fs-card-title);
   font-weight: 640;
   letter-spacing: -0.01em;
   line-height: 1.34;
@@ -1367,7 +1404,7 @@ kbd {
 
 .tag {
   font: inherit;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   font-weight: 560;
   line-height: 1.2;
   border-radius: 999px;
@@ -1401,7 +1438,7 @@ kbd {
   margin: 0;
   padding-left: 6px;
   color: var(--text-2);
-  font-size: 13.5px;
+  font-size: var(--fs-body);
   line-height: 1.58;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1418,7 +1455,7 @@ kbd {
    because I hovered one card" flicker. Capping at ~7 lines with its own
    scroll keeps growth modest and predictable, while still fully
    revealing the large majority of descriptions with no scrolling at all
-   (13.5px font x 1.58 line-height x 7 lines ≈ 150px). */
+   (--fs-body's 14px x 1.58 line-height x 7 lines ≈ 155px). */
 .card:hover .desc,
 .card:focus-within .desc {
   /* display:block fully exits the -webkit-box clamp model (same reset
@@ -1428,7 +1465,7 @@ kbd {
   display: block;
   -webkit-line-clamp: unset;
   line-clamp: unset;
-  max-height: 150px;
+  max-height: 155px;
   overflow-y: auto;
 }
 
@@ -1450,7 +1487,7 @@ kbd {
   gap: 6px 12px;
   padding-top: 10px;
   border-top: 1px dashed var(--border);
-  font-size: 12.5px;
+  font-size: var(--fs-label);
   color: var(--text-3);
 }
 
@@ -1559,7 +1596,10 @@ mark {
   justify-content: center;
 }
 
-.state h2 { margin: 0 0 7px; font-size: 17px; font-weight: 640; }
+/* font-weight 700, not the 640 this used before — every other heading
+   sharing --fs-heading (Start Here, Feedback, policy h2, onboarding
+   modal) is 700; this was the one inconsistent outlier. */
+.state h2 { margin: 0 0 7px; font-size: var(--fs-heading); font-weight: 700; }
 .state p { margin: 0 auto 18px; color: var(--text-2); max-width: 46ch; }
 
 .skeleton-grid {
@@ -1603,7 +1643,7 @@ mark {
   color: #8a2020;
   border-radius: var(--radius);
   padding: 18px 20px;
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 
 .error-box code {
@@ -1621,7 +1661,7 @@ mark {
   transform: translate(-50%, 14px);
   background: #131720;
   color: #fff;
-  font-size: 13.5px;
+  font-size: var(--fs-label);
   font-weight: 540;
   padding: 10px 17px;
   border-radius: 999px;
@@ -1706,7 +1746,7 @@ mark {
 
 .feedback-modal-title {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: var(--fs-heading);
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -1715,7 +1755,7 @@ mark {
 .feedback-modal-text {
   margin: 0 0 20px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.5;
 }
 
@@ -1728,13 +1768,14 @@ mark {
   border-top: 1px solid var(--border);
 }
 
-/* Second section's heading — parallel treatment to .feedback-modal-title
-   above (same weight/color), just a size down so it still reads as a
-   subsection of this one modal rather than a second dialog. */
+/* Second section's heading — same size as .feedback-modal-title above
+   (both are --fs-heading), but a lighter weight instead of a smaller
+   size to still read as a subsection of this one modal rather than a
+   second dialog. */
 .feedback-modal-subtitle {
   margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--fs-heading);
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text);
 }
@@ -1766,7 +1807,9 @@ mark {
      gap already apply unchanged from the base rule above, so no override
      needed here. */
   .start-here { padding: 8px 10px 10px; }
-  .start-here-title { margin: 0 0 6px; font-size: 17px; }
+  /* font-size no longer overridden here — desktop's --fs-heading (17px)
+     already equals what this mobile rule used to force it down to. */
+  .start-here-title { margin: 0 0 6px; }
   .start-card { padding: 9px 10px; }
 
   /* Same tighter treatment as .start-here just above. */
@@ -1908,7 +1951,9 @@ mark {
 
   .searchbox { flex: 1 1 100%; }
 
-  .random-hint { font-size: 11px; gap: 4px; }
+  /* font-size no longer overridden here — desktop's --fs-meta (11px)
+     already equals what this mobile rule used to shrink it to. */
+  .random-hint { gap: 4px; }
   .random-hint svg { width: 17px; height: 17px; }
 
   /* Hide the (small, compact) search bar on scroll-down, reveal it on
@@ -1955,7 +2000,7 @@ mark {
     flex: 1 1 0;
     min-width: 0;
     padding: 11px 10px;
-    font-size: 13.5px;
+    font-size: var(--fs-label);
   }
 
   /* A "0" count means no matches given the *other* active filters —
@@ -1971,7 +2016,9 @@ mark {
   /* Comfortable tap targets (~40px) */
   .pill { padding: 9px 14px; font-size: 13.5px; }
   .tag { padding: 6.5px 12px; font-size: 12px; }
-  .crumb { padding: 7px 8px 7px 13px; font-size: 13px; }
+  /* font-size no longer overridden here — desktop's --fs-label (13px)
+     already equals what this mobile rule used to bump it up to. */
+  .crumb { padding: 7px 8px 7px 13px; }
   .crumb .x { width: 20px; height: 20px; }
   .copy { width: 38px; height: 38px; }
   .clear-search { width: 26px; height: 26px; }
@@ -2027,7 +2074,7 @@ mark {
   padding: 15px 17px;
   margin-bottom: 20px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.6;
 }
 
@@ -2081,7 +2128,7 @@ footer.foot {
 
 .feedback-cta-text {
   color: var(--text-2);
-  font-size: 13.5px;
+  font-size: var(--fs-label);
 }
 
 /* Holds both CTA buttons side by side, right-aligned as a single unit
@@ -2100,7 +2147,7 @@ footer.foot {
 
 .foot-hint {
   color: var(--text-3);
-  font-size: 12.5px;
+  font-size: var(--fs-meta);
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -2117,23 +2164,15 @@ footer.foot {
   padding: 8px 0 20px;
 }
 
-.policy h1 {
-  margin: 0 0 4px;
-  font-size: clamp(22px, 3vw, 28px);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--brand-navy-deep);
-}
-
 .policy .policy-updated {
   margin: 0 0 28px;
   color: var(--text-3);
-  font-size: 12.5px;
+  font-size: var(--fs-meta);
 }
 
 .policy h2 {
   margin: 28px 0 8px;
-  font-size: 16px;
+  font-size: var(--fs-heading);
   font-weight: 700;
   color: var(--text);
 }
@@ -2141,7 +2180,7 @@ footer.foot {
 .policy p,
 .policy li {
   color: var(--text-2);
-  font-size: 14.5px;
+  font-size: var(--fs-body);
   line-height: 1.65;
 }
 
@@ -2206,7 +2245,7 @@ footer.foot {
 
 .onboarding-modal-title {
   margin: 0 0 8px;
-  font-size: clamp(17px, 4.2vw, 18px);
+  font-size: var(--fs-heading);
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -2215,7 +2254,7 @@ footer.foot {
 .onboarding-modal-text {
   margin: 0 0 20px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.5;
 }
 
@@ -2309,7 +2348,7 @@ footer.foot {
 .tour-step-count {
   margin: 0 0 6px;
   padding-right: 26px;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -2320,7 +2359,7 @@ footer.foot {
   margin: 0 0 18px;
   padding-right: 26px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.5;
 }
 
@@ -2357,7 +2396,7 @@ footer.foot {
 }
 
 .site-nav a {
-  font-size: 13px;
+  font-size: var(--fs-label);
   font-weight: 640;
   color: var(--text-2);
   text-decoration: none;
@@ -2395,7 +2434,7 @@ footer.foot {
 
 .research-callout-text {
   color: var(--text);
-  font-size: 13.5px;
+  font-size: var(--fs-label);
 }
 
 .research-callout-btn { flex: none; white-space: nowrap; }
@@ -2418,7 +2457,7 @@ footer.foot {
 .rr-intro {
   margin: 0 0 12px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.6;
 }
 
@@ -2466,7 +2505,7 @@ footer.foot {
    research.js) rather than a plain neutral gray. */
 .tag.type .n {
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--fs-meta);
   margin-left: 1px;
   padding: 1px 6px;
   border-radius: 999px;
@@ -2484,7 +2523,7 @@ footer.foot {
 }
 
 .topic-pill {
-  font-size: 11px;
+  font-size: var(--fs-meta);
   font-weight: 560;
   line-height: 1.2;
   color: var(--brand-navy-deep);
@@ -2499,7 +2538,7 @@ footer.foot {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   letter-spacing: 0.02em;
   border-radius: 999px;
@@ -2578,7 +2617,7 @@ footer.foot {
    red background here instead of assuming a solid hue fill. */
 .status-badge.status-filter .n {
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--fs-meta);
   background: rgba(0, 0, 0, 0.08);
   color: inherit;
   border-radius: 999px;
