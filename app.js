@@ -132,20 +132,13 @@
 
   /* ---------------- helpers ---------------- */
 
-  function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
+  // esc/norm/safeUrl/$ live in shared-ui.js (identical in research.js) —
+  // aliased here so every existing call site below is unchanged.
+  var esc = SharedUI.esc;
+  var norm = SharedUI.norm;
 
   function reEsc(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
-  function norm(s) {
-    return String(s || "").toLowerCase();
   }
 
   // Escape text, wrapping every occurrence of any search term in <mark>.
@@ -168,14 +161,7 @@
     return out + esc(t.slice(last));
   }
 
-  function safeUrl(u) {
-    var s = String(u || "").trim();
-    if (!s) return "";
-    // Allow only http(s)/mailto; anything else (javascript:, data:) is dropped.
-    if (/^https?:\/\//i.test(s) || /^mailto:/i.test(s)) return s;
-    if (/^www\./i.test(s)) return "https://" + s;
-    return "";
-  }
+  var safeUrl = SharedUI.safeUrl;
 
   // Deterministic, well-spaced hues so each Type keeps its colour across rebuilds.
   var HUES = [210, 145, 28, 340, 265, 190, 95, 12, 300, 45, 170, 240, 320, 70, 355, 225];
@@ -268,7 +254,11 @@
   };
 
   var el = {};
-  var toastTimer = null;
+  // Bound to el.toast once boot() has resolved it — see the shared
+  // createToast() factory in shared-ui.js. Every call site below closes
+  // over this same `toast` variable, so the late assignment in boot()
+  // is all they need.
+  var toast;
 
   // Set by "Random resource" to narrow the grid to that single pick; null
   // means show the normal filtered results. Any actual filter/search
@@ -293,9 +283,7 @@
   // QUICK_READ, or "" if that resource can't be found in the live sheet.
   var quickReadUrl = "";
 
-  function $(id) {
-    return document.getElementById(id);
-  }
+  var $ = SharedUI.$;
 
   /* ---------------- filtering ---------------- */
 
@@ -421,19 +409,18 @@
 
   /* ---------------- rendering ---------------- */
 
+  // search/person/empty/dice come from shared-ui.js (byte-identical to
+  // research.js's copies) — copy/check/compass/close stay local since
+  // Research Resources has no use for any of them.
   var ICON = {
-    search:
-      '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
-    person:
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    search: SharedUI.ICONS.search,
+    person: SharedUI.ICONS.person,
     copy:
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
     check:
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
-    empty:
-      '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>',
-    dice:
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>',
+    empty: SharedUI.ICONS.empty,
+    dice: SharedUI.ICONS.dice,
     compass:
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
     close:
@@ -934,15 +921,6 @@
     exitRandomPick();
   }
 
-  function toast(msg) {
-    el.toast.textContent = msg;
-    el.toast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-      el.toast.classList.remove("show");
-    }, 1900);
-  }
-
   function copyText(text, btn) {
     function ok() {
       if (btn) {
@@ -1192,17 +1170,10 @@
       render();
     });
 
-    // Match-mode info tooltip: :hover/:focus-visible in CSS already
-    // reveal it for mouse and keyboard. Touch has no :hover, so a tap
-    // needs to explicitly open *and* close it — toggle a class here, and
-    // close it on any click elsewhere.
-    el.matchInfo.addEventListener("click", function (e) {
-      e.stopPropagation();
-      el.matchInfo.classList.toggle("info-open");
-    });
-    document.addEventListener("click", function () {
-      el.matchInfo.classList.remove("info-open");
-    });
+    // Match-mode info tooltip (#match-info is this page's only
+    // .info-btn, but the shared helper delegates across all of them —
+    // see shared-ui.js).
+    SharedUI.setupInfoTooltips();
 
     // Breadcrumbs (and the empty-state "clear all" button)
     document.addEventListener("click", function (e) {
@@ -1665,6 +1636,8 @@
       return;
     }
 
+    toast = SharedUI.createToast(el.toast);
+
     try {
       $("search-icon").innerHTML = ICON.search;
       // "beforeend" (not "afterbegin" like below) — text first, dice
@@ -1680,28 +1653,7 @@
     }
 
     try {
-      // Mobile: drop the placeholder text so the search bar reads clean
-      // and uncluttered next to the random-resource hint; desktop keeps
-      // it. Purely cosmetic — the visually-hidden <label for="search">
-      // already gives the input its accessible name either way, and
-      // typing/searching is unaffected. Same 720px breakpoint used
-      // elsewhere in this file and in styles.css. Listens for the query
-      // crossing rather than every resize so it also handles rotation
-      // and desktop windows being resized past the breakpoint live.
-      var mobileQuery =
-        window.matchMedia && window.matchMedia("(max-width: 720px)");
-      if (mobileQuery) {
-        var searchPlaceholder = el.search.placeholder;
-        var syncSearchPlaceholder = function () {
-          el.search.placeholder = mobileQuery.matches ? "" : searchPlaceholder;
-        };
-        syncSearchPlaceholder();
-        if (mobileQuery.addEventListener) {
-          mobileQuery.addEventListener("change", syncSearchPlaceholder);
-        } else if (mobileQuery.addListener) {
-          mobileQuery.addListener(syncSearchPlaceholder); // Safari < 14
-        }
-      }
+      SharedUI.clearSearchPlaceholderOnMobile(el.search);
     } catch (e) {
       /* placeholder text is cosmetic — never block startup on it */
     }

@@ -143,25 +143,11 @@
 
   /* ---------------- helpers ---------------- */
 
-  function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
-  function norm(s) {
-    return String(s || "").toLowerCase();
-  }
-
-  function safeUrl(u) {
-    var s = String(u || "").trim();
-    if (!s) return "";
-    if (/^https?:\/\//i.test(s) || /^mailto:/i.test(s)) return s;
-    if (/^www\./i.test(s)) return "https://" + s;
-    return "";
-  }
+  // esc/norm/safeUrl/$ live in shared-ui.js (identical in app.js) —
+  // aliased here so every existing call site below is unchanged.
+  var esc = SharedUI.esc;
+  var norm = SharedUI.norm;
+  var safeUrl = SharedUI.safeUrl;
 
   // Buckets the free-text "Is it still online" cell into online/offline/
   // unknown so the badge can be color-coded.
@@ -191,14 +177,12 @@
     return raw;
   }
 
-  var ICON_PERSON =
-    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-  var ICON_SEARCH =
-    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
-  var ICON_EMPTY =
-    '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>';
-  var ICON_DICE =
-    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>';
+  // Same icons app.js uses (see shared-ui.js) — no research-page-only
+  // icons exist, unlike app.js's copy/check/compass/close.
+  var ICON_PERSON = SharedUI.ICONS.person;
+  var ICON_SEARCH = SharedUI.ICONS.search;
+  var ICON_EMPTY = SharedUI.ICONS.empty;
+  var ICON_DICE = SharedUI.ICONS.dice;
 
   // Deterministic, well-spaced hues so each Type keeps its color across
   // rebuilds — same palette app.js uses for its own Type pills/dots.
@@ -216,7 +200,9 @@
     creators: [], // selected Creator values (OR within this facet, same as the Policy Menu's Organization pills)
   };
   var el = {};
-  var toastTimer = null;
+  // Bound to el.toast once boot() has resolved it — see the shared
+  // createToast() factory in shared-ui.js.
+  var toast;
 
   // Set by "random resource" to narrow the grid to that single pick;
   // null means show the normal filtered results — same pattern as
@@ -236,9 +222,7 @@
     rollId++;
   }
 
-  function $(id) {
-    return document.getElementById(id);
-  }
+  var $ = SharedUI.$;
 
   /* ---------------- filtering ---------------- */
 
@@ -280,15 +264,6 @@
   }
 
   /* ---------------- rendering ---------------- */
-
-  function toast(msg) {
-    el.toast.textContent = msg;
-    el.toast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-      el.toast.classList.remove("show");
-    }, 1900);
-  }
 
   /* -------- Online/Type/Creator pill filters (ported from app.js's own
      Type and Organization pills — one generic implementation shared by
@@ -688,27 +663,9 @@
       render();
     });
 
-    // "Is it still online" info tooltip — same open-on-hover/focus (CSS)
-    // plus toggle-on-tap (here) pattern as the Policy Menu's own Match
-    // all/any info button (#match-info in app.js), reusing the same
-    // .info-btn/.tooltip classes rather than a new component. Two
-    // instances exist (preview row + full row), so this is delegated
-    // across all .info-btn elements rather than hardcoded to one id.
-    document.querySelectorAll(".info-btn").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var wasOpen = btn.classList.contains("info-open");
-        document.querySelectorAll(".info-btn.info-open").forEach(function (b) {
-          b.classList.remove("info-open");
-        });
-        if (!wasOpen) btn.classList.add("info-open");
-      });
-    });
-    document.addEventListener("click", function () {
-      document.querySelectorAll(".info-btn.info-open").forEach(function (b) {
-        b.classList.remove("info-open");
-      });
-    });
+    // "Is it still online" info tooltip (two instances — preview row +
+    // full row — the shared helper delegates across both).
+    SharedUI.setupInfoTooltips();
 
     // Online/Type/Creator pills (delegated on the filter bar, same
     // pattern app.js uses for its Type/Subtype/Organization pills).
@@ -887,6 +844,8 @@
       return;
     }
 
+    toast = SharedUI.createToast(el.toast);
+
     try {
       $("rr-search-icon").innerHTML = ICON_SEARCH;
       // "beforeend" (not "afterbegin") — text first, dice icon after, on
@@ -898,27 +857,7 @@
     }
 
     try {
-      // Mobile: drop the placeholder text so the search bar reads clean
-      // and uncluttered next to the random-resource hint — ported from
-      // app.js's identical boot() step, which this page was missing
-      // (that's what was actually cramping the mobile search bar, not a
-      // missing "hide the button" rule — the random-hint markup/CSS here
-      // already matches app.js's exactly). Same 720px breakpoint used
-      // elsewhere on this page and in styles.css.
-      var mobileQuery =
-        window.matchMedia && window.matchMedia("(max-width: 720px)");
-      if (mobileQuery) {
-        var searchPlaceholder = el.search.placeholder;
-        var syncSearchPlaceholder = function () {
-          el.search.placeholder = mobileQuery.matches ? "" : searchPlaceholder;
-        };
-        syncSearchPlaceholder();
-        if (mobileQuery.addEventListener) {
-          mobileQuery.addEventListener("change", syncSearchPlaceholder);
-        } else if (mobileQuery.addListener) {
-          mobileQuery.addListener(syncSearchPlaceholder); // Safari < 14
-        }
-      }
+      SharedUI.clearSearchPlaceholderOnMobile(el.search);
     } catch (e) {
       /* placeholder text is cosmetic — never block startup on it */
     }
