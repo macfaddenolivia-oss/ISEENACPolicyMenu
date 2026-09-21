@@ -2445,24 +2445,10 @@ footer.foot {
 
 /* ---------- Research Resources page ---------- */
 
-/* Vertical rhythm from the top of .wrap down to the filter bar: a
-   single consistent ~12px step (back-link -> intro -> search controls),
-   matching the tighter 6-8px rhythm the search/filter-bar/statusbar
-   stack below it already uses, rather than the much larger gap a plain
-   .btn sitting directly above a paragraph would otherwise leave. */
-.rr-back-link {
-  margin-bottom: 12px;
-}
-
-/* Sits inline beside .rr-back-link (both are .btn, an inline-flex box,
-   so they flow side by side and wrap naturally on narrow screens) —
-   this page's own entry point into the guided tour for a visitor who
-   lands here directly rather than via the Policy Menu's tour. */
-.rr-tour-trigger {
-  margin-left: 8px;
-  margin-bottom: 12px;
-}
-
+/* First real content in .wrap now that the back-link/tour-trigger row
+   above it is gone — .wrap's own top padding provides the gap down
+   from the header, matching the tighter 6-8px rhythm the search/
+   filter-bar/statusbar stack below it already uses. */
 .rr-intro {
   margin: 0 0 12px;
   color: var(--text-2);

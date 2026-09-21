@@ -1,26 +1,24 @@
 // First-time-visitor onboarding: a "New here?" prompt (5s after load,
 // sessionStorage-gated) that offers a step-by-step guided tour. Both
 // pages show this popup — subject to the asymmetric suppression rules
-// in shouldPrompt() below — and Research Resources additionally has a
-// standalone trigger button for starting the tour on demand. The tour
-// itself always covers both the Policy Menu and Research Resources,
-// just in whichever order matches where it was started. Entirely
-// self-contained — own storage keys, own element lookups, own
-// try/catch — so it can never interfere with setupFeedbackModal in
-// app.js (separate sessionStorage key, separate timer, no shared
-// state, no calls into app.js/research.js at all). Loaded on both
-// index.html and research-resources.html.
+// in shouldPrompt() below — and it's the only entry point into the
+// tour on either page. The tour itself always covers both the Policy
+// Menu and Research Resources, just in whichever order matches where
+// it was started. Entirely self-contained — own storage keys, own
+// element lookups, own try/catch — so it can never interfere with
+// setupFeedbackModal in app.js (separate sessionStorage key, separate
+// timer, no shared state, no calls into app.js/research.js at all).
+// Loaded on both index.html and research-resources.html.
 (function () {
   // Three sessionStorage keys, each meaning something distinct — this
   // used to be one shared "seen" flag, but the popup's suppression
   // rules are asymmetric between the two pages (see shouldPrompt()
   // below), so a single flag can no longer represent all of it:
   //
-  // - ACCEPTED_KEY: the tour was actually started (prompt accepted, or
-  //   the standalone trigger button used) on EITHER page. Once true,
-  //   neither page's prompt shows again this session — this is the one
-  //   truly shared, symmetric flag, matching the tour's existing
-  //   "fully seen" behavior.
+  // - ACCEPTED_KEY: the tour was actually started (prompt accepted) on
+  //   EITHER page. Once true, neither page's prompt shows again this
+  //   session — this is the one truly shared, symmetric flag, matching
+  //   the tour's existing "fully seen" behavior.
   // - DISMISSED_KEY.policy / DISMISSED_KEY.research: the *popup* (not
   //   an in-progress tour) was closed/declined on that specific page
   //   without starting the tour. Dismissing the Policy Menu's popup
@@ -596,9 +594,9 @@
   }
 
   // Single entry point for starting the tour on this page, fresh or
-  // resumed — used by the "Yes, show me" prompt, the standalone trigger
-  // button, and the cross-page resume below, so all three go through
-  // the same research-data wait rather than each remembering to.
+  // resumed — used by the "Yes, show me" prompt and the cross-page
+  // resume below, so both go through the same research-data wait
+  // rather than each remembering to.
   function beginTour(returnTo) {
     if (IS_RESEARCH_PAGE) {
       whenResearchCardsReady(function () {
@@ -609,20 +607,7 @@
     }
   }
 
-  // Standalone "New here?" trigger button (Research Resources only —
-  // the Policy Menu relies on its timed popup alone) — lets a visitor
-  // start the tour on demand, same as accepting the prompt.
-  function setupTriggerButton() {
-    var btn = document.getElementById("tour-trigger");
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      markAccepted();
-      beginTour();
-    });
-  }
-
   try {
-    setupTriggerButton();
     var startedOn = readResumeState();
     if (startedOn) {
       // Second leg: resume this page's own steps, and return to

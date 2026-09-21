@@ -29,9 +29,6 @@
 
 <div class="wrap">
 
-  <a class="btn back-link rr-back-link" href="index.html">← Back to Policy Menu</a>
-  <button class="btn rr-tour-trigger" id="tour-trigger" type="button">New here? Take a quick tour</button>
-
   <p class="rr-intro">
     Search and filter research databases, tools, and data sources for environmental
     health research. Some of these resources are no longer maintained by their
@@ -186,8 +183,7 @@
 
 <!-- Same "New here?" prompt as index.html's, reused verbatim — see
      onboarding-tour.js for the (per-page) rules on when it's allowed to
-     show. Accepting it starts a tour rooted on this page; #tour-trigger
-     above does the same thing on demand. -->
+     show. This is the only entry point into the tour on this page. -->
 <div class="onboarding-modal-backdrop" id="onboarding-modal-backdrop" hidden>
   <div class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-modal-title">
     <h2 class="onboarding-modal-title" id="onboarding-modal-title">New here?</h2>
