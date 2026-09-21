@@ -580,6 +580,47 @@
         .join("");
   }
 
+  // Maps the same online/offline/unknown bucket classifyOnline() uses for
+  // the card badge to the exact color that badge renders in, so the
+  // dropdown's option text can match it. The <option value="..."> stays
+  // the raw CSV value (e.g. "Yes, only data through 2020") — only the
+  // displayed text and color change; filtering still matches on that
+  // raw value (see passes()).
+  var ONLINE_OPTION_COLOR = {
+    online: "#0a7d55",
+    offline: "#b3261e",
+    unknown: "var(--text-2)",
+  };
+
+  function populateOnlineSelect(select, values, placeholder) {
+    select.innerHTML =
+      '<option value="">' + esc(placeholder) + "</option>" +
+      values
+        .map(function (v) {
+          var color = ONLINE_OPTION_COLOR[classifyOnline(v)];
+          return (
+            '<option value="' + esc(v) + '" style="color:' + color + '">' +
+            esc(onlineLabel(v)) +
+            "</option>"
+          );
+        })
+        .join("");
+  }
+
+  // Progressive enhancement: syncs the *closed* select box's own text
+  // color to the selected option's color. Browsers that already color
+  // individual <option> rows in the open dropdown (Chrome, Firefox, Edge
+  // desktop) get this for free from populateOnlineSelect above; this
+  // extra step is what makes the closed box reflect it too, since a
+  // <select> always renders its own color for the closed state, not the
+  // selected <option>'s. Known gap: Safari (desktop and iOS) and mobile
+  // OS-native pickers generally ignore <option> color styling entirely,
+  // so there this select just stays plain text in all states.
+  function syncOnlineFilterColor() {
+    var opt = el.onlineFilter.options[el.onlineFilter.selectedIndex];
+    el.onlineFilter.style.color = (opt && opt.style.color) || "";
+  }
+
   function wire() {
     el.search.addEventListener("input", function () {
       setSearch(el.search.value);
@@ -599,6 +640,7 @@
     });
     el.onlineFilter.addEventListener("change", function () {
       state.online = el.onlineFilter.value;
+      syncOnlineFilterColor();
       exitRandomPick();
       render();
     });
@@ -722,7 +764,8 @@
         return acc;
       }, {})
     ).sort();
-    populateSelect(el.onlineFilter, onlineValues, "All");
+    populateOnlineSelect(el.onlineFilter, onlineValues, "All");
+    syncOnlineFilterColor();
 
     wire();
     render();
