@@ -47,6 +47,9 @@
                placeholder="Search resources, creators, descriptions, topics…">
         <span class="search-hints">
           <button class="clear-search" id="rr-clear-search" type="button" aria-label="Clear search">×</button>
+          <button class="random-hint" id="rr-random" type="button" aria-label="Show a random resource">
+            <span class="random-hint-text">random resource</span>
+          </button>
         </span>
       </div>
     </div>
@@ -69,6 +72,8 @@
 
   <div class="statusbar">
     <span class="count" id="rr-count" aria-live="polite">Loading…</span>
+    <button class="btn" id="rr-back-to-all" type="button" hidden>← Back to all resources</button>
+    <button class="btn btn-random" id="rr-another-random" type="button" hidden>Another random resource</button>
   </div>
 
   <main id="rr-grid" class="skeleton-grid" aria-busy="true">
@@ -98,6 +103,8 @@
     </div>
   </footer>
 </div>
+
+<div class="toast" id="rr-toast" role="status" aria-live="polite"></div>
 
 <script src="research.js"></script>
 </body>

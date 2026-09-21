@@ -191,6 +191,8 @@
     '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
   var ICON_EMPTY =
     '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>';
+  var ICON_DICE =
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>';
 
   /* ---------------- state ---------------- */
 
@@ -202,6 +204,25 @@
     online: "",
   };
   var el = {};
+  var toastTimer = null;
+
+  // Set by "random resource" to narrow the grid to that single pick;
+  // null means show the normal filtered results — same pattern as
+  // app.js's own random-pick feature on the Policy Menu. Any real
+  // search/filter change (not the random actions themselves) clears
+  // this — see exitRandomPick, used by setSearch and the two dropdown
+  // change handlers.
+  var randomPick = null;
+
+  // Bumped by exitRandomPick() so pickRandom()'s in-flight flicker chain
+  // can tell it's been superseded and stop, instead of clobbering
+  // whatever the interrupting action just rendered a moment later.
+  var rollId = 0;
+
+  function exitRandomPick() {
+    randomPick = null;
+    rollId++;
+  }
 
   function $(id) {
     return document.getElementById(id);
@@ -230,7 +251,20 @@
     return ALL.filter(passes);
   }
 
+  function hasActiveFilters() {
+    return !!(state.q.trim() || state.type || state.online);
+  }
+
   /* ---------------- rendering ---------------- */
+
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      el.toast.classList.remove("show");
+    }, 1900);
+  }
 
   function metaItem(icon, text) {
     return (
@@ -286,11 +320,26 @@
   }
 
   function render() {
-    var results = currentResults();
+    var filtered = currentResults();
+    var results = randomPick ? [randomPick] : filtered;
 
-    el.count.innerHTML =
-      "<strong>" + results.length + "</strong> of " + ALL.length + " resources";
+    if (randomPick) {
+      var scope = hasActiveFilters()
+        ? filtered.length + " filtered"
+        : "all " + ALL.length;
+      var noun = filtered.length === 1 ? " resource" : " resources";
+      el.count.innerHTML = "<strong>Random pick</strong> from " + scope + noun;
+    } else {
+      el.count.innerHTML =
+        "<strong>" + filtered.length + "</strong> of " + ALL.length + " resources";
+    }
     el.grid.setAttribute("aria-busy", "false");
+
+    el.backToAll.hidden = !randomPick;
+    el.anotherRandom.hidden = !randomPick;
+    // Re-roll needs at least one match in the filtered set, regardless of
+    // whether we're currently narrowed to a single random pick.
+    el.random.disabled = filtered.length === 0;
 
     if (!results.length) {
       el.grid.className = "";
@@ -313,6 +362,7 @@
     state.q = v;
     state.terms = norm(v).split(/\s+/).filter(Boolean);
     el.searchbox.classList.toggle("has-value", v.length > 0);
+    exitRandomPick();
   }
 
   function populateSelect(select, values, placeholder) {
@@ -339,10 +389,65 @@
 
     el.typeFilter.addEventListener("change", function () {
       state.type = el.typeFilter.value;
+      exitRandomPick();
       render();
     });
     el.onlineFilter.addEventListener("change", function () {
       state.online = el.onlineFilter.value;
+      exitRandomPick();
+      render();
+    });
+
+    // Random resource: narrows the grid to a single pick drawn from the
+    // *currently filtered* results, not always the full set — same
+    // behavior as the Policy Menu's own random-pick feature. Shared by
+    // the main hint button and "Another random resource" (shown only
+    // while a pick is already up), so re-rolling works the same from
+    // either place.
+    function pickRandom() {
+      var results = currentResults();
+      if (!results.length) return;
+
+      var reduced =
+        window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      var myRoll = ++rollId;
+      var flickers = reduced ? 0 : 5 + Math.floor(Math.random() * 3); // 5-7 frames
+      var delay = 90;
+      var count = 0;
+
+      function tick() {
+        if (myRoll !== rollId) return; // superseded — abort this chain
+        count++;
+        var landing = count > flickers;
+        randomPick = results[Math.floor(Math.random() * results.length)];
+        render();
+        var card = el.grid.children[0];
+        if (card) {
+          if (landing) {
+            void card.offsetWidth; // restart the animation
+            card.classList.add("settle-in");
+          } else {
+            card.classList.add("cycling");
+          }
+        }
+        if (landing) {
+          toast("Random pick: " + randomPick.resource);
+        } else {
+          setTimeout(tick, delay);
+        }
+      }
+
+      tick();
+      el.grid.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    el.random.addEventListener("click", pickRandom);
+    el.anotherRandom.addEventListener("click", pickRandom);
+
+    // Leaves the single-pick view without touching search/filter state.
+    el.backToAll.addEventListener("click", function () {
+      exitRandomPick();
       render();
     });
   }
@@ -399,10 +504,14 @@
       searchbox: $("rr-searchbox"),
       search: $("rr-search"),
       clearSearch: $("rr-clear-search"),
+      random: $("rr-random"),
       typeFilter: $("rr-type-filter"),
       onlineFilter: $("rr-online-filter"),
       count: $("rr-count"),
       grid: $("rr-grid"),
+      backToAll: $("rr-back-to-all"),
+      anotherRandom: $("rr-another-random"),
+      toast: $("rr-toast"),
     };
 
     var missing = [];
@@ -419,8 +528,12 @@
 
     try {
       $("rr-search-icon").innerHTML = ICON_SEARCH;
+      // "beforeend" (not "afterbegin") — text first, dice icon after, on
+      // the right side of the label, matching the Policy Menu's version.
+      el.random.insertAdjacentHTML("beforeend", ICON_DICE);
+      el.anotherRandom.insertAdjacentHTML("afterbegin", ICON_DICE);
     } catch (e) {
-      /* icon is decorative — never block startup on it */
+      /* icons are decorative — never block startup on them */
     }
 
     var devHint = function (err) {
