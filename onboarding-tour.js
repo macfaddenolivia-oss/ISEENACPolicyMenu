@@ -91,10 +91,6 @@
     {
       selector: ".status-badge",
       text: "Each card shows whether the original source is still online. See the info icon next to \"Is it still online?\" above: an offline resource often still has its data available through an archived mirror."
-    },
-    {
-      selector: "#rr-random",
-      text: "Not sure where to start? This picks a random resource from whatever's currently filtered."
     }
   ];
 
