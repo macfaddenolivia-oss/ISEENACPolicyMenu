@@ -158,14 +158,31 @@
   }
 
   // Buckets the free-text "Is it still online" cell into online/offline/
-  // unknown so it can be color-coded, while still showing the sheet's own
-  // wording (e.g. "No (mirror available)") as the badge label itself.
+  // unknown so the badge can be color-coded.
   function classifyOnline(v) {
     var n = norm(v).trim();
     if (!n) return "unknown";
     if (n.indexOf("yes") === 0) return "online";
     if (n.indexOf("no") === 0) return "offline";
     return "unknown";
+  }
+
+  // Turns the raw "Is it still online" cell into a badge label that reads
+  // on its own, since a bare "Yes"/"No" doesn't say what it's answering.
+  // A plain "Yes" becomes "Live"; a qualified one (e.g. "Yes, only data
+  // through 2020") keeps the qualifier as "Live (data through 2020)"; any
+  // "No" becomes "Offline" regardless of what follows it.
+  function onlineLabel(v) {
+    var raw = String(v || "").trim();
+    if (!raw) return "Unknown";
+    var lower = raw.toLowerCase();
+    if (lower === "yes") return "Live";
+    if (lower.indexOf("yes") === 0) {
+      var detail = raw.replace(/^yes,?\s*(only\s+)?/i, "").trim();
+      return detail ? "Live (" + detail + ")" : "Live";
+    }
+    if (lower.indexOf("no") === 0) return "Offline";
+    return raw;
   }
 
   var ICON_PERSON =
@@ -226,7 +243,7 @@
   function cardHTML(r) {
     var url = safeUrl(r.link);
     var onlineClass = classifyOnline(r.online);
-    var badgeText = r.online || "Unknown";
+    var badgeText = onlineLabel(r.online);
 
     var tags = "";
     if (r.type) tags += '<span class="tag type tag-static">' + esc(r.type) + "</span>";
