@@ -603,6 +603,12 @@ kbd {
   color: var(--text-3);
 }
 
+/* Several .btn instances are <a href> elements (back-link, the feedback
+   CTAs, the homepage research callout below), not <button>s — without
+   this, the browser's default :visited style would recolor their text
+   once clicked, which reads as broken/faded rather than intentional. */
+.btn:visited { color: var(--text); }
+
 /* Primary CTA (Random resource) — solid accent teal, darker teal on hover */
 .btn-primary {
   color: #fff;
@@ -615,6 +621,10 @@ kbd {
   border-color: var(--accent-2);
   color: #fff;
 }
+
+/* Overrides .btn:visited above for the solid-fill variant — same
+   specificity, so it must come after in source order to win. */
+.btn-primary:visited { color: #fff; }
 
 /* "Another random resource" — the primary, repeatable action while a
    pick is showing, styled distinctly from the neutral "Back to all
