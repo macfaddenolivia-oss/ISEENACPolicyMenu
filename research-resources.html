@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Resources · Environmental Epidemiology</title>
+<meta name="description" content="A searchable library of research databases, tools, and data sources for environmental health research, including notes on which are still online.">
+<link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://isee-policy-menu.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="brand">
+      <a href="index.html">
+        <img class="brand-logo" src="img/isee-logo-2.png" alt="ISEE North America">
+      </a>
+      <div class="brand-text">
+        <h1 class="brand-name">Research Resources</h1>
+        <p class="brand-subtitle">Databases, tools, and data sources to support environmental health research.</p>
+      </div>
+    </div>
+  </div>
+  <nav class="site-nav" aria-label="Site">
+    <a href="index.html">Policy Menu</a>
+    <a href="research-resources.html" aria-current="page">Research Resources</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <a class="btn back-link" href="index.html">← Back to Policy Menu</a>
+
+  <p class="rr-intro">
+    Search and filter research databases, tools, and data sources for environmental
+    health research. Some of these resources are no longer maintained by their
+    original hosts. Where that's the case, we note it and link to a mirror when
+    one exists.
+  </p>
+
+  <div class="controls" id="rr-controls">
+    <div class="searchrow">
+      <div class="searchbox" id="rr-searchbox">
+        <span id="rr-search-icon"></span>
+        <label class="visually-hidden" for="rr-search">Search research resources</label>
+        <input id="rr-search" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Search resources, creators, descriptions, topics…">
+        <span class="search-hints">
+          <button class="clear-search" id="rr-clear-search" type="button" aria-label="Clear search">×</button>
+        </span>
+      </div>
+    </div>
+
+    <div class="rr-filters">
+      <label class="rr-filter">
+        <span class="flabel">Type</span>
+        <select class="rr-select" id="rr-type-filter">
+          <option value="">All types</option>
+        </select>
+      </label>
+      <label class="rr-filter">
+        <span class="flabel">Is it still online?</span>
+        <select class="rr-select" id="rr-online-filter">
+          <option value="">All</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <span class="count" id="rr-count" aria-live="polite">Loading…</span>
+  </div>
+
+  <main id="rr-grid" class="skeleton-grid" aria-busy="true">
+    <div class="skel"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="skel"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="skel"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="skel"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="skel"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="skel"><span></span><span></span><span></span><span></span><span></span></div>
+  </main>
+
+  <noscript>
+    <style>
+      .controls, .statusbar, #rr-grid { display: none !important; }
+    </style>
+    <div class="nojs-note">
+      <strong>JavaScript is required</strong> to search and filter this page.
+      If you're viewing this as a downloaded file rather than a web page, open it
+      in a browser instead (on iPhone or iPad: tap <em>Share → Open in Safari</em>).
+    </div>
+  </noscript>
+
+  <footer class="foot">
+    <div class="foot-hint">
+      <span>Created and curated by <a href="https://www.linkedin.com/in/olivia-macfadden/" target="_blank" rel="noopener noreferrer"> Olivia Macfadden</a> and <a href="https://rydalf.github.io/website/" target="_blank" rel="noopener noreferrer">Ryan Dalforno</a> on behalf of the <a href="https://www.isee-northamerica.org/policy.php" target="_blank" rel="noopener noreferrer"> International Society for Environmental Epidemiology - North America Chapter's Policy Committee</a></span>
+      <span><a href="privacy-policy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</div>
+
+<script src="research.js"></script>
+</body>
+</html>

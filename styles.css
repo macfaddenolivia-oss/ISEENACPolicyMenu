@@ -2299,3 +2299,177 @@ footer.foot {
 /* Pushes Skip/Next to the row's right edge when Back is present (steps
    2+); on step 1, Back is [hidden] and Skip/Next simply start the row. */
 #tour-back { margin-right: auto; }
+
+/* ---------- Site nav (shared across every page) ---------- */
+
+/* A slim second row under the main header bar, present on every page
+   (index.html, privacy-policy.html, research-resources.html) so
+   Research Resources is reachable from anywhere, not just the homepage. */
+.site-nav {
+  display: flex;
+  gap: 20px;
+  padding: 10px clamp(16px, 4vw, 40px);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-nav a {
+  font-size: 13px;
+  font-weight: 640;
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--brand-navy);
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--brand-navy-deep);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Research Resources callout (on the Policy Menu homepage) ---------- */
+
+/* Same shape/rhythm as .feedback-cta, but a distinct navy tint (rather
+   than the general teal --accent) so it reads as pointing at a
+   different destination, not another flavor of the feedback ask. */
+.research-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  background: color-mix(in srgb, var(--brand-navy) 7%, var(--surface));
+  border: 1px solid var(--brand-slate);
+  border-radius: var(--radius);
+}
+
+.research-callout-text {
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.research-callout-btn { flex: none; white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .research-callout { flex-direction: column; text-align: center; padding: 14px 16px; }
+}
+
+/* ---------- Research Resources page ---------- */
+
+.rr-intro {
+  max-width: 760px;
+  margin: 4px 0 16px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.rr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 20px;
+  align-items: center;
+  padding: 4px 0 10px;
+}
+
+.rr-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rr-select {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  padding: 8px 10px;
+  min-width: 190px;
+  cursor: pointer;
+}
+
+.rr-select:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-color: var(--accent);
+}
+
+/* Type/Subtype tags on a research card are informational, not clickable
+   filters (the dropdowns above do that job) — same look as the Policy
+   Menu's own .tag, minus the pointer/hover affordances that would
+   otherwise imply they do something on click. */
+.tag-static {
+  cursor: default;
+}
+
+.tag-static:hover {
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+
+.topic-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.topic-pill {
+  font-size: 11px;
+  font-weight: 560;
+  line-height: 1.2;
+  color: var(--brand-navy-deep);
+  background: color-mix(in srgb, var(--brand-navy) 9%, white);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.status-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  padding: 4px 10px 4px 8px;
+  white-space: nowrap;
+}
+
+.status-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-online {
+  color: #0a7d55;
+  background: #e3f7ee;
+}
+
+.status-offline {
+  color: #b3261e;
+  background: #fdecea;
+}
+
+.status-unknown {
+  color: var(--text-2);
+  background: var(--surface-2);
+}
