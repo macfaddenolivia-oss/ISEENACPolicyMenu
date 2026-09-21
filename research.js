@@ -163,7 +163,7 @@
   // on its own, since a bare "Yes"/"No" doesn't say what it's answering.
   // A plain "Yes" becomes "Live"; a qualified one (e.g. "Yes, only data
   // through 2020") keeps the qualifier as "Live (data through 2020)"; any
-  // "No" becomes "Offline" regardless of what follows it.
+  // "No" becomes "No longer live" regardless of what follows it.
   function onlineLabel(v) {
     var raw = String(v || "").trim();
     if (!raw) return "Unknown";
@@ -173,7 +173,7 @@
       var detail = raw.replace(/^yes,?\s*(only\s+)?/i, "").trim();
       return detail ? "Live (" + detail + ")" : "Live";
     }
-    if (lower.indexOf("no") === 0) return "Offline";
+    if (lower.indexOf("no") === 0) return "No longer live";
     return raw;
   }
 
@@ -350,12 +350,13 @@
   }
 
   // Maps an "onlineBucket" value ("online"/"offline"/"unknown") to its
-  // filter-pill label. The filter pill groups every raw sheet value
-  // sharing a bucket together (e.g. "Yes" and "Yes, only data through
-  // 2020" both count toward one "Live" pill) — the per-row qualifier
-  // stays on the card badge (onlineLabel(r.online), using the raw
-  // value), just not on this collapsed filter pill.
-  var ONLINE_BUCKET_LABEL = { online: "Live", offline: "Offline", unknown: "Unknown" };
+  // filter-pill label ("Live"/"No longer live"/"Unknown"). The filter
+  // pill groups every raw sheet value sharing a bucket together (e.g.
+  // "Yes" and "Yes, only data through 2020" both count toward one "Live"
+  // pill) — the per-row qualifier stays on the card badge
+  // (onlineLabel(r.online), using the raw value), just not on this
+  // collapsed filter pill.
+  var ONLINE_BUCKET_LABEL = { online: "Live", offline: "No longer live", unknown: "Unknown" };
 
   // kind is "type" (hue dot, data-filter="type"), "org" (Creator,
   // data-filter="org"), or "online" (Is it still online, data-filter=
@@ -509,7 +510,7 @@
   // computed once by render() and passed in so the Type filter pill and
   // each card's Type tag (see cardHTML) always show the same number.
   function renderFilterPills(typeCounts) {
-    renderFacetPills("onlineValues", "onlineBucket", "online", "Online status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
+    renderFacetPills("onlineValues", "onlineBucket", "online", "Live status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
     renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview, typeCounts);
     renderFacetPills("creators", "creator", "org", "Creator", PREVIEW_CREATOR_COUNT, el.creatorPills, el.creatorPillsPreview);
 

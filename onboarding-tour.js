@@ -90,7 +90,7 @@
     },
     {
       selector: ".status-badge",
-      text: "Each card shows whether the original source is still online. See the info icon next to \"Is it still online?\" above: an offline resource often still has its data available through an archived mirror."
+      text: "Each card shows whether the original source is still live. See the info icon next to \"Is it still live?\" above: a resource that's no longer live often still has its data available through an archived mirror."
     }
   ];
 

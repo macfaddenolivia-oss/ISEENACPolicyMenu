@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Research Resources · Environmental Epidemiology</title>
-<meta name="description" content="A searchable library of research databases, tools, and data sources for environmental health research, including notes on which are still online.">
+<meta name="description" content="A searchable library of research databases, tools, and data sources for environmental health research, including notes on which are still live.">
 <link rel="stylesheet" href="styles.css">
 <script data-goatcounter="https://isee-policy-menu.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -53,31 +53,34 @@
     </div>
   </div>
 
-  <!-- Is it still online / Type / Creator filters: same filter-bar/
+  <!-- Is it still live / Type / Creator filters: same filter-bar/
        filter-group-box/pill/preview/"+N more"/Browse-filters pattern as
        the Policy Menu's own Type+Subtype and Organization boxes (see
        index.html/app.js). Type pills reuse data-filter="type" (hue dot
        included) and Creator pills reuse data-filter="org" — both pick
        up that filter's existing CSS treatment directly. "Is it still
-       online" pills use their own data-filter="online" treatment (green/
+       live" pills use their own data-filter="online" treatment (green/
        red, matching the card status badge colors) since a rotating hue
-       wouldn't mean anything for this facet. One shared "Browse filters"
-       toggle opens all three boxes' full pill walls at once, same as the
-       Policy Menu's single toggle for its two boxes. -->
+       wouldn't mean anything for this facet. (The data-filter/data-value
+       attributes and CSS class names stay "online"/"offline" internally
+       — only the displayed "Live"/"No longer live" text changed.) One
+       shared "Browse filters" toggle opens all three boxes' full pill
+       walls at once, same as the Policy Menu's single toggle for its two
+       boxes. -->
   <div class="filter-bar" id="rr-filter-bar">
     <div class="filter-bar-tags">
       <div class="filter-group-box" id="rr-online-filter-box">
         <div class="filters-preview" id="rr-online-preview">
           <div class="fgroup">
             <span class="fgroup-label-row">
-              <span class="flabel" id="rr-lbl-online-preview">Is it still online?</span>
-              <button class="info-btn" type="button" aria-label="What does &quot;Is it still online&quot; mean?" aria-describedby="rr-online-tooltip-preview">
+              <span class="flabel" id="rr-lbl-online-preview">Is it still live?</span>
+              <button class="info-btn" type="button" aria-label="What does &quot;Is it still live&quot; mean?" aria-describedby="rr-online-tooltip-preview">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="11" x2="12" y2="16"></line>
                   <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"></circle>
                 </svg>
-                <span class="tooltip" id="rr-online-tooltip-preview" role="tooltip">Some government-hosted resources have been taken offline. Where that's happened, we link to a mirror hosted by groups who archived the data before it was lost. "Offline" means the original government site is down, not that the resource is unavailable.</span>
+                <span class="tooltip" id="rr-online-tooltip-preview" role="tooltip">Some government-hosted resources have been taken down. Where that's happened, we link to a mirror hosted by groups who archived the data before it was lost. "No longer live" means the original government site is down, not that the resource is unavailable.</span>
               </button>
             </span>
             <div class="pills" id="rr-online-pills-preview" role="group" aria-labelledby="rr-lbl-online-preview"></div>
@@ -86,14 +89,14 @@
         <div class="filters" id="rr-online-filters">
           <div class="fgroup">
             <span class="fgroup-label-row">
-              <span class="flabel" id="rr-lbl-online">Is it still online?</span>
-              <button class="info-btn" type="button" aria-label="What does &quot;Is it still online&quot; mean?" aria-describedby="rr-online-tooltip">
+              <span class="flabel" id="rr-lbl-online">Is it still live?</span>
+              <button class="info-btn" type="button" aria-label="What does &quot;Is it still live&quot; mean?" aria-describedby="rr-online-tooltip">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="11" x2="12" y2="16"></line>
                   <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"></circle>
                 </svg>
-                <span class="tooltip" id="rr-online-tooltip" role="tooltip">Some government-hosted resources have been taken offline. Where that's happened, we link to a mirror hosted by groups who archived the data before it was lost. "Offline" means the original government site is down, not that the resource is unavailable.</span>
+                <span class="tooltip" id="rr-online-tooltip" role="tooltip">Some government-hosted resources have been taken down. Where that's happened, we link to a mirror hosted by groups who archived the data before it was lost. "No longer live" means the original government site is down, not that the resource is unavailable.</span>
               </button>
             </span>
             <div class="pills" id="rr-online-pills" role="group" aria-labelledby="rr-lbl-online"></div>
