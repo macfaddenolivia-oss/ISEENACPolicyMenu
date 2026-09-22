@@ -392,8 +392,20 @@
   </div>
 </div>
 
+<!-- onboarding-tour.js loads (and runs — it executes synchronously at
+     script-parse time, not on a deferred event) before app.js
+     specifically so its own resume/fresh-prompt decision — and the
+     clearTourResolved() call that goes with it — happens before app.js's
+     boot() calls SharedUI.setupFeedbackModal, which reads that same
+     flag. Reversed, setupFeedbackModal could read a stale "resolved"
+     flag from an earlier, unrelated resolution before onboarding-tour.js
+     ever got a chance to clear it for a brand-new prompt/tour about to
+     run on this page load — see the clearTourResolved() comment in
+     onboarding-tour.js for the bug this ordering fixes. Safe to load
+     first: onboarding-tour.js never calls into app.js and has no
+     dependency on it having run. -->
 <script src="shared-ui.js"></script>
-<script src="app.js"></script>
 <script src="onboarding-tour.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

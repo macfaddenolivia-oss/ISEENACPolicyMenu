@@ -194,6 +194,28 @@
     document.dispatchEvent(new CustomEvent("tourResolved"));
   }
 
+  // Called at the two points below, right before a NEW, unresolved
+  // engagement begins on the current page load (a fresh "New here?"
+  // prompt, or resuming a cross-page tour) — never inside dismiss()/
+  // end() themselves. Guards against a stale RESOLVED_KEY from an
+  // earlier, unrelated resolution this session (e.g. the Policy Menu's
+  // popup was dismissed, which resolves the tour *and* starts the
+  // feedback popup's countdown there — but doesn't suppress Research
+  // Resources' own, separate popup, per shouldPrompt()'s asymmetric
+  // rule). Without this, SharedUI.setupFeedbackModal on this fresh page
+  // load would see that stale "resolved" flag and start counting down
+  // immediately, with no idea a brand-new prompt/tour is about to run
+  // right here — firing the feedback popup on top of an active,
+  // unresolved tour. This only clears the flag; it never fires the
+  // "tourResolved" event, since nothing has resolved yet at this point.
+  function clearTourResolved() {
+    try {
+      sessionStorage.removeItem(RESOLVED_KEY);
+    } catch (e) {
+      // private browsing / storage disabled — same fallback as above.
+    }
+  }
+
   // Whether THIS page's own popup is allowed to show right now — see
   // the DISMISSED_KEY comment above for why Research Resources' own
   // dismissal reaches back to suppress the Policy Menu's popup too, but
@@ -645,9 +667,17 @@
     if (startedOn) {
       // Second leg: resume this page's own steps, and return to
       // whichever page the tour began on once it ends — normally or
-      // via an early exit — see end()'s returnTo handling.
+      // via an early exit — see end()'s returnTo handling. A fresh,
+      // unresolved run is starting right here, so clear any stale
+      // resolution from earlier in the session first — see
+      // clearTourResolved().
+      clearTourResolved();
       beginTour(startedOn);
     } else if (shouldPrompt()) {
+      // Same reasoning as above: a fresh "New here?" prompt is about to
+      // show on this page, so any earlier resolution (possibly from a
+      // different, already-dismissed page) no longer applies here.
+      clearTourResolved();
       setupPrompt();
     }
   } catch (e) {

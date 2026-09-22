@@ -310,8 +310,12 @@
   </div>
 </div>
 
+<!-- onboarding-tour.js loads (and runs — it executes synchronously at
+     script-parse time, not on a deferred event) before research.js — see
+     the matching comment in index.html for why this order fixes a real
+     bug in SharedUI.setupFeedbackModal's tourResolved check. -->
 <script src="shared-ui.js"></script>
-<script src="research.js"></script>
 <script src="onboarding-tour.js"></script>
+<script src="research.js"></script>
 </body>
 </html>

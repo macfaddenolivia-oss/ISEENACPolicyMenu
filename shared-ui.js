@@ -122,6 +122,18 @@
   // Menu, that later page load sees the flag already set and starts its
   // own 45s countdown from that load — no extra cross-page code needed
   // here.
+  //
+  // This read below only sees a *correct* value because of script load
+  // order: onboarding-tour.js's own resume/fresh-prompt decision (and
+  // the clearTourResolved() call that goes with a fresh, unresolved one
+  // — see that function's comment) runs before this function does on
+  // both index.html and research-resources.html. Without that ordering,
+  // this could read a stale "resolved" flag left over from an earlier,
+  // already-dismissed page's popup and start counting down immediately
+  // even while a brand-new prompt/tour is about to run right here — a
+  // real bug that shipped once (the feedback popup appearing on top of
+  // an active, unresolved tour) and was fixed by that reordering, not by
+  // anything in this file. Don't reorder those <script> tags back.
   function setupFeedbackModal(storageKey) {
     try {
       // Guarded on its own: some browsers' stricter privacy modes throw
