@@ -810,9 +810,10 @@ kbd {
 }
 .info-btn:focus-visible { outline: none; box-shadow: var(--ring); }
 
-/* .tooltip's own cosmetic rule (position/size/colors) and its hover/
-   focus/tap reveal are defined once, shared with .nav-item-wrap's tab
-   tooltips — see "Nav tab tooltips" further down (kept there since that
+/* .tooltip's own cosmetic rule (position/size/colors) is defined once,
+   shared with .nav-item-wrap's tab tooltips, though reveal triggers
+   differ (.info-btn also gets tap-to-open; nav tabs are hover/focus-
+   only) — see "Nav tab tooltips" further down (kept there since that
    section also needs to explain the nav-specific overflow handling). */
 
 /* The boxed groups (Type+Subtype, Topic, Organization), stacked. */
@@ -2419,18 +2420,21 @@ footer.foot {
   align-items: center;
 }
 
-/* Same .info-btn/.tooltip pattern used elsewhere (Match all/any, "Is it
-   still online") — reveal on hover/keyboard-focus/tap, describing text
-   is each page's own header subtitle (see index.html/research-
-   resources.html/privacy-policy.html) rather than new copy. The tab
-   link itself needs no tabindex/role changes: <a> is natively
-   focusable, and :has(a:focus-visible) mirrors .info-btn's own
-   :focus-visible trigger without needing the tooltip to be a child of
-   the focusable element itself (it's a sibling here, not a child, since
-   nesting it inside the <a> would make clicking the tooltip's own text
-   trigger navigation). .info-open is toggled the same way .info-btn's
-   is (see setupInfoTooltips in shared-ui.js) for touch, which has no
-   hover to reveal it passively. */
+/* Same .tooltip cosmetic rule used by .info-btn elsewhere (Match all/
+   any, "Is it still online"), but reveal is hover/keyboard-focus ONLY
+   here — deliberately no tap-to-open. .nav-item-wrap's <a> is a real
+   navigation link, not a decorative disclosure button like .info-btn,
+   so it never gets the .info-open tap-toggle treatment (see
+   setupInfoTooltips in shared-ui.js): tapping a nav tab on touch
+   navigates immediately, exactly like a plain link, with no tooltip
+   step in between. Describing text is each page's own header subtitle
+   (see index.html/research-resources.html/privacy-policy.html) rather
+   than new copy. The tab link itself needs no tabindex/role changes:
+   <a> is natively focusable, and :has(a:focus-visible) mirrors
+   .info-btn's own :focus-visible trigger without needing the tooltip to
+   be a child of the focusable element itself (it's a sibling here, not
+   a child, since nesting it inside the <a> would make clicking the
+   tooltip's own text trigger navigation). */
 .info-btn .tooltip,
 .nav-item-wrap .tooltip {
   position: absolute;
@@ -2458,8 +2462,7 @@ footer.foot {
 .info-btn:focus-visible .tooltip,
 .info-btn.info-open .tooltip,
 .nav-item-wrap:hover .tooltip,
-.nav-item-wrap:has(a:focus-visible) .tooltip,
-.nav-item-wrap.info-open .tooltip {
+.nav-item-wrap:has(a:focus-visible) .tooltip {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
