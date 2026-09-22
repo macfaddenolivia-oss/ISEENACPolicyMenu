@@ -432,6 +432,7 @@
   // from app.js's fitPreviewRow.
   var PREVIEW_ONLINE_COUNT = 6;
   var PREVIEW_TYPE_COUNT = 6;
+  var PREVIEW_TOPIC_COUNT = 4;
   var PREVIEW_CREATOR_COUNT = 3;
 
   function fitPreviewRow(container, totalCount, label, isActiveFn) {
@@ -493,21 +494,15 @@
     }
   }
 
-  // One facet's pills, full wall + (optionally) preview row — shared by
-  // Online, Type, Topic, and Creator below, same as app.js reuses its
-  // own rendering for Type/Subtype/Topic/Organization rather than
-  // writing one version per facet. `precomputedCounts`, when given, is
-  // used instead of calling countIncluding again — render() passes the
-  // Type counts it already computed for itself, so the same numbers
-  // reach the Type filter pills and each card's Type tag without
-  // computing them twice. `multi`, when true, treats r[field] as an
-  // array (Topic) rather than one scalar value, same meaning as in
-  // countIncluding. `previewEl`/`previewCount`, when omitted (Topic),
-  // skip the preview row entirely — only the full wall in `pillsEl` is
-  // populated, so that facet stays absent from the default view and
-  // only appears once "Browse filters" is opened (the existing
-  // .filters/.filters-open CSS rule already does that hiding, no extra
-  // JS needed here).
+  // One facet's pills, full wall + preview row — shared by Online, Type,
+  // Topic, and Creator below, same as app.js reuses its own rendering
+  // for Type/Subtype/Topic/Organization rather than writing one version
+  // per facet. `precomputedCounts`, when given, is used instead of
+  // calling countIncluding again — render() passes the Type counts it
+  // already computed for itself, so the same numbers reach the Type
+  // filter pills and each card's Type tag without computing them
+  // twice. `multi`, when true, treats r[field] as an array (Topic)
+  // rather than one scalar value, same meaning as in countIncluding.
   function renderFacetPills(listKey, field, kind, label, previewCount, pillsEl, previewEl, precomputedCounts, multi) {
     var counts = precomputedCounts || countIncluding(listKey, field, multi);
     var values = Object.keys(
@@ -529,8 +524,6 @@
       })
       .join("");
 
-    if (!previewEl) return;
-
     var forPreview = relevantValues(values, counts, state[listKey]);
     var preview = previewSubset(forPreview, state[listKey], previewCount);
     previewEl.innerHTML =
@@ -549,12 +542,11 @@
   // counting Type + Subtype + Topic + Organization together. typeCounts
   // is computed once by render() and passed in so the Type filter pill
   // and each card's Type tag (see cardHTML) always show the same
-  // number. Topic gets no preview element (see renderFacetPills) — it
-  // stays hidden until "Browse filters" is opened.
+  // number.
   function renderFilterPills(typeCounts) {
     renderFacetPills("onlineValues", "onlineBucket", "online", "Live status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
     renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview, typeCounts);
-    renderFacetPills("topics", "topics", "topic", "Topic", null, el.topicPills, null, null, true);
+    renderFacetPills("topics", "topics", "topic", "Topic", PREVIEW_TOPIC_COUNT, el.topicPills, el.topicPillsPreview, null, true);
     renderFacetPills("creators", "creator", "org", "Creator", PREVIEW_CREATOR_COUNT, el.creatorPills, el.creatorPillsPreview);
 
     var activePills = state.types.length + state.onlineValues.length + state.topics.length + state.creators.length;
@@ -870,6 +862,7 @@
       typePills: $("rr-type-pills"),
       typePillsPreview: $("rr-type-pills-preview"),
       topicPills: $("rr-topic-pills"),
+      topicPillsPreview: $("rr-topic-pills-preview"),
       creatorPills: $("rr-creator-pills"),
       creatorPillsPreview: $("rr-creator-pills-preview"),
       filterToggle: $("rr-filter-toggle"),

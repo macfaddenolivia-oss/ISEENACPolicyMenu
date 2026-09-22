@@ -65,11 +65,9 @@
        status badge colors) since a rotating hue wouldn't mean anything
        for this facet. (The data-filter/data-value attributes and CSS
        class names stay "online"/"offline" internally — only the
-       displayed "Live"/"No longer live" text changed.) Topic has no
-       preview row on any breakpoint, unlike the other three — see
-       #rr-topic-filter-box below. One shared "Browse filters" toggle
-       opens every box's full pill wall at once, same as the Policy
-       Menu's single toggle for its boxes. -->
+       displayed "Live"/"No longer live" text changed.) One shared
+       "Browse filters" toggle opens every box's full pill wall at
+       once, same as the Policy Menu's single toggle for its boxes. -->
   <div class="filter-bar" id="rr-filter-bar">
     <div class="filter-bar-tags">
       <div class="filter-group-box" id="rr-online-filter-box">
@@ -120,13 +118,17 @@
           </div>
         </div>
       </div>
-      <!-- Topic has no preview row on any breakpoint — tucked entirely
-           behind "Browse filters" so the default view stays uncrowded
-           (unlike Online/Type/Creator, which each show a preview plus
-           this full wall). No mobile-only disclosure needed either: the
-           shared .filters/.filter-bar.filters-open rule in styles.css
-           is enough on its own since there's no preview to replace. -->
+      <!-- Same preview + full-wall pattern as Online/Type/Creator below —
+           a small always-visible top-N preview that swaps for the full
+           pill wall once "Browse filters" is open (see
+           .filters-preview/.filters in styles.css). -->
       <div class="filter-group-box" id="rr-topic-filter-box">
+        <div class="filters-preview" id="rr-topic-preview">
+          <div class="fgroup">
+            <span class="flabel" id="rr-lbl-topic-preview">Topic</span>
+            <div class="pills" id="rr-topic-pills-preview" role="group" aria-labelledby="rr-lbl-topic-preview"></div>
+          </div>
+        </div>
         <div class="filters" id="rr-topic-filters">
           <div class="fgroup">
             <span class="flabel" id="rr-lbl-topic">Topic</span>

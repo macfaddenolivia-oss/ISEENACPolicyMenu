@@ -203,15 +203,21 @@
           </div>
         </div>
 
-        <!-- Topic has no preview row on any breakpoint — it's tucked
-             entirely behind "Browse filters" so the default view stays
-             uncrowded (unlike Type/Subtype/Organization, which each show
-             a small preview plus this full wall). It needs no mobile-only
-             disclosure of its own either, since there's no preview here
-             to collapse-and-replace: the shared .filters/.filter-bar
-             .filters-open rule in styles.css is enough on every
-             breakpoint on its own. -->
+        <!-- Same preview + full-wall pattern as Type/Subtype/Organization
+             below — a small always-visible top-N preview that swaps for
+             the full pill wall once "Browse filters" is open (see
+             .filters-preview/.filters in styles.css). No mobile-only
+             disclosure button of its own (unlike Organization's), just
+             the plain preview+Browse-filters behavior Subtype already
+             uses. -->
         <div class="filter-group-box" id="topic-filter-box">
+          <div class="filters-preview" id="filters-preview-topic">
+            <div class="fgroup">
+              <span class="flabel" id="lbl-topic-preview">Topic</span>
+              <div class="pills" id="topic-pills-preview" role="group" aria-labelledby="lbl-topic-preview"></div>
+            </div>
+          </div>
+
           <div class="filters" id="filters-topic">
             <div class="fgroup" id="topic-fgroup">
               <span class="flabel" id="lbl-topic">Topic</span>

@@ -552,6 +552,7 @@
   // fit per row.
   var PREVIEW_TYPE_COUNT = 6;
   var PREVIEW_SUB_COUNT = 4;
+  var PREVIEW_TOPIC_COUNT = 4;
   var PREVIEW_ORG_COUNT = 3;
 
   // Corrects the guess above against the real, laid-out DOM: walks the
@@ -764,13 +765,8 @@
     });
 
     // Topic — same source and split/trim as the card's own topic-pills
-    // (see rowsToRecords' r.topics), same sort/zero-count/Match all-any
-    // pattern as Type/Subtype/Organization, but no preview row at all:
-    // only el.topicPills (inside #filters-topic, a plain .filters box
-    // with no .filters-preview sibling) is populated, so Topic stays
-    // completely absent from the default view and only appears once
-    // "Browse filters" is opened — the existing .filters/.filters-open
-    // CSS rule already does that hiding with no extra JS here.
+    // (see rowsToRecords' r.topics), same sort/zero-count/preview/
+    // Match all-any pattern as Type/Subtype/Organization.
     var allTopics = {};
     ALL.forEach(function (r) {
       r.topics.forEach(function (t) {
@@ -783,6 +779,18 @@
         return pillHTML(t, topicCounts[t] || 0, state.topics.indexOf(t) !== -1, "topic");
       })
       .join("");
+
+    var topicsForPreview = relevantValues(topics, topicCounts, state.topics);
+    var topicPreview = previewSubset(topicsForPreview, state.topics, PREVIEW_TOPIC_COUNT);
+    el.topicPillsPreview.innerHTML =
+      topicPreview
+        .map(function (t) {
+          return pillHTML(t, topicCounts[t] || 0, state.topics.indexOf(t) !== -1, "topic");
+        })
+        .join("") + moreTagHTML(topicsForPreview.length - topicPreview.length, "Topic");
+    fitPreviewRow(el.topicPillsPreview, topicsForPreview.length, "Topic", function (v) {
+      return state.topics.indexOf(v) !== -1;
+    });
 
     // "Organization" in the UI is the Creator column underneath — same
     // sort, preview, zero-count, and Match all/any pattern as Type and
@@ -1681,6 +1689,7 @@
       orgPills: $("org-pills"),
       typePillsPreview: $("type-pills-preview"),
       subPillsPreview: $("sub-pills-preview"),
+      topicPillsPreview: $("topic-pills-preview"),
       orgPillsPreview: $("org-pills-preview"),
       subFgroup: $("sub-fgroup"),
       subFgroupPreview: $("sub-fgroup-preview"),
