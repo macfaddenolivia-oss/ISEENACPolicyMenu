@@ -36,19 +36,23 @@
     <div class="site-nav-inner">
       <!-- Same .info-btn/.tooltip reveal pattern used elsewhere on the
            site (see styles.css) — hover, keyboard focus, or tap on the
-           tab itself shows what that page is, copied verbatim from its
-           own header subtitle (index.html/research-resources.html)
-           rather than new copy. This page loads no JS of its own, so
-           the tap-to-open behavior on touch (see setupInfoTooltips in
-           shared-ui.js) needs that script included here too — hover and
-           keyboard focus work from the CSS alone either way. -->
+           tab itself shows what that page is, based on its own header
+           subtitle (index.html/research-resources.html). Deliberately
+           NOT kept verbatim in sync with it though: hovering between the
+           two tabs showed "in the United States" back to back on both
+           tooltips, reading as redundant, so that phrase is trimmed here
+           only, while both header subtitles still say it. This page
+           loads no JS of its own, so the tap-to-open behavior on touch
+           (see setupInfoTooltips in shared-ui.js) needs that script
+           included here too — hover and keyboard focus work from the
+           CSS alone either way. -->
       <span class="nav-item-wrap">
         <a href="./" aria-describedby="nav-tab-tooltip-policy">Policy Menu</a>
-        <span class="tooltip" id="nav-tab-tooltip-policy" role="tooltip">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action in the United States.</span>
+        <span class="tooltip" id="nav-tab-tooltip-policy" role="tooltip">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action.</span>
       </span>
       <span class="nav-item-wrap">
         <a href="research-resources.html" aria-describedby="nav-tab-tooltip-research">Research Resources</a>
-        <span class="tooltip" id="nav-tab-tooltip-research" role="tooltip">Databases, tools, and data sources to support environmental health research in the United States.</span>
+        <span class="tooltip" id="nav-tab-tooltip-research" role="tooltip">Databases, tools, and data sources to support environmental health research.</span>
       </span>
     </div>
   </nav>

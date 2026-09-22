@@ -101,16 +101,20 @@
       <!-- Same .info-btn/.tooltip reveal pattern as the Match all/any
            and "Is it still live" info icons (see styles.css) — hover,
            keyboard focus, or tap on the tab itself shows what that page
-           is, copied verbatim from its own header subtitle rather than
-           new copy. aria-describedby (not aria-label) since the link's
-           own text is already its accessible name. -->
+           is, based on its own header subtitle. Deliberately NOT kept
+           verbatim in sync with it though: hovering between the two tabs
+           showed "in the United States" back to back on both tooltips,
+           reading as redundant, so that phrase is trimmed here only,
+           while both header subtitles still say it. aria-describedby
+           (not aria-label) since the link's own text is already its
+           accessible name. -->
       <span class="nav-item-wrap">
         <a href="./" aria-current="page" aria-describedby="nav-tab-tooltip-policy">Policy Menu</a>
-        <span class="tooltip" id="nav-tab-tooltip-policy" role="tooltip">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action in the United States.</span>
+        <span class="tooltip" id="nav-tab-tooltip-policy" role="tooltip">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action.</span>
       </span>
       <span class="nav-item-wrap">
         <a href="research-resources.html" aria-describedby="nav-tab-tooltip-research">Research Resources</a>
-        <span class="tooltip" id="nav-tab-tooltip-research" role="tooltip">Databases, tools, and data sources to support environmental health research in the United States.</span>
+        <span class="tooltip" id="nav-tab-tooltip-research" role="tooltip">Databases, tools, and data sources to support environmental health research.</span>
         <!-- Quiet, persistent pointer at this tab, replacing the old
              full-width .research-callout banner below the header.
              Decorative only — the link text already says where it
@@ -174,7 +178,7 @@
             <line x1="12" y1="11" x2="12" y2="16"></line>
             <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"></circle>
           </svg>
-          <span class="tooltip" role="tooltip">AND: a resource must match at least one selected tag in every filter category where you've made a selection (Type, Subtype, Topic, and Organization — only when more than one is active). OR: matching in just one active category is enough. Selecting multiple tags within the same category is always OR — picking two Types shows resources matching either one, not both.</span>
+          <span class="tooltip" role="tooltip">AND: a resource must match every filter category where you've made a selection (Type, Subtype, Topic, and Organization). This only matters once more than one category is active. OR: matching just one active category is enough. Picking multiple tags within the same category is always OR, so selecting two Types matches either one, not both.</span>
         </button>
       </div>
 
