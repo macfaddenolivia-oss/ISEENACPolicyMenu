@@ -2390,14 +2390,27 @@ footer.foot {
 
 /* A slim second row under the main header bar, present on every page
    (index.html, privacy-policy.html, research-resources.html) so
-   Research Resources is reachable from anywhere, not just the homepage. */
+   Research Resources is reachable from anywhere, not just the homepage.
+   Two-layer split (bar + centered inner), same pattern .site-header/
+   .site-header-inner already uses: .site-nav itself stays full-bleed so
+   its background/border still span the whole viewport, while
+   .site-nav-inner carries the same max-width/centering/side-padding as
+   .wrap and .site-header-inner, so the tab links line up with the
+   actual content column below (search bar, cards) instead of the bare
+   viewport edge — the two only coincided before on viewports narrow
+   enough that .wrap's own 1600px cap never kicked in. */
 .site-nav {
-  display: flex;
-  gap: 20px;
-  padding: 10px clamp(16px, 4vw, 40px);
   background: var(--surface-2);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+}
+
+.site-nav-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  gap: 20px;
+  padding: 10px clamp(16px, 4vw, 40px);
 }
 
 .site-nav a {
@@ -2532,15 +2545,55 @@ footer.foot {
   box-shadow: none;
 }
 
-/* Research cards show only the Type tag now (no Subtype), so the row
-   holding it is usually a single small pill — the shared .tagrow's
-   10px margin-bottom (sized for the Policy Menu's usual two-tag row)
-   reads as a touch loose above that lighter row; tightened slightly
-   just on this page's cards. */
-.rr-card .tagrow {
-  margin-bottom: 8px;
+/* Research cards' own compactness pass — every rule below is scoped to
+   .rr-card (never the bare .card/.tagrow/.desc/.meta/.topic-pills base
+   rules those classes share with the Policy Menu) so none of this
+   touches that page's cards. Tightens the margin/padding between each
+   section of the card — title, Type tag, description, the two dashed
+   dividers (above the creator/level/location meta row and above the
+   topic pills row), and the meta block itself — plus the card's own
+   top/bottom padding, without changing the Type tag's own look, the
+   left-edge color stripe, the status badge, the dividers' own dashed
+   style, any font size/line-height, or .grid's align-items:stretch
+   (still stretches every card in a row to the tallest one — this only
+   shrinks how tall that tallest card is in the first place). .desc's
+   -webkit-line-clamp:3 has no minimum-height effect of its own — a
+   short description just renders at its own natural (shorter) height;
+   the empty space visible on short-description cards is the stretched
+   row height plus .meta's margin-top:auto (deliberately kept, per
+   above) absorbing the slack above the meta block, not a separate
+   reservation to remove here.
+   Card's own top/bottom padding — sides left alone. */
+.card.rr-card {
+  padding-top: 13px;
+  padding-bottom: 12px;
 }
 
+/* Title -> Type tag gap. .card.rr-card (not .rr-card alone) so this
+   unambiguously outranks the base .card h3's specificity rather than
+   relying on a same-specificity source-order tiebreak. */
+.card.rr-card h3 {
+  margin-bottom: 5px;
+}
+
+/* Type tag -> description gap (was 10px shared, then 8px here). */
+.rr-card .tagrow {
+  margin-bottom: 5px;
+}
+
+/* Divider 1: gap above the creator/level/location row. */
+.rr-card .meta {
+  padding-top: 7px;
+}
+.rr-card .meta-inner {
+  padding-top: 6px;
+}
+
+/* Divider 2: gap above the topic pills row. */
+.rr-card .topic-pills {
+  margin-top: 7px;
+  padding-top: 6px;
+}
 
 .topic-pills {
   display: flex;
