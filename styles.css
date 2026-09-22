@@ -1592,6 +1592,17 @@ mark {
   gap: 10px;
 }
 
+/* Equal-width buttons regardless of their text length ("Go to Policy
+   Menu" vs. the longer "Go to Research Resources") — same flex-grow/
+   justify-content/min-height pattern .onboarding-modal-actions .btn
+   already uses for its own two-button row, just with a taller
+   flex-basis to match this pair's longer label text. */
+.notfound-actions .btn {
+  flex: 1 1 160px;
+  justify-content: center;
+  min-height: 44px;
+}
+
 .skeleton-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
