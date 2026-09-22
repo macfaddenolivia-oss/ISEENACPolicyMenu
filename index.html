@@ -87,16 +87,19 @@
   </div>
   <nav class="site-nav" aria-label="Site">
     <a href="index.html" aria-current="page">Policy Menu</a>
-    <a href="research-resources.html">Research Resources</a>
+    <span class="nav-item-wrap">
+      <a href="research-resources.html">Research Resources</a>
+      <!-- Quiet, persistent pointer at this tab, replacing the old
+           full-width .research-callout banner below the header.
+           Decorative only — the link text already says where it
+           goes — so it's hidden from assistive tech and never
+           intercepts clicks (see .nav-nudge in styles.css). -->
+      <span class="nav-nudge" aria-hidden="true">New: data for your research</span>
+    </span>
   </nav>
 </header>
 
 <div class="wrap">
-
-  <div class="research-callout">
-    <span class="research-callout-text">Looking for data to support your research? Explore our Research Resources page.</span>
-    <a class="btn btn-primary research-callout-btn" href="research-resources.html">Explore Research Resources</a>
-  </div>
 
   <div class="controls" id="controls">
     <div class="searchrow">

@@ -2414,33 +2414,72 @@ footer.foot {
   text-underline-offset: 4px;
 }
 
-/* ---------- Research Resources callout (on the Policy Menu homepage) ---------- */
+/* ---------- Research Resources nav nudge (Policy Menu only) ---------- */
 
-/* Same shape/rhythm as .feedback-cta, but a distinct navy tint (rather
-   than the general teal --accent) so it reads as pointing at a
-   different destination, not another flavor of the feedback ask. */
-.research-callout {
-  display: flex;
+/* Positioning context for .nav-nudge below — wraps just the "Research
+   Resources" link (not the whole nav) so the bubble anchors to that
+   link specifically rather than the nav bar as a whole. The wrapper
+   has no padding/border of its own and only the <a> participates in
+   its layout (.nav-nudge is position:absolute, taken out of flow), so
+   the <a>'s own rendered box — and the tour's getBoundingClientRect
+   highlight around '.site-nav a[href="research-resources.html"]' — is
+   unaffected by this wrapper's presence. */
+.nav-item-wrap {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  background: color-mix(in srgb, var(--brand-navy) 7%, var(--surface));
-  border: 1px solid var(--brand-slate);
-  border-radius: var(--radius);
 }
 
-.research-callout-text {
-  color: var(--text);
-  font-size: var(--fs-label);
+/* Small, quiet, persistent pointer at the Research Resources tab,
+   replacing the old full-width .research-callout banner that used to
+   sit below the header. Reads as a little speech bubble aimed up at
+   the nav tab rather than another banner competing with the page
+   below it. Purely decorative (the link text already says where it
+   goes) — aria-hidden and pointer-events:none so it never affects the
+   link's own click target or screen-reader reading order. Anchored to
+   the wrap's right edge (not centered) since this is the nav's
+   last/rightmost item — growing further right could run past the
+   viewport on narrow screens. */
+.nav-nudge {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 5;
+  max-width: min(190px, calc(100vw - 32px));
+  padding: 5px 9px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--brand-navy-deep);
+  font-size: var(--fs-meta);
+  font-weight: 640;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
 }
 
-.research-callout-btn { flex: none; white-space: nowrap; }
-
-@media (max-width: 560px) {
-  .research-callout { flex-direction: column; text-align: center; padding: 14px 16px; }
+/* Bubble's pointer, aimed up at the tab above it — two stacked
+   triangles (border-colored behind, background-colored in front, 1px
+   apart) so the pointer reads with the same thin outline as the
+   bubble itself instead of a flat, borderless wedge. */
+.nav-nudge::before,
+.nav-nudge::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+}
+.nav-nudge::before {
+  top: -7px;
+  border-bottom: 6px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+.nav-nudge::after {
+  top: -6px;
+  border-bottom: 6px solid var(--accent-soft);
 }
 
 /* ---------- Research Resources page ---------- */
