@@ -6,9 +6,10 @@
 // Menu and Research Resources, just in whichever order matches where
 // it was started. Entirely self-contained — own storage keys, own
 // element lookups, own try/catch — so it can never interfere with
-// setupFeedbackModal in app.js (separate sessionStorage key, separate
-// timer, no shared state, no calls into app.js/research.js at all).
-// Loaded on both index.html and research-resources.html.
+// SharedUI.setupFeedbackModal (separate sessionStorage keys per popup
+// per page, separate timer, no shared state, no calls into
+// app.js/research.js at all). Loaded on both index.html and
+// research-resources.html.
 (function () {
   // Three sessionStorage keys, each meaning something distinct — this
   // used to be one shared "seen" flag, but the popup's suppression

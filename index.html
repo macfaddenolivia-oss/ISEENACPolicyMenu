@@ -311,17 +311,19 @@
 </div>
 
 <!-- Shown once, ~45s after page load, unless already dismissed this
-     session (sessionStorage — see setupFeedbackModal in app.js) or the
-     footer CTA above already covers the same ask for anyone who scrolls
-     that far without needing a popup at all. Two separate asks stacked
-     in one modal: the email signup (primary — first) and the existing
-     feedback-survey link (secondary, below a divider) — kept as two
-     distinct links rather than one merged form so neither ask reads as
-     a required field of the other. Signup opens the Google Form in its
-     own tab rather than embedding it here — an embedded iframe showed
-     Google's own account-switcher bar and a second copy of the form's
-     own title/description, which duplicated this modal's own heading
-     and copy right below it. -->
+     session (sessionStorage — see SharedUI.setupFeedbackModal in
+     shared-ui.js, called from app.js with this page's own storage key)
+     or the footer CTA above already covers the same ask for anyone who
+     scrolls that far without needing a popup at all. Two separate asks
+     stacked in one modal: the email signup (primary — first) and the
+     existing feedback-survey link (secondary, below a divider) — kept
+     as two distinct links rather than one merged form so neither ask
+     reads as a required field of the other. Signup opens the Google
+     Form in its own tab rather than embedding it here — an embedded
+     iframe showed Google's own account-switcher bar and a second copy
+     of the form's own title/description, which duplicated this modal's
+     own heading and copy right below it. Research Resources reuses this
+     exact same markup/behavior — see research-resources.html. -->
 <div class="feedback-modal-backdrop" id="feedback-modal-backdrop" hidden>
   <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
     <button class="feedback-modal-close" id="feedback-modal-close" type="button" aria-label="Close">

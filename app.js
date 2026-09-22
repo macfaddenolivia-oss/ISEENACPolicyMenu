@@ -446,8 +446,11 @@
   /* ---------------- rendering ---------------- */
 
   // search/person/empty/dice come from shared-ui.js (byte-identical to
-  // research.js's copies) — copy/check/compass/close stay local since
-  // Research Resources has no use for any of them.
+  // research.js's copies) — copy/check/compass stay local since
+  // Research Resources has no use for either. close also used to live
+  // here, but moved to SharedUI.ICONS once the feedback modal itself
+  // (which was the only thing using it) moved to shared-ui.js — see
+  // SharedUI.setupFeedbackModal.
   var ICON = {
     search: SharedUI.ICONS.search,
     person: SharedUI.ICONS.person,
@@ -459,8 +462,6 @@
     dice: SharedUI.ICONS.dice,
     compass:
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
-    close:
-      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
   };
 
   function pillHTML(value, count, active, kind) {
@@ -1525,107 +1526,6 @@
     });
   }
 
-  // Feedback popup: shown once, ~45s after page load, unless already
-  // dismissed this session (sessionStorage, not localStorage — it comes
-  // back on a future visit, not just a future page load in the same
-  // one). Entirely self-contained — its own element lookups, wrapped in
-  // one outer try/catch — rather than routed through boot()'s strict
-  // `el` validation above, so a missing or broken popup element can
-  // never take down the core filtering app; it just quietly never
-  // shows. Independent of whether resource data ends up loading
-  // successfully, so it's called unconditionally from boot(), not from
-  // start() (which only runs once data's in hand).
-  function setupFeedbackModal() {
-    try {
-      var STORAGE_KEY = "feedbackModalDismissed";
-      // Guarded on its own: some browsers' stricter privacy modes throw
-      // on sessionStorage access entirely rather than just returning
-      // null, which would otherwise trip the outer catch below and
-      // silently cancel the popup before it ever got a chance to
-      // schedule its timer. Defaulting to "not dismissed" here means it
-      // still shows in that case — it just won't remember being
-      // dismissed across reloads, same fallback dismiss() already uses.
-      var alreadyDismissed = false;
-      try {
-        alreadyDismissed = !!sessionStorage.getItem(STORAGE_KEY);
-      } catch (e) {
-        /* storage blocked/unavailable */
-      }
-      if (alreadyDismissed) return;
-
-      var backdrop = document.getElementById("feedback-modal-backdrop");
-      var closeBtn = document.getElementById("feedback-modal-close");
-      var closeIcon = document.getElementById("feedback-modal-close-icon");
-      var link = document.getElementById("feedback-modal-link");
-      var signupLink = document.getElementById("feedback-modal-signup-link");
-      if (!backdrop || !closeBtn || !link) return;
-
-      if (closeIcon) closeIcon.innerHTML = ICON.close;
-
-      var dismissed = false;
-      var lastFocused = null;
-
-      function onKeydown(e) {
-        if (e.key === "Escape") dismiss();
-      }
-
-      function dismiss() {
-        if (dismissed) return;
-        dismissed = true;
-        try {
-          sessionStorage.setItem(STORAGE_KEY, "1");
-        } catch (e) {
-          /* private browsing / storage disabled — it just won't stay
-             dismissed past this page load, which is an acceptable
-             fallback rather than something to block on */
-        }
-        backdrop.classList.remove("show");
-        // Let the fade-out finish before pulling it fully out of layout,
-        // rather than having it vanish mid-transition.
-        setTimeout(function () {
-          backdrop.hidden = true;
-        }, 220);
-        document.removeEventListener("keydown", onKeydown);
-        if (lastFocused && typeof lastFocused.focus === "function") {
-          lastFocused.focus();
-        }
-      }
-
-      closeBtn.addEventListener("click", dismiss);
-      link.addEventListener("click", dismiss);
-      if (signupLink) signupLink.addEventListener("click", dismiss);
-      backdrop.addEventListener("click", function (e) {
-        if (e.target === backdrop) dismiss();
-      });
-
-      setTimeout(function () {
-        if (dismissed || sessionStorage.getItem(STORAGE_KEY)) return;
-        lastFocused = document.activeElement;
-        backdrop.hidden = false;
-        // Double rAF: guarantees the browser has painted the
-        // pre-transition state (opacity 0, offset) after [hidden] comes
-        // off before .show flips it — a single frame can occasionally
-        // still coalesce with the class change and skip the transition
-        // entirely.
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            backdrop.classList.add("show");
-          });
-        });
-        document.addEventListener("keydown", onKeydown);
-        closeBtn.focus();
-      }, 45000);
-    } catch (e) {
-      // Never let a feedback-popup issue affect the rest of the app —
-      // still logged (not thrown/shown to the visitor) so a real
-      // problem is visible in devtools instead of just silently never
-      // showing the popup with no trace of why.
-      if (typeof console !== "undefined" && console.error) {
-        console.error("Feedback popup failed to set up:", e);
-      }
-    }
-  }
-
   function start(records) {
     ALL = records;
 
@@ -1748,7 +1648,15 @@
       /* placeholder text is cosmetic — never block startup on it */
     }
 
-    setupFeedbackModal();
+    // Shown once, ~45s after page load, unless already dismissed this
+    // session — see SharedUI.setupFeedbackModal for the full behavior
+    // (entirely self-contained, so a missing/broken modal element can
+    // never take down the core filtering app). "feedbackModalDismissed"
+    // (no page suffix) is this key's original, unchanged name from
+    // before Research Resources existed — kept as-is rather than
+    // renamed, so it stays distinct from Research Resources' own
+    // "feedbackModalDismissedResearch" without disturbing this one.
+    SharedUI.setupFeedbackModal("feedbackModalDismissed");
 
     // Fetches the published Google Sheet at runtime (hosted and dev-server
     // modes both hit the network here).
