@@ -52,7 +52,7 @@
   // that's already there rather than adding a new one just for this.
   var IS_RESEARCH_PAGE = !!document.getElementById("rr-grid");
   var PAGE_ID = IS_RESEARCH_PAGE ? "research" : "policy";
-  var PAGE_URL = { policy: "index.html", research: "research-resources.html" };
+  var PAGE_URL = { policy: "./", research: "research-resources.html" };
 
   // Each page's own steps, independent of which direction the tour is
   // running — reused as-is in both directions (see buildSteps below),
@@ -107,9 +107,9 @@
       crossPage: "research-resources.html"
     },
     research: {
-      selector: '.site-nav a[href="index.html"]',
+      selector: '.site-nav a[href="./"]',
       text: "There's also the Policy Menu: guides, legal resources, and advocacy tools for turning environmental health science into policy and action. Click Continue to see it.",
-      crossPage: "index.html"
+      crossPage: "./"
     }
   };
 
