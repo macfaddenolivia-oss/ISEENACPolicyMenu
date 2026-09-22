@@ -584,11 +584,11 @@
         "</span>";
     }
 
+    // Level/Location/Is it a governmental site? stay parsed on the
+    // record (see rowsToRecords) but are no longer shown on the card —
+    // only Creator renders here now.
     var meta = "";
     if (r.creator) meta += metaItem(ICON_PERSON, r.creator);
-    if (r.level) meta += metaItem(null, "Level: " + r.level);
-    if (r.location) meta += metaItem(null, "Location: " + r.location);
-    if (r.govSite) meta += metaItem(null, "Government site: " + r.govSite);
 
     var topicsHTML = "";
     if (r.topics.length) {
