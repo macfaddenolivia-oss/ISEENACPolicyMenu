@@ -256,6 +256,7 @@
     terms: [],
     types: [], // selected Type values (OR within group)
     subs: [],  // selected Subtype values (OR within group)
+    topics: [], // selected Topic values (OR within group) — a resource can carry several Topics, so matching one is enough (see FACETS' multi flag below)
     orgs: [],  // selected Organization (Creator) values (OR within group)
     matchMode: "all", // "all" (every active facet must match) or "any" (at least one does) — "all" is the default
   };
@@ -302,13 +303,19 @@
     });
   }
 
-  // Type/Subtype/Organization are the three facets a resource is filtered
-  // on. matchMode governs how the three combine; within a single facet,
-  // multiple selected values are always OR'd together (see `passes`
-  // below) regardless of matchMode.
+  // Type/Subtype/Topic/Organization are the four facets a resource is
+  // filtered on. matchMode governs how they combine; within a single
+  // facet, multiple selected values are always OR'd together (see
+  // `passes` below) regardless of matchMode. Topic is `multi: true`
+  // since r.topics is an array (a resource can carry several) rather
+  // than the single scalar value the other three fields hold — passes()
+  // below checks *any* of a multi facet's values are present instead of
+  // an exact match, but still combines with the other facets via the
+  // same matchMode logic as everything else.
   var FACETS = [
     { field: "type", list: "types" },
     { field: "subtype", list: "subs" },
+    { field: "topics", list: "topics", multi: true },
     { field: "creator", list: "orgs" },
   ];
 
@@ -320,7 +327,15 @@
       var f = FACETS[i];
       var values = state[f.list];
       if (!values.length) continue;
-      active.push(values.indexOf(r[f.field]) !== -1);
+      if (f.multi) {
+        active.push(
+          r[f.field].some(function (v) {
+            return values.indexOf(v) !== -1;
+          })
+        );
+      } else {
+        active.push(values.indexOf(r[f.field]) !== -1);
+      }
     }
 
     if (!active.length) return true;
@@ -335,6 +350,7 @@
       state.q.trim() ||
       state.types.length ||
       state.subs.length ||
+      state.topics.length ||
       state.orgs.length
     );
   }
@@ -342,6 +358,7 @@
   function clearAll() {
     state.types.length = 0;
     state.subs.length = 0;
+    state.topics.length = 0;
     state.orgs.length = 0;
     state.matchMode = "all";
     setSearch("");
@@ -382,8 +399,14 @@
   // included, so its count is just the current, unmodified result
   // count. Both `current` and the per-value work below run against a
   // stable snapshot captured up front, before any temporary
-  // state.types/subs/orgs mutation happens later in the same pass.
-  function countIncluding(listKey, field) {
+  // state.types/subs/topics/orgs mutation happens later in the same
+  // pass. `multi`, when true, treats r[field] as an array a record can
+  // have several values in (Topic) rather than one scalar value — the
+  // "does this record count toward v" check becomes membership
+  // (indexOf(v) !== -1) instead of equality, and a record contributes
+  // every one of its own values as its own candidate rather than just
+  // one.
+  function countIncluding(listKey, field, multi) {
     var counts = Object.create(null);
     var original = state[listKey];
     var alreadyOn = Object.create(null);
@@ -393,22 +416,28 @@
     var current = currentResults();
     var facetActive = original.length > 0;
 
+    function matches(rr, v) {
+      return multi ? rr[field].indexOf(v) !== -1 : rr[field] === v;
+    }
+
     ALL.forEach(function (r) {
-      var v = r[field];
-      if (!v || counts[v] !== undefined) return;
-      if (alreadyOn[v]) {
-        counts[v] = current.length;
-        return;
-      }
-      if (!facetActive) {
-        counts[v] = current.filter(function (rr) {
-          return rr[field] === v;
-        }).length;
-        return;
-      }
-      state[listKey] = original.concat([v]);
-      counts[v] = currentResults().length;
-      state[listKey] = original;
+      var values = multi ? r[field] : [r[field]];
+      values.forEach(function (v) {
+        if (!v || counts[v] !== undefined) return;
+        if (alreadyOn[v]) {
+          counts[v] = current.length;
+          return;
+        }
+        if (!facetActive) {
+          counts[v] = current.filter(function (rr) {
+            return matches(rr, v);
+          }).length;
+          return;
+        }
+        state[listKey] = original.concat([v]);
+        counts[v] = currentResults().length;
+        state[listKey] = original;
+      });
     });
 
     return counts;
@@ -664,6 +693,7 @@
   function renderFilters() {
     var typeCounts = countIncluding("types", "type");
     var subCounts = countIncluding("subs", "subtype");
+    var topicCounts = countIncluding("topics", "topics", true);
     var orgCounts = countIncluding("orgs", "creator");
 
     var types = Object.keys(typeHue).sort(bySelectionThenCount(typeCounts, state.types));
@@ -733,6 +763,27 @@
       return state.subs.indexOf(v) !== -1;
     });
 
+    // Topic — same source and split/trim as the card's own topic-pills
+    // (see rowsToRecords' r.topics), same sort/zero-count/Match all-any
+    // pattern as Type/Subtype/Organization, but no preview row at all:
+    // only el.topicPills (inside #filters-topic, a plain .filters box
+    // with no .filters-preview sibling) is populated, so Topic stays
+    // completely absent from the default view and only appears once
+    // "Browse filters" is opened — the existing .filters/.filters-open
+    // CSS rule already does that hiding with no extra JS here.
+    var allTopics = {};
+    ALL.forEach(function (r) {
+      r.topics.forEach(function (t) {
+        if (t) allTopics[t] = true;
+      });
+    });
+    var topics = Object.keys(allTopics).sort(bySelectionThenCount(topicCounts, state.topics));
+    el.topicPills.innerHTML = topics
+      .map(function (t) {
+        return pillHTML(t, topicCounts[t] || 0, state.topics.indexOf(t) !== -1, "topic");
+      })
+      .join("");
+
     // "Organization" in the UI is the Creator column underneath — same
     // sort, preview, zero-count, and Match all/any pattern as Type and
     // Subtype (though it has no Type-style gating of its own).
@@ -781,6 +832,9 @@
     });
     state.subs.forEach(function (v) {
       parts.push(crumb("sub", "Subtype", v));
+    });
+    state.topics.forEach(function (v) {
+      parts.push(crumb("topic", "Topic", v));
     });
     state.orgs.forEach(function (v) {
       parts.push(crumb("org", "Organization", v));
@@ -903,7 +957,7 @@
     el.clearFilters.disabled = !hasActiveFilters() && !randomPick;
 
     // Show how many pill filters are active, since they're collapsed on mobile
-    var activePills = state.types.length + state.subs.length + state.orgs.length;
+    var activePills = state.types.length + state.subs.length + state.topics.length + state.orgs.length;
     el.filterBadge.textContent = activePills ? String(activePills) : "";
 
     if (!results.length) {
@@ -985,6 +1039,7 @@
   function applyFilterClick(kind, value) {
     if (kind === "type") toggleIn(state.types, value);
     else if (kind === "sub") toggleIn(state.subs, value);
+    else if (kind === "topic") toggleIn(state.topics, value);
     else if (kind === "org") toggleIn(state.orgs, value);
     exitRandomPick();
     render();
@@ -1214,6 +1269,8 @@
         toggleIn(state.types, value);
       } else if (kind === "sub") {
         toggleIn(state.subs, value);
+      } else if (kind === "topic") {
+        toggleIn(state.topics, value);
       } else if (kind === "org") {
         toggleIn(state.orgs, value);
       }
@@ -1620,6 +1677,7 @@
       clearSearch: $("clear-search"),
       typePills: $("type-pills"),
       subPills: $("sub-pills"),
+      topicPills: $("topic-pills"),
       orgPills: $("org-pills"),
       typePillsPreview: $("type-pills-preview"),
       subPillsPreview: $("sub-pills-preview"),

@@ -197,6 +197,7 @@
     terms: [],
     types: [], // selected Type values (OR within this facet, same as the Policy Menu's Type pills)
     onlineValues: [], // selected "Is it still online" raw values (OR within this facet)
+    topics: [], // selected Topic values (OR within this facet) — a resource can carry several Topics, so matching one is enough (see countIncluding's multi flag / passes below)
     creators: [], // selected Creator values (OR within this facet, same as the Policy Menu's Organization pills)
   };
   var el = {};
@@ -240,6 +241,16 @@
     if (!matchesSearch(r)) return false;
     if (state.types.length && state.types.indexOf(r.type) === -1) return false;
     if (state.onlineValues.length && state.onlineValues.indexOf(r.onlineBucket) === -1) return false;
+    // Topic is multi-valued (r.topics is an array) — matching *any* one
+    // of the selected Topics is enough, not an exact single-value match.
+    if (
+      state.topics.length &&
+      !r.topics.some(function (t) {
+        return state.topics.indexOf(t) !== -1;
+      })
+    ) {
+      return false;
+    }
     if (state.creators.length && state.creators.indexOf(r.creator) === -1) return false;
     return true;
   }
@@ -253,6 +264,7 @@
       state.q.trim() ||
       state.types.length ||
       state.onlineValues.length ||
+      state.topics.length ||
       state.creators.length
     );
   }
@@ -272,7 +284,13 @@
 
   // Live count per candidate value in `field` under the *other* active
   // filters — same simulate-add approach as app.js's countIncluding.
-  function countIncluding(listKey, field) {
+  // `multi`, when true, treats r[field] as an array a record can have
+  // several values in (Topic) rather than one scalar value — the "does
+  // this record count toward v" check becomes membership
+  // (indexOf(v) !== -1) instead of equality, and a record contributes
+  // every one of its own values as its own candidate rather than just
+  // one.
+  function countIncluding(listKey, field, multi) {
     var counts = Object.create(null);
     var original = state[listKey];
     var alreadyOn = Object.create(null);
@@ -282,22 +300,28 @@
     var current = currentResults();
     var facetActive = original.length > 0;
 
+    function matches(rr, v) {
+      return multi ? rr[field].indexOf(v) !== -1 : rr[field] === v;
+    }
+
     ALL.forEach(function (r) {
-      var v = r[field];
-      if (!v || counts[v] !== undefined) return;
-      if (alreadyOn[v]) {
-        counts[v] = current.length;
-        return;
-      }
-      if (!facetActive) {
-        counts[v] = current.filter(function (rr) {
-          return rr[field] === v;
-        }).length;
-        return;
-      }
-      state[listKey] = original.concat([v]);
-      counts[v] = currentResults().length;
-      state[listKey] = original;
+      var values = multi ? r[field] : [r[field]];
+      values.forEach(function (v) {
+        if (!v || counts[v] !== undefined) return;
+        if (alreadyOn[v]) {
+          counts[v] = current.length;
+          return;
+        }
+        if (!facetActive) {
+          counts[v] = current.filter(function (rr) {
+            return matches(rr, v);
+          }).length;
+          return;
+        }
+        state[listKey] = original.concat([v]);
+        counts[v] = currentResults().length;
+        state[listKey] = original;
+      });
     });
 
     return counts;
@@ -469,18 +493,32 @@
     }
   }
 
-  // One facet's pills, full wall + preview row — shared by Online, Type,
-  // and Creator below, same as app.js reuses its own rendering for
-  // Type/Subtype/Organization rather than writing one version per
-  // facet. `precomputedCounts`, when given, is used instead of calling
-  // countIncluding again — render() passes the Type counts it already
-  // computed for itself, so the same numbers reach the Type filter
-  // pills and each card's Type tag without computing them twice.
-  function renderFacetPills(listKey, field, kind, label, previewCount, pillsEl, previewEl, precomputedCounts) {
-    var counts = precomputedCounts || countIncluding(listKey, field);
+  // One facet's pills, full wall + (optionally) preview row — shared by
+  // Online, Type, Topic, and Creator below, same as app.js reuses its
+  // own rendering for Type/Subtype/Topic/Organization rather than
+  // writing one version per facet. `precomputedCounts`, when given, is
+  // used instead of calling countIncluding again — render() passes the
+  // Type counts it already computed for itself, so the same numbers
+  // reach the Type filter pills and each card's Type tag without
+  // computing them twice. `multi`, when true, treats r[field] as an
+  // array (Topic) rather than one scalar value, same meaning as in
+  // countIncluding. `previewEl`/`previewCount`, when omitted (Topic),
+  // skip the preview row entirely — only the full wall in `pillsEl` is
+  // populated, so that facet stays absent from the default view and
+  // only appears once "Browse filters" is opened (the existing
+  // .filters/.filters-open CSS rule already does that hiding, no extra
+  // JS needed here).
+  function renderFacetPills(listKey, field, kind, label, previewCount, pillsEl, previewEl, precomputedCounts, multi) {
+    var counts = precomputedCounts || countIncluding(listKey, field, multi);
     var values = Object.keys(
       ALL.reduce(function (acc, r) {
-        if (r[field]) acc[r[field]] = true;
+        if (multi) {
+          r[field].forEach(function (v) {
+            if (v) acc[v] = true;
+          });
+        } else if (r[field]) {
+          acc[r[field]] = true;
+        }
         return acc;
       }, {})
     ).sort(bySelectionThenCount(counts, state[listKey]));
@@ -490,6 +528,8 @@
         return pillHTML(v, counts[v] || 0, state[listKey].indexOf(v) !== -1, kind);
       })
       .join("");
+
+    if (!previewEl) return;
 
     var forPreview = relevantValues(values, counts, state[listKey]);
     var preview = previewSubset(forPreview, state[listKey], previewCount);
@@ -505,16 +545,19 @@
   }
 
   // Combined badge on the single "Browse filters" button — total active
-  // pills across all three facets, same as app.js's #filter-badge
-  // counting Type + Subtype + Organization together. typeCounts is
-  // computed once by render() and passed in so the Type filter pill and
-  // each card's Type tag (see cardHTML) always show the same number.
+  // pills across all four facets, same as app.js's #filter-badge
+  // counting Type + Subtype + Topic + Organization together. typeCounts
+  // is computed once by render() and passed in so the Type filter pill
+  // and each card's Type tag (see cardHTML) always show the same
+  // number. Topic gets no preview element (see renderFacetPills) — it
+  // stays hidden until "Browse filters" is opened.
   function renderFilterPills(typeCounts) {
     renderFacetPills("onlineValues", "onlineBucket", "online", "Live status", PREVIEW_ONLINE_COUNT, el.onlinePills, el.onlinePillsPreview);
     renderFacetPills("types", "type", "type", "Type", PREVIEW_TYPE_COUNT, el.typePills, el.typePillsPreview, typeCounts);
+    renderFacetPills("topics", "topics", "topic", "Topic", null, el.topicPills, null, null, true);
     renderFacetPills("creators", "creator", "org", "Creator", PREVIEW_CREATOR_COUNT, el.creatorPills, el.creatorPillsPreview);
 
-    var activePills = state.types.length + state.onlineValues.length + state.creators.length;
+    var activePills = state.types.length + state.onlineValues.length + state.topics.length + state.creators.length;
     el.filterBadge.textContent = activePills ? String(activePills) : "";
   }
 
@@ -646,6 +689,7 @@
   function clearAll() {
     state.types.length = 0;
     state.onlineValues.length = 0;
+    state.topics.length = 0;
     state.creators.length = 0;
     setSearch("");
     el.search.value = "";
@@ -681,6 +725,7 @@
       var kind = p.getAttribute("data-filter");
       var value = p.getAttribute("data-value");
       if (kind === "type") toggleIn(state.types, value);
+      else if (kind === "topic") toggleIn(state.topics, value);
       else if (kind === "org") toggleIn(state.creators, value);
       else if (kind === "online") toggleIn(state.onlineValues, value);
       exitRandomPick();
@@ -824,6 +869,7 @@
       onlinePillsPreview: $("rr-online-pills-preview"),
       typePills: $("rr-type-pills"),
       typePillsPreview: $("rr-type-pills-preview"),
+      topicPills: $("rr-topic-pills"),
       creatorPills: $("rr-creator-pills"),
       creatorPillsPreview: $("rr-creator-pills-preview"),
       filterToggle: $("rr-filter-toggle"),

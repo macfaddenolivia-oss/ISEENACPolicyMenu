@@ -151,12 +151,12 @@
             <line x1="12" y1="11" x2="12" y2="16"></line>
             <circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"></circle>
           </svg>
-          <span class="tooltip" role="tooltip">Match all: a resource must satisfy every filter category that has an active selection (Type, Subtype, and Organization — only when more than one is active) · Match any: satisfying just one active category is enough</span>
+          <span class="tooltip" role="tooltip">Match all: a resource must satisfy every filter category that has an active selection (Type, Subtype, Topic, and Organization — only when more than one is active) · Match any: satisfying just one active category is enough</span>
         </button>
       </div>
 
       <div class="filter-actions">
-        <button class="btn" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filters-typesub filters-org">
+        <button class="btn" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filters-typesub filters-topic filters-org">
           <span id="filter-toggle-label">Browse filters</span><span class="badge" id="filter-badge"></span>
         </button>
         <button class="btn" id="clear-filters" type="button" disabled>Clear filters</button>
@@ -199,6 +199,23 @@
             <div class="fgroup" id="sub-fgroup">
               <span class="flabel" id="lbl-sub">Subtype</span>
               <div class="pills" id="sub-pills" role="group" aria-labelledby="lbl-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Topic has no preview row on any breakpoint — it's tucked
+             entirely behind "Browse filters" so the default view stays
+             uncrowded (unlike Type/Subtype/Organization, which each show
+             a small preview plus this full wall). It needs no mobile-only
+             disclosure of its own either, since there's no preview here
+             to collapse-and-replace: the shared .filters/.filter-bar
+             .filters-open rule in styles.css is enough on every
+             breakpoint on its own. -->
+        <div class="filter-group-box" id="topic-filter-box">
+          <div class="filters" id="filters-topic">
+            <div class="fgroup" id="topic-fgroup">
+              <span class="flabel" id="lbl-topic">Topic</span>
+              <div class="pills" id="topic-pills" role="group" aria-labelledby="lbl-topic"></div>
             </div>
           </div>
         </div>

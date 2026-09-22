@@ -843,7 +843,7 @@ kbd {
   pointer-events: auto;
 }
 
-/* The two boxed groups (Type+Subtype, Organization), stacked. */
+/* The boxed groups (Type+Subtype, Topic, Organization), stacked. */
 .filter-bar-tags {
   grid-area: tags;
   min-width: 0;
@@ -860,9 +860,9 @@ kbd {
 
 .filter-actions .btn { justify-content: center; white-space: nowrap; }
 
-/* Type+Subtype and Organization each get their own bordered box so the
-   three filter categories read as two distinct groups rather than one
-   continuous wall of tags. */
+/* Type+Subtype, Topic, and Organization each get their own bordered
+   box so the four filter categories read as three distinct groups
+   rather than one continuous wall of tags. */
 /* Muted by default — blends toward --surface-2 (the page background,
    --bg, is the same white as --surface itself now, so it can't supply
    this contrast the way it used to) rather than standing out as a
@@ -1021,18 +1021,23 @@ kbd {
 
 .pill[aria-pressed="true"] .dot { background: rgba(255, 255, 255, 0.85); }
 
-/* Subtype pills stay a lighter, thinner gray outline at regular weight —
-   no colored dot (it was never added for this kind — see pillHTML in
-   app.js), no hue-tinted fill, selected or not — so next to Type's
-   always-on solid fill below, Subtype reads as the quieter secondary
-   refinement rather than a second primary category. More specific than
-   the generic .pill[aria-pressed="true"] above, so it wins the cascade
-   for just this one property set; font-weight stays at the base .pill's
-   regular (unbolded) weight, since this rule doesn't touch it and Type's
+/* Subtype and Topic pills stay a lighter, thinner gray outline at
+   regular weight — no colored dot (never added for either kind — see
+   pillHTML in app.js/research.js), no hue-tinted fill, selected or
+   not — so next to Type's always-on solid fill below, both read as
+   quieter secondary refinements rather than a second primary category.
+   Without this, a selected pill of either kind would otherwise fall
+   through to the generic .pill[aria-pressed="true"] rule above and
+   pick up its hsl(var(--type-h, 220) ...) fallback — an unrelated blue
+   tint neither kind has any other reason to show. More specific than
+   that generic rule, so this wins the cascade for just this one
+   property set; font-weight stays at the base .pill's regular
+   (unbolded) weight, since this rule doesn't touch it and Type's
    bold-weight rule below is scoped to data-filter="type" only.
    Organization pills are left as they were. Same selectors at every
    width, so this holds on mobile too. */
-.pill[data-filter="sub"][aria-pressed="true"] {
+.pill[data-filter="sub"][aria-pressed="true"],
+.pill[data-filter="topic"][aria-pressed="true"] {
   color: var(--text);
   background: var(--surface-2);
   border-color: var(--border-strong);
