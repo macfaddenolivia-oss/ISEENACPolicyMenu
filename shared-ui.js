@@ -89,20 +89,39 @@
     });
   }
 
-  // Feedback/signup popup — shown once, ~45s after page load, unless
-  // already dismissed this session. Originally Policy-Menu-only (lived
-  // in app.js), now shared verbatim with Research Resources: the modal
-  // has no dependency on either page's dataset/filtering state, only on
-  // a fixed set of element IDs (feedback-modal-backdrop and friends —
-  // see the markup comment in index.html/research-resources.html) that
-  // both pages' HTML now defines identically, so this is a genuine
-  // page-agnostic UI helper like setupInfoTooltips/createToast above
-  // rather than something that needs to live in app.js or research.js.
-  // storageKey is the one thing callers must pass distinctly per page
-  // (e.g. "feedbackModalDismissed" for Policy Menu,
-  // "feedbackModalDismissedResearch" for Research Resources) so
-  // dismissing the popup on one page never suppresses it on the other —
-  // see each page's own boot()/setup call site.
+  // Feedback/signup popup — shown once, ~45s after the guided tour
+  // prompt is *resolved*, unless already dismissed this session.
+  // Originally Policy-Menu-only (lived in app.js), now shared verbatim
+  // with Research Resources: the modal has no dependency on either
+  // page's dataset/filtering state, only on a fixed set of element IDs
+  // (feedback-modal-backdrop and friends — see the markup comment in
+  // index.html/research-resources.html) that both pages' HTML now
+  // defines identically, so this is a genuine page-agnostic UI helper
+  // like setupInfoTooltips/createToast above rather than something that
+  // needs to live in app.js or research.js. storageKey is the one thing
+  // callers must pass distinctly per page (e.g. "feedbackModalDismissed"
+  // for Policy Menu, "feedbackModalDismissedResearch" for Research
+  // Resources) so dismissing the popup on one page never suppresses it
+  // on the other — see each page's own boot()/setup call site.
+  //
+  // The 45s countdown deliberately doesn't start on page load. It's
+  // gated on the "tourResolved" sessionStorage flag onboarding-tour.js
+  // sets the moment the "New here?" prompt is declined, or the tour
+  // itself ends (finished/skipped/closed, either leg) — see
+  // markTourResolved() there. If that flag is already set (resolution
+  // happened earlier, possibly on the other page), the countdown starts
+  // right away; otherwise this waits for the "tourResolved" CustomEvent
+  // that function also dispatches, so a same-page resolution is picked
+  // up immediately rather than needing to poll. If the visitor never
+  // touches the "New here?" prompt at all this visit, neither the flag
+  // nor the event ever fires, and this popup deliberately never shows —
+  // no fallback timer. Because the flag is sessionStorage (not a
+  // page-local variable), the cross-page case falls out for free: if
+  // the tour resolves on Research Resources having started on the
+  // Policy Menu, and the visitor later navigates back to the Policy
+  // Menu, that later page load sees the flag already set and starts its
+  // own 45s countdown from that load — no extra cross-page code needed
+  // here.
   function setupFeedbackModal(storageKey) {
     try {
       // Guarded on its own: some browsers' stricter privacy modes throw
@@ -165,23 +184,42 @@
         if (e.target === backdrop) dismiss();
       });
 
-      setTimeout(function () {
-        if (dismissed || sessionStorage.getItem(storageKey)) return;
-        lastFocused = document.activeElement;
-        backdrop.hidden = false;
-        // Double rAF: guarantees the browser has painted the
-        // pre-transition state (opacity 0, offset) after [hidden] comes
-        // off before .show flips it — a single frame can occasionally
-        // still coalesce with the class change and skip the transition
-        // entirely.
-        requestAnimationFrame(function () {
+      function startCountdown() {
+        setTimeout(function () {
+          if (dismissed || sessionStorage.getItem(storageKey)) return;
+          lastFocused = document.activeElement;
+          backdrop.hidden = false;
+          // Double rAF: guarantees the browser has painted the
+          // pre-transition state (opacity 0, offset) after [hidden]
+          // comes off before .show flips it — a single frame can
+          // occasionally still coalesce with the class change and skip
+          // the transition entirely.
           requestAnimationFrame(function () {
-            backdrop.classList.add("show");
+            requestAnimationFrame(function () {
+              backdrop.classList.add("show");
+            });
           });
+          document.addEventListener("keydown", onKeydown);
+          closeBtn.focus();
+        }, 45000);
+      }
+
+      var tourAlreadyResolved = false;
+      try {
+        tourAlreadyResolved = !!sessionStorage.getItem("tourResolved");
+      } catch (e) {
+        /* storage blocked/unavailable — falls through to waiting on the
+           same-page "tourResolved" event below, same as a fresh session */
+      }
+
+      if (tourAlreadyResolved) {
+        startCountdown();
+      } else {
+        document.addEventListener("tourResolved", function onTourResolved() {
+          document.removeEventListener("tourResolved", onTourResolved);
+          startCountdown();
         });
-        document.addEventListener("keydown", onKeydown);
-        closeBtn.focus();
-      }, 45000);
+      }
     } catch (e) {
       // Never let a feedback-popup issue affect the rest of the page —
       // still logged (not thrown/shown to the visitor) so a real

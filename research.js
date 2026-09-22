@@ -901,12 +901,14 @@
       /* placeholder text is cosmetic — never block startup on it */
     }
 
-    // Shown once, ~45s after page load, unless already dismissed this
-    // session — same modal markup/behavior as the Policy Menu's (see
-    // SharedUI.setupFeedbackModal), reusing the same feedback-survey and
-    // sign-up links since there's no Research-Resources-specific survey
-    // yet. A distinct storage key keeps dismissal independent of the
-    // Policy Menu's own popup and of the onboarding tour's popup.
+    // Shown once, ~45s after the "New here?" tour prompt is resolved
+    // (declined, or the tour itself finishes/is skipped), unless already
+    // dismissed this session — same modal markup/behavior as the Policy
+    // Menu's (see SharedUI.setupFeedbackModal), reusing the same
+    // feedback-survey and sign-up links since there's no
+    // Research-Resources-specific survey yet. A distinct storage key
+    // keeps dismissal independent of the Policy Menu's own popup and of
+    // the onboarding tour's popup.
     SharedUI.setupFeedbackModal("feedbackModalDismissedResearch");
 
     var devHint = function (err) {

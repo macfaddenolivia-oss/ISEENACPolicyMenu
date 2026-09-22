@@ -37,6 +37,20 @@
   // case as "engaged with," not "dismissed."
   var ACCEPTED_KEY = "onboardingTourAccepted";
   var DISMISSED_KEY = { policy: "onboardingTourDismissedPolicy", research: "onboardingTourDismissedResearch" };
+  // Set the moment the "New here?" prompt is *resolved* one way or the
+  // other — declined without starting the tour, or the tour itself ends
+  // (finished normally, skipped, or closed, on either leg) — see
+  // markTourResolved()'s two call sites below (setupPrompt's dismiss()
+  // and runTour's end()). SharedUI.setupFeedbackModal (shared-ui.js)
+  // reads this sessionStorage flag to gate when its own 45s countdown
+  // starts, so the feedback popup never competes with an
+  // in-progress/unresolved tour prompt. Being sessionStorage (not a
+  // page-local variable) is exactly what makes the cross-page case work
+  // for free: if the tour resolves on Research Resources having started
+  // on the Policy Menu, and the visitor later navigates back, that later
+  // page load sees this flag already set and starts its own countdown
+  // immediately — no extra cross-page plumbing needed.
+  var RESOLVED_KEY = "tourResolved";
   // One-shot cross-page handoff: written right before navigating away
   // from whichever page's own last (crossPage) step, read (and
   // immediately cleared) on the very next page load here. Only carries
@@ -165,6 +179,21 @@
     }
   }
 
+  // Fires exactly once per resolution (dismiss()/end() below each guard
+  // against re-firing on their own). The event fires even if the
+  // sessionStorage write itself fails, so a same-page feedback-modal
+  // listener still reacts immediately — it just won't persist across a
+  // later navigation in that fallback case, same tradeoff every other
+  // sessionStorage write in this file already makes.
+  function markTourResolved() {
+    try {
+      sessionStorage.setItem(RESOLVED_KEY, "1");
+    } catch (e) {
+      // private browsing / storage disabled — same fallback as above.
+    }
+    document.dispatchEvent(new CustomEvent("tourResolved"));
+  }
+
   // Whether THIS page's own popup is allowed to show right now — see
   // the DISMISSED_KEY comment above for why Research Resources' own
   // dismissal reaches back to suppress the Policy Menu's popup too, but
@@ -206,6 +235,7 @@
       if (!shown) return;
       shown = false;
       markDismissed(PAGE_ID);
+      markTourResolved();
       hidePrompt();
     }
 
@@ -491,6 +521,7 @@
 
     function end() {
       markAccepted();
+      markTourResolved();
       overlay.classList.remove("show");
       setTimeout(function () {
         overlay.hidden = true;

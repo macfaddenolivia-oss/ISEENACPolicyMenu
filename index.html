@@ -321,11 +321,13 @@
   </footer>
 </div>
 
-<!-- Shown once, ~45s after page load, unless already dismissed this
-     session (sessionStorage — see SharedUI.setupFeedbackModal in
-     shared-ui.js, called from app.js with this page's own storage key)
-     or the footer CTA above already covers the same ask for anyone who
-     scrolls that far without needing a popup at all. Two separate asks
+<!-- Shown once, ~45s after the "New here?" tour prompt is resolved
+     (declined, or the tour itself finishes/is skipped), unless already
+     dismissed this session (sessionStorage — see
+     SharedUI.setupFeedbackModal in shared-ui.js, called from app.js with
+     this page's own storage key) or the footer CTA above already covers
+     the same ask for anyone who scrolls that far without needing a
+     popup at all. Two separate asks
      stacked in one modal: the email signup (primary — first) and the
      existing feedback-survey link (secondary, below a divider) — kept
      as two distinct links rather than one merged form so neither ask

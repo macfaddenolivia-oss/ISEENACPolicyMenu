@@ -55,10 +55,14 @@ that's not the editable Sheet itself.
 
 Community members suggest resources through the same feedback survey on
 either page, linked in that page's footer and in a popup that appears ~45s
-after page load (`SharedUI.setupFeedbackModal` in `shared-ui.js` — shared
+after the "New here?" tour prompt is resolved, declined or the tour itself
+finishes/is skipped (`SharedUI.setupFeedbackModal` in `shared-ui.js` — shared
 markup/behavior, called separately from `app.js` and `research.js` with
 distinct sessionStorage keys so dismissing one page's popup doesn't dismiss
-the other's). Both pages currently point at the same single survey form —
+the other's; see "The guided tour" below for what "resolved" means). If a
+visitor never interacts with the tour prompt at all, the feedback popup never
+shows that visit — there's no independent fallback timer. Both pages
+currently point at the same single survey form —
 there's no separate Research-Resources-specific form yet. Ryan or Olivia
 periodically review submissions and, for approved suggestions, manually add
 a row to the relevant Sheet tab (first tab for Policy Menu,
@@ -134,9 +138,19 @@ worth knowing before touching this file:
   pages' popups for the session, while declining it on the Policy Menu popup
   only suppresses that page's own popup. See the comment block at the top of
   `onboarding-tour.js` for the reasoning.
-- It's entirely self-contained (own storage keys, own element lookups) and
-  never calls into `app.js` or `research.js`, so it can't interfere with
-  `setupFeedbackModal`'s own separate popup/timer.
+- It's otherwise self-contained (own storage keys, own element lookups) and
+  never calls into `app.js` or `research.js` directly — but it does drive the
+  feedback popup's timing: the moment the "New here?" prompt is resolved
+  (declined, or the tour ends by finishing/skipping/closing, on either leg),
+  `markTourResolved()` sets a shared `tourResolved` sessionStorage flag and
+  dispatches a `tourResolved` `CustomEvent`. `SharedUI.setupFeedbackModal`
+  (called from both `app.js` and `research.js`) waits for that flag/event
+  before starting its own 45s countdown, rather than running on an
+  independent page-load timer — so the feedback popup never competes with an
+  unresolved tour prompt, and never shows at all if a visitor never touches
+  the prompt. Because the flag is `sessionStorage`, resolving the tour on one
+  page and later revisiting the other page still starts that page's own
+  countdown correctly, with no extra cross-page code needed for it.
 
 ## Local development
 

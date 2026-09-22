@@ -1648,8 +1648,10 @@
       /* placeholder text is cosmetic — never block startup on it */
     }
 
-    // Shown once, ~45s after page load, unless already dismissed this
-    // session — see SharedUI.setupFeedbackModal for the full behavior
+    // Shown once, ~45s after the "New here?" tour prompt is resolved
+    // (declined, or the tour itself finishes/is skipped), unless already
+    // dismissed this session — see SharedUI.setupFeedbackModal for the
+    // full behavior
     // (entirely self-contained, so a missing/broken modal element can
     // never take down the core filtering app). "feedbackModalDismissed"
     // (no page suffix) is this key's original, unchanged name from
