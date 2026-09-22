@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://macfaddenolivia-oss.github.io/ISEENACPolicyMenu/sitemap.xml
