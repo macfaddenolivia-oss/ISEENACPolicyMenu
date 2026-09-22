@@ -275,7 +275,7 @@ a:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px 27px;
+  padding: 11px 27px;
   font: inherit;
   font-size: var(--fs-control);
   font-weight: 700;
