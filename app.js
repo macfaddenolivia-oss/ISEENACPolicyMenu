@@ -114,6 +114,7 @@
     var out = [];
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
+      var topicsRaw = pick(row, "Topics");
       var rec = {
         resource: pick(row, "Resource"),
         creator: pick(row, "Creator"),
@@ -121,6 +122,12 @@
         subtype: pick(row, "Subtype"),
         description: pick(row, "Description"),
         stem: pick(row, "STEM Yes/No"),
+        topics: topicsRaw
+          .split(";")
+          .map(function (t) {
+            return t.trim();
+          })
+          .filter(Boolean),
         link: pick(row, "Link"),
       };
       if (!rec.resource && !rec.link) continue; // nothing renderable
@@ -827,6 +834,21 @@
         highlight(r.resource, terms) + "</a>"
       : highlight(r.resource, terms);
 
+    // Same .topic-pills/.topic-pill markup and dashed-divider placement
+    // as the Research Resources cards (see cardHTML in research.js) —
+    // reuses that shared, page-agnostic CSS rather than a new style.
+    var topicsHTML = "";
+    if (r.topics.length) {
+      topicsHTML =
+        '<div class="topic-pills">' +
+        r.topics
+          .map(function (t) {
+            return '<span class="topic-pill">' + esc(t) + "</span>";
+          })
+          .join("") +
+        "</div>";
+    }
+
     return (
       '<article class="card" style="--type-h:' + hue + ";--d:" + delay + 'ms"' +
       ' data-type="' + esc(r.type) + '" data-sub="' + esc(r.subtype) + '"' +
@@ -843,6 +865,7 @@
       (tags ? '<div class="tagrow">' + tags + "</div>" : "") +
       '<p class="desc">' + highlight(r.description || "No description provided.", terms) + "</p>" +
       (meta ? '<div class="meta"><div><div class="meta-inner">' + meta + "</div></div></div>" : "") +
+      topicsHTML +
       "</article>"
     );
   }
