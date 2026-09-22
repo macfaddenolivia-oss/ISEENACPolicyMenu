@@ -199,6 +199,7 @@
     onlineValues: [], // selected "Is it still online" raw values (OR within this facet)
     topics: [], // selected Topic values (OR within this facet) — a resource can carry several Topics, so matching one is enough (see countIncluding's multi flag / passes below)
     creators: [], // selected Creator values (OR within this facet, same as the Policy Menu's Organization pills)
+    matchMode: "all", // "all" (AND — every active facet must match) or "any" (OR — at least one does) — "all" is the default, same as the Policy Menu's
   };
   var el = {};
   // Bound to el.toast once boot() has resolved it — see the shared
@@ -237,22 +238,44 @@
     });
   }
 
+  // Type/Online/Topic/Creator are the four facets a resource is
+  // filtered on here — same AND/OR-across-facets pattern as app.js's own
+  // FACETS/passes (see the comment there), just against this page's own
+  // fields. Within a single facet, multiple selected values are always
+  // OR'd together (see each field's own comment on `state` above)
+  // regardless of matchMode; matchMode only governs how the facets
+  // combine with each other.
+  var FACETS = [
+    { field: "type", list: "types" },
+    { field: "onlineBucket", list: "onlineValues" },
+    { field: "topics", list: "topics", multi: true },
+    { field: "creator", list: "creators" },
+  ];
+
   function passes(r) {
     if (!matchesSearch(r)) return false;
-    if (state.types.length && state.types.indexOf(r.type) === -1) return false;
-    if (state.onlineValues.length && state.onlineValues.indexOf(r.onlineBucket) === -1) return false;
-    // Topic is multi-valued (r.topics is an array) — matching *any* one
-    // of the selected Topics is enough, not an exact single-value match.
-    if (
-      state.topics.length &&
-      !r.topics.some(function (t) {
-        return state.topics.indexOf(t) !== -1;
-      })
-    ) {
-      return false;
+
+    var active = [];
+    for (var i = 0; i < FACETS.length; i++) {
+      var f = FACETS[i];
+      var values = state[f.list];
+      if (!values.length) continue;
+      if (f.multi) {
+        active.push(
+          r[f.field].some(function (v) {
+            return values.indexOf(v) !== -1;
+          })
+        );
+      } else {
+        active.push(values.indexOf(r[f.field]) !== -1);
+      }
     }
-    if (state.creators.length && state.creators.indexOf(r.creator) === -1) return false;
-    return true;
+
+    if (!active.length) return true;
+    if (state.matchMode === "any") {
+      return active.indexOf(true) !== -1;
+    }
+    return active.indexOf(false) === -1;
   }
 
   function currentResults() {
@@ -392,13 +415,26 @@
   // .status-filter for the interactive/selected-state additions a
   // clickable pill needs on top of that read-only badge look. Its value
   // is the bucket key ("online"/"offline"), not a raw CSV string.
+  // mayHide/typeMuted are ported as-is from app.js's own pillHTML (see
+  // the full reasoning there): mayHide lets a 0-count tag disappear
+  // outright on mobile (via .pill-may-hide, only relevant combined with
+  // .is-empty — see styles.css) rather than just sitting there grayed
+  // out — always allowed for Type, but only for the other facets
+  // (Online/Topic/Creator here, Subtype/Topic/Organization there) once
+  // AND is guaranteed *not* to be why a combination looks unsatisfiable
+  // (i.e. once OR is active, where adding filters only ever adds
+  // matches). typeMuted dims unselected Type pills once at least one
+  // Type is active in OR mode, for the same at-a-glance reason app.js
+  // documents — pure visual emphasis, never a count or hide/show change.
   function pillHTML(value, count, active, kind) {
     var isEmpty = count === 0;
+    var mayHide = isEmpty && (kind === "type" || state.matchMode === "any");
 
     if (kind === "online") {
       return (
         '<button class="pill status-badge status-' + value + ' status-filter' +
-        (isEmpty ? " is-empty" : "") + '"' +
+        (isEmpty ? " is-empty" : "") +
+        (mayHide ? " pill-may-hide" : "") + '"' +
         ' type="button"' +
         ' aria-pressed="' + (active ? "true" : "false") + '"' +
         ' data-filter="online"' +
@@ -409,10 +445,19 @@
       );
     }
 
+    var typeMuted =
+      kind === "type" &&
+      !active &&
+      state.matchMode === "any" &&
+      state.types.length > 0;
     var hue = kind === "type" ? typeHue[value] : null;
     var style = hue != null ? ' style="--type-h:' + hue + '"' : "";
     return (
-      '<button class="pill' + (isEmpty ? " is-empty" : "") + '"' +
+      '<button class="pill' +
+        (isEmpty ? " is-empty" : "") +
+        (mayHide ? " pill-may-hide" : "") +
+        (typeMuted ? " pill-type-muted" : "") +
+        '"' +
       ' type="button"' +
       ' aria-pressed="' + (active ? "true" : "false") + '"' +
       ' data-filter="' + kind + '"' +
@@ -621,6 +666,9 @@
   }
 
   function render() {
+    el.matchAllBtn.setAttribute("aria-pressed", state.matchMode === "all" ? "true" : "false");
+    el.matchAnyBtn.setAttribute("aria-pressed", state.matchMode === "any" ? "true" : "false");
+
     var typeCounts = countIncluding("types", "type");
     renderFilterPills(typeCounts);
 
@@ -683,6 +731,7 @@
     state.onlineValues.length = 0;
     state.topics.length = 0;
     state.creators.length = 0;
+    state.matchMode = "all";
     setSearch("");
     el.search.value = "";
   }
@@ -720,6 +769,18 @@
       else if (kind === "topic") toggleIn(state.topics, value);
       else if (kind === "org") toggleIn(state.creators, value);
       else if (kind === "online") toggleIn(state.onlineValues, value);
+      exitRandomPick();
+      render();
+    });
+
+    // Match-mode toggle: how Type/Online/Topic/Creator selections
+    // combine — same markup/behavior as the Policy Menu's (see app.js).
+    el.matchMode.addEventListener("click", function (e) {
+      var b = e.target.closest(".seg-btn");
+      if (!b) return;
+      var mode = b.getAttribute("data-mode");
+      if (mode === state.matchMode) return;
+      state.matchMode = mode;
       exitRandomPick();
       render();
     });
@@ -869,6 +930,9 @@
       filterToggleLabel: $("rr-filter-toggle-label"),
       filterBadge: $("rr-filter-badge"),
       clearFilters: $("rr-clear-filters"),
+      matchMode: $("rr-match-mode"),
+      matchAllBtn: $("rr-match-all-btn"),
+      matchAnyBtn: $("rr-match-any-btn"),
     };
 
     var missing = [];
