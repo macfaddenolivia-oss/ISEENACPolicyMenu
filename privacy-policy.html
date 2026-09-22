@@ -23,8 +23,22 @@
   </div>
   <nav class="site-nav" aria-label="Site">
     <div class="site-nav-inner">
-      <a href="index.html">Policy Menu</a>
-      <a href="research-resources.html">Research Resources</a>
+      <!-- Same .info-btn/.tooltip reveal pattern used elsewhere on the
+           site (see styles.css) — hover, keyboard focus, or tap on the
+           tab itself shows what that page is, copied verbatim from its
+           own header subtitle (index.html/research-resources.html)
+           rather than new copy. This page loads no JS of its own, so
+           the tap-to-open behavior on touch (see setupInfoTooltips in
+           shared-ui.js) needs that script included here too — hover and
+           keyboard focus work from the CSS alone either way. -->
+      <span class="nav-item-wrap">
+        <a href="index.html" aria-describedby="nav-tab-tooltip-policy">Policy Menu</a>
+        <span class="tooltip" id="nav-tab-tooltip-policy" role="tooltip">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action.</span>
+      </span>
+      <span class="nav-item-wrap">
+        <a href="research-resources.html" aria-describedby="nav-tab-tooltip-research">Research Resources</a>
+        <span class="tooltip" id="nav-tab-tooltip-research" role="tooltip">Databases, tools, and data sources to support environmental health research.</span>
+      </span>
     </div>
   </nav>
 </header>
@@ -75,5 +89,11 @@
   </footer>
 </div>
 
+<!-- Only used for the nav tab tooltips' tap-to-open behavior on touch
+     (see setupInfoTooltips in shared-ui.js) — this page has no other
+     interactive JS. Placed at the end of body, after the nav markup
+     above, so the elements it queries already exist. -->
+<script src="shared-ui.js"></script>
+<script>SharedUI.setupInfoTooltips();</script>
 </body>
 </html>

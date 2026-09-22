@@ -810,38 +810,10 @@ kbd {
 }
 .info-btn:focus-visible { outline: none; box-shadow: var(--ring); }
 
-.info-btn .tooltip {
-  position: absolute;
-  z-index: 40;
-  left: 0;
-  top: calc(100% + 8px);
-  width: max-content;
-  max-width: min(320px, 80vw);
-  background: var(--text);
-  color: var(--bg);
-  font-size: var(--fs-body);
-  font-weight: 400;
-  line-height: 1.45;
-  text-align: left;
-  padding: 8px 11px;
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
-  opacity: 0;
-  transform: translateY(-4px);
-  pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-/* Hover/focus cover mouse and keyboard; .info-open (toggled in app.js)
-   covers touch, where :hover can't be relied on to open *and* close it
-   again on a second tap. */
-.info-btn:hover .tooltip,
-.info-btn:focus-visible .tooltip,
-.info-btn.info-open .tooltip {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
+/* .tooltip's own cosmetic rule (position/size/colors) and its hover/
+   focus/tap reveal are defined once, shared with .nav-item-wrap's tab
+   tooltips — see "Nav tab tooltips" further down (kept there since that
+   section also needs to explain the nav-specific overflow handling). */
 
 /* The boxed groups (Type+Subtype, Topic, Organization), stacked. */
 .filter-bar-tags {
@@ -2432,16 +2404,76 @@ footer.foot {
   text-underline-offset: 4px;
 }
 
-/* ---------- Research Resources nav nudge (Policy Menu only) ---------- */
+/* ---------- Nav tab tooltips + Research Resources nav nudge ---------- */
 
-/* Groups the "Research Resources" link with .nav-nudge right after it
-   on the same row (not the whole nav) — purely a grouping box, no
-   positioning/sizing of its own, so the <a>'s own rendered box (and
-   the tour's getBoundingClientRect highlight around
+/* Wraps each nav tab <a> (Policy Menu, Research Resources — on every
+   page sharing .site-nav) so it has somewhere to anchor its own
+   describing .tooltip (see below), and — for Research Resources only —
+   .nav-nudge right after it on the same row. Otherwise a plain grouping
+   box: no sizing of its own beyond position:relative, so the <a>'s own
+   rendered box (and the tour's getBoundingClientRect highlight around
    '.site-nav a[href="research-resources.html"]') is unaffected. */
 .nav-item-wrap {
+  position: relative;
   display: inline-flex;
   align-items: center;
+}
+
+/* Same .info-btn/.tooltip pattern used elsewhere (Match all/any, "Is it
+   still online") — reveal on hover/keyboard-focus/tap, describing text
+   is each page's own header subtitle (see index.html/research-
+   resources.html/privacy-policy.html) rather than new copy. The tab
+   link itself needs no tabindex/role changes: <a> is natively
+   focusable, and :has(a:focus-visible) mirrors .info-btn's own
+   :focus-visible trigger without needing the tooltip to be a child of
+   the focusable element itself (it's a sibling here, not a child, since
+   nesting it inside the <a> would make clicking the tooltip's own text
+   trigger navigation). .info-open is toggled the same way .info-btn's
+   is (see setupInfoTooltips in shared-ui.js) for touch, which has no
+   hover to reveal it passively. */
+.info-btn .tooltip,
+.nav-item-wrap .tooltip {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  top: calc(100% + 8px);
+  width: max-content;
+  max-width: min(320px, 80vw);
+  background: var(--text);
+  color: var(--bg);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  padding: 8px 11px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.info-btn:hover .tooltip,
+.info-btn:focus-visible .tooltip,
+.info-btn.info-open .tooltip,
+.nav-item-wrap:hover .tooltip,
+.nav-item-wrap:has(a:focus-visible) .tooltip,
+.nav-item-wrap.info-open .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Research Resources is the nav's last/rightmost tab — a left-anchored
+   tooltip (the default above, fine for Policy Menu near the nav's left
+   edge) would grow rightward from well into the row and can overflow a
+   narrow viewport, same risk .nav-nudge already accounts for. Anchoring
+   from the wrap's right edge instead keeps it growing leftward, safely
+   within the viewport regardless of how far right the tab itself sits. */
+.site-nav-inner > .nav-item-wrap:last-child .tooltip {
+  left: auto;
+  right: 0;
 }
 
 /* Small, quiet, persistent pointer at the Research Resources tab,

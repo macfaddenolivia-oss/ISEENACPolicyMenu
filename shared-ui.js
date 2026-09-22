@@ -50,28 +50,55 @@
   };
 
   // Info-tooltip open/close (e.g. the Policy Menu's Match all/any info
-  // button, Research Resources' "Is it still online" info button):
-  // :hover/:focus-visible in CSS already reveal a .tooltip for mouse and
-  // keyboard; touch has no :hover, so a tap needs to explicitly open
-  // *and* close it. Delegated across every .info-btn on the page, since
-  // Research Resources has more than one instance (preview row + full
-  // filter row) — a page with just one (the Policy Menu) behaves
-  // identically, delegation just costs nothing extra there.
+  // button, Research Resources' "Is it still online" info button, every
+  // page's nav tab tooltips): :hover/:focus-visible in CSS already
+  // reveal a .tooltip for mouse and keyboard; touch has no :hover, so a
+  // tap needs to explicitly open *and* close it. Delegated across every
+  // .info-btn/.nav-item-wrap on the page (more than one of either on
+  // some pages) — a page with just one behaves identically, delegation
+  // just costs nothing extra there.
   function setupInfoTooltips() {
+    function closeAllExcept(keep) {
+      document.querySelectorAll(".info-btn.info-open, .nav-item-wrap.info-open").forEach(function (b) {
+        if (b !== keep) b.classList.remove("info-open");
+      });
+    }
+
     document.querySelectorAll(".info-btn").forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
         var wasOpen = btn.classList.contains("info-open");
-        document.querySelectorAll(".info-btn.info-open").forEach(function (b) {
-          b.classList.remove("info-open");
-        });
+        closeAllExcept(null);
         if (!wasOpen) btn.classList.add("info-open");
       });
     });
-    document.addEventListener("click", function () {
-      document.querySelectorAll(".info-btn.info-open").forEach(function (b) {
-        b.classList.remove("info-open");
+
+    // .nav-item-wrap holds a real <a> (navigates on click), not a
+    // decorative button like .info-btn — unlike that case, a touch tap
+    // here needs to be interceptable so the tooltip is actually
+    // readable rather than flashing past as the page navigates away.
+    // Gated to hover:none (genuine touch/no-hover devices) so mouse
+    // clicks on hover-capable devices are completely unaffected and
+    // always navigate immediately on the first click, exactly as
+    // before — hover already revealed the tooltip there, if wanted,
+    // before the click ever happens. A second tap on an already-open
+    // tab (tooltip already showing) is allowed through to navigate.
+    document.querySelectorAll(".nav-item-wrap").forEach(function (wrap) {
+      var link = wrap.querySelector("a");
+      if (!link) return;
+      link.addEventListener("click", function (e) {
+        var noHover = window.matchMedia && window.matchMedia("(hover: none)").matches;
+        if (noHover && !wrap.classList.contains("info-open")) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeAllExcept(wrap);
+          wrap.classList.add("info-open");
+        }
       });
+    });
+
+    document.addEventListener("click", function () {
+      closeAllExcept(null);
     });
   }
 
