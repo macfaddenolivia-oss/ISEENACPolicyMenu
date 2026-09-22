@@ -1580,6 +1580,18 @@ mark {
 .state h2 { margin: 0 0 7px; font-size: var(--fs-heading); font-weight: 700; }
 .state p { margin: 0 auto 18px; color: var(--text-2); max-width: 46ch; }
 
+/* 404 page's two CTA buttons, inside a .state block (see 404.html) —
+   same flex/gap/wrap pattern as .onboarding-modal-actions and
+   .feedback-cta-actions elsewhere (10px gap matches both), just
+   centered rather than stretched or flush against sibling content,
+   since this row is the .state block's only content. */
+.notfound-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .skeleton-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page Not Found · Environmental Epidemiology</title>
+<meta name="description" content="The page you're looking for doesn't exist. Find your way back to the Policy Menu or Research Resources.">
+<link rel="stylesheet" href="styles.css">
+<script data-goatcounter="https://isee-policy-menu.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="brand">
+      <a href="https://isee-northamerica.org/" target="_blank" rel="noopener noreferrer">
+        <img class="brand-logo" src="img/isee-logo-2.png" alt="ISEE North America">
+      </a>
+      <div class="brand-text">
+        <h1 class="brand-name">Page Not Found</h1>
+        <p class="brand-subtitle">Environmental Health Policy Engagement Database</p>
+      </div>
+    </div>
+  </div>
+  <nav class="site-nav" aria-label="Site">
+    <div class="site-nav-inner">
+      <!-- Same .info-btn/.tooltip reveal pattern used elsewhere on the
+           site (see styles.css) — hover, keyboard focus, or tap on the
+           tab itself shows what that page is, copied verbatim from its
+           own header subtitle (index.html/research-resources.html)
+           rather than new copy. This page loads no page-specific JS of
+           its own, so the tap-to-open behavior on touch (see
+           setupInfoTooltips in shared-ui.js) needs that script included
+           here too — hover and keyboard focus work from the CSS alone
+           either way. -->
+      <span class="nav-item-wrap">
+        <a href="./" aria-describedby="nav-tab-tooltip-policy">Policy Menu</a>
+        <span class="tooltip" id="nav-tab-tooltip-policy" role="tooltip">Searchable database of guides, legal resources, other databases, and advocacy tools for turning environmental health science into policy and action in the United States.</span>
+      </span>
+      <span class="nav-item-wrap">
+        <a href="research-resources.html" aria-describedby="nav-tab-tooltip-research">Research Resources</a>
+        <span class="tooltip" id="nav-tab-tooltip-research" role="tooltip">Databases, tools, and data sources to support environmental health research in the United States.</span>
+      </span>
+    </div>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="policy">
+    <!-- Reuses the site's existing empty-state pattern (.state/.icon,
+         see "No resources match" in app.js/styles.css) rather than a
+         new one-off layout — same round icon badge, heading, and body
+         copy treatment, just with 404-specific content. Icon is the
+         same magnifying glass used for both pages' own search boxes
+         (SharedUI.ICONS.search), reused verbatim rather than a new SVG
+         path drawn just for this page. -->
+    <div class="state">
+      <div class="icon" id="notfound-icon"></div>
+      <h2>Looks like this link didn't survive the exposure.</h2>
+      <p>We couldn't find what you were looking for. It may have moved, or the link might have a typo. Here are two good places to start instead.</p>
+      <div class="notfound-actions">
+        <a class="btn btn-primary" href="./">Go to Policy Menu</a>
+        <a class="btn" href="research-resources.html">Go to Research Resources</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="foot-hint">
+      <span>Created and curated by <a href="https://www.linkedin.com/in/olivia-macfadden/" target="_blank" rel="noopener noreferrer"> Olivia Macfadden</a> and <a href="https://rydalf.github.io/website/" target="_blank" rel="noopener noreferrer">Ryan Dalforno</a> on behalf of the <a href="https://www.isee-northamerica.org/policy.php" target="_blank" rel="noopener noreferrer"> International Society for Environmental Epidemiology - North America Chapter's Policy Committee</a></span>
+      <span><a href="privacy-policy.html">Privacy Policy</a></span>
+    </div>
+  </footer>
+</div>
+
+<!-- Sets the icon above and wires up the nav tab tooltips' tap-to-open
+     behavior on touch (see setupInfoTooltips in shared-ui.js) — this
+     page has no other interactive JS. Placed at the end of body, after
+     the markup above, so the elements it queries already exist. -->
+<script src="shared-ui.js"></script>
+<script>
+  document.getElementById("notfound-icon").innerHTML = SharedUI.ICONS.search;
+  SharedUI.setupInfoTooltips();
+</script>
+</body>
+</html>
