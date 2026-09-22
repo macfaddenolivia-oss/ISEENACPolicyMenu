@@ -531,12 +531,18 @@
     var onlineClass = classifyOnline(r.online);
     var badgeText = onlineLabel(r.online);
 
+    // Same --type-h this type's filter pill and .tag.type tag use (see
+    // pillHTML/typeHue) — set on the article itself too so the card's
+    // existing .card::before left-edge stripe (ported as-is from
+    // app.js's Policy Menu cards, see that rule in styles.css) picks up
+    // the same color rather than a second value that could drift out
+    // of sync. Same 220 fallback app.js's cardHTML uses for a card
+    // with no Type.
+    var hue = typeHue[r.type] != null ? typeHue[r.type] : 220;
+
     var tags = "";
     if (r.type) {
-      // Same --type-h this type's filter pill uses (see pillHTML) so
-      // .tag.type's existing hue-based color rules pick it up here too.
-      var hue = typeHue[r.type];
-      var hueStyle = hue != null ? ' style="--type-h:' + hue + '"' : "";
+      var hueStyle = ' style="--type-h:' + hue + '"';
       tags +=
         '<span class="tag type tag-static"' + hueStyle + '>' +
         esc(r.type) +
@@ -567,7 +573,7 @@
       : esc(r.resource);
 
     return (
-      '<article class="card rr-card">' +
+      '<article class="card rr-card" style="--type-h:' + hue + '">' +
       '<div class="card-head"><h3>' + title + "</h3>" +
       '<span class="status-badge status-' + onlineClass + '">' + esc(badgeText) + "</span>" +
       "</div>" +
