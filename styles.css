@@ -2493,20 +2493,6 @@ footer.foot {
   margin-bottom: 8px;
 }
 
-/* Type tag's count badge — mirrors .pill .n's look (tabular numerals, a
-   small pill of its own) so the number reads the same way it does on
-   the Type filter pill above, tinted with that same --type-h the tag
-   itself is now colored with (set inline per card — see cardHTML in
-   research.js) rather than a plain neutral gray. */
-.tag.type .n {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--fs-meta);
-  margin-left: 1px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: hsl(var(--type-h) var(--type-s) var(--type-l) / 0.18);
-  color: inherit;
-}
 
 .topic-pills {
   display: flex;

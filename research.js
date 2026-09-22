@@ -526,7 +526,7 @@
     );
   }
 
-  function cardHTML(r, typeCounts) {
+  function cardHTML(r) {
     var url = safeUrl(r.link);
     var onlineClass = classifyOnline(r.online);
     var badgeText = onlineLabel(r.online);
@@ -534,16 +534,12 @@
     var tags = "";
     if (r.type) {
       // Same --type-h this type's filter pill uses (see pillHTML) so
-      // .tag.type's existing hue-based color rules pick it up here too,
-      // and the same live count that pill currently shows, so the tag
-      // and the pill never disagree.
+      // .tag.type's existing hue-based color rules pick it up here too.
       var hue = typeHue[r.type];
       var hueStyle = hue != null ? ' style="--type-h:' + hue + '"' : "";
-      var typeCount = (typeCounts && typeCounts[r.type]) || 0;
       tags +=
         '<span class="tag type tag-static"' + hueStyle + '>' +
         esc(r.type) +
-        ' <span class="n">' + typeCount + "</span>" +
         "</span>";
     }
 
@@ -584,9 +580,6 @@
   }
 
   function render() {
-    // Computed once here (not inside renderFilterPills) so the exact
-    // same numbers reach the Type filter pills and every card's Type
-    // tag below — see cardHTML.
     var typeCounts = countIncluding("types", "type");
     renderFilterPills(typeCounts);
 
@@ -630,7 +623,7 @@
     el.grid.className = "grid";
     el.grid.innerHTML = results
       .map(function (r) {
-        return cardHTML(r, typeCounts);
+        return cardHTML(r);
       })
       .join("");
   }
