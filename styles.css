@@ -2252,6 +2252,16 @@ footer.foot {
   color: var(--text);
 }
 
+/* One-line description of the site, above the tour question: same size,
+   darker and slightly heavier so it reads as the lead line. */
+.onboarding-modal-desc {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .onboarding-modal-text {
   margin: 0 0 20px;
   color: var(--text-2);
