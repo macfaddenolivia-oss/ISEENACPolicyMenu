@@ -1706,22 +1706,34 @@ mark {
   position: relative;
   width: 100%;
   max-width: 380px;
-  /* Belt-and-suspenders on short viewports (mobile landscape especially)
-     — scroll the modal itself rather than letting it overflow the
-     backdrop or the screen, even though the compact content here is in
-     practice never close to tall enough to need it. */
+  /* With three sections the content can outgrow short viewports (phones,
+     mobile landscape especially). The card itself is capped and clips;
+     only .feedback-modal-body below scrolls, so the absolutely
+     positioned close button stays pinned to the card's corner instead
+     of scrolling away with the content. dvh (with a vh fallback for
+     older browsers) tracks the visible area as mobile browser chrome
+     shows/hides. */
   max-height: calc(100vh - 40px);
-  overflow-y: auto;
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  padding: 30px 24px 24px;
   text-align: center;
   transform: translateY(10px) scale(0.98);
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .feedback-modal-backdrop.show .feedback-modal { transform: none; }
+
+.feedback-modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 30px 24px 24px;
+}
 
 .feedback-modal-close {
   position: absolute;
@@ -1739,6 +1751,8 @@ mark {
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  /* Above .feedback-modal-body's scrolling content. */
+  z-index: 1;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -1760,16 +1774,15 @@ mark {
   line-height: 1.5;
 }
 
-/* Separates the email signup (primary ask above) from the existing
-   feedback-survey link (secondary ask below) so the two don't read as
-   one long form. */
+/* Separates each section (email signup, feedback survey, user stories)
+   so they don't read as one long form. */
 .feedback-modal-divider {
   margin: 20px 0 16px;
   border: 0;
   border-top: 1px solid var(--border);
 }
 
-/* Second section's heading — same size as .feedback-modal-title above
+/* Later sections' headings — same size as .feedback-modal-title above
    (both are --fs-heading), but a lighter weight instead of a smaller
    size to still read as a subsection of this one modal rather than a
    second dialog. */
@@ -2063,7 +2076,8 @@ mark {
      room to breathe on the narrowest phones without needing to shrink
      its own max-width. */
   .feedback-modal-backdrop { padding: 14px; }
-  .feedback-modal { padding: 26px 20px 20px; }
+  .feedback-modal { max-height: calc(100vh - 28px); max-height: calc(100dvh - 28px); }
+  .feedback-modal-body { padding: 26px 20px 20px; }
 }
 
 /* ---------- No-JavaScript fallback ---------- */

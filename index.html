@@ -331,11 +331,11 @@
      SharedUI.setupFeedbackModal in shared-ui.js, called from app.js with
      this page's own storage key) or the footer CTA above already covers
      the same ask for anyone who scrolls that far without needing a
-     popup at all. Two separate asks
-     stacked in one modal: the email signup (primary — first) and the
-     existing feedback-survey link (secondary, below a divider) — kept
-     as two distinct links rather than one merged form so neither ask
-     reads as a required field of the other. Signup opens the Google
+     popup at all. Three separate asks
+     stacked in one modal, separated by dividers: the email signup
+     (primary — first), the feedback-survey link, and the user-stories
+     form — kept as distinct links rather than one merged form so no
+     ask reads as a required field of another. Each opens its Google
      Form in its own tab rather than embedding it here — an embedded
      iframe showed Google's own account-switcher bar and a second copy
      of the form's own title/description, which duplicated this modal's
@@ -346,13 +346,19 @@
     <button class="feedback-modal-close" id="feedback-modal-close" type="button" aria-label="Close">
       <span id="feedback-modal-close-icon"></span>
     </button>
-    <h2 class="feedback-modal-title" id="feedback-modal-title">Stay in the Loop</h2>
-    <p class="feedback-modal-text">Want to get updates from us when we add a big batch of resources or add new features or tools? Sign up here to stay in the loop — we promise we won't bug you too often.</p>
-    <a class="btn btn-primary feedback-modal-btn" id="feedback-modal-signup-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfSkQJeiw1Yd5cddSESTvEnDISDD2yO10ucS1zlzdKKWmveMg/viewform?usp=sharing&ouid=107812146081185218267" target="_blank" rel="noopener noreferrer">Sign up for updates</a>
-    <hr class="feedback-modal-divider">
-    <h3 class="feedback-modal-subtitle">Have Feedback?</h3>
-    <p class="feedback-modal-text">Have feedback or a resource to suggest? We'd love to hear from you.</p>
-    <a class="btn btn-primary feedback-modal-btn" id="feedback-modal-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfWToxNokh2F44aZsekEC2I9dpu-z2Hl_crvL-047JkQ6xbdA/viewform?usp=sharing" target="_blank" rel="noopener noreferrer">Share feedback</a>
+    <div class="feedback-modal-body">
+      <h2 class="feedback-modal-title" id="feedback-modal-title">Stay in the Loop</h2>
+      <p class="feedback-modal-text">Want to get updates from us when we add a big batch of resources or add new features or tools? Sign up here to stay in the loop. We promise we won't bug you too often.</p>
+      <a class="btn btn-primary feedback-modal-btn" id="feedback-modal-signup-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfSkQJeiw1Yd5cddSESTvEnDISDD2yO10ucS1zlzdKKWmveMg/viewform?usp=sharing&ouid=107812146081185218267" target="_blank" rel="noopener noreferrer">Sign up for updates</a>
+      <hr class="feedback-modal-divider">
+      <h3 class="feedback-modal-subtitle">Have Feedback?</h3>
+      <p class="feedback-modal-text">Have feedback or a resource to suggest? We'd love to hear from you.</p>
+      <a class="btn btn-primary feedback-modal-btn" id="feedback-modal-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfWToxNokh2F44aZsekEC2I9dpu-z2Hl_crvL-047JkQ6xbdA/viewform?usp=sharing" target="_blank" rel="noopener noreferrer">Share feedback</a>
+      <hr class="feedback-modal-divider">
+      <h3 class="feedback-modal-subtitle">Share Your Story</h3>
+      <p class="feedback-modal-text">Has the Policy Menu helped your work? We'd love to hear how you've used it.</p>
+      <a class="btn btn-primary feedback-modal-btn" id="feedback-modal-story-link" href="https://forms.gle/6MCEy83iDcXpPWmBA" target="_blank" rel="noopener noreferrer">Share your story</a>
+    </div>
   </div>
 </div>
 

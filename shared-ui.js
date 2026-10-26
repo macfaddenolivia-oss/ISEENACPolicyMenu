@@ -156,6 +156,7 @@
       var closeIcon = document.getElementById("feedback-modal-close-icon");
       var link = document.getElementById("feedback-modal-link");
       var signupLink = document.getElementById("feedback-modal-signup-link");
+      var storyLink = document.getElementById("feedback-modal-story-link");
       if (!backdrop || !closeBtn || !link) return;
 
       if (closeIcon) closeIcon.innerHTML = ICONS.close;
@@ -192,6 +193,7 @@
       closeBtn.addEventListener("click", dismiss);
       link.addEventListener("click", dismiss);
       if (signupLink) signupLink.addEventListener("click", dismiss);
+      if (storyLink) storyLink.addEventListener("click", dismiss);
       backdrop.addEventListener("click", function (e) {
         if (e.target === backdrop) dismiss();
       });
