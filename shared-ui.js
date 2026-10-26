@@ -120,8 +120,21 @@
   // the tour resolves on Research Resources having started on the
   // Policy Menu, and the visitor later navigates back to the Policy
   // Menu, that later page load sees the flag already set and starts its
-  // own 45s countdown from that load — no extra cross-page code needed
-  // here.
+  // countdown right away.
+  //
+  // The 45s accumulates across page loads rather than restarting on
+  // each one — otherwise a visitor who refreshes or moves between the
+  // two pages more often than every 45s would never see the popup. The
+  // first time a countdown starts this session, its start time is saved
+  // under COUNTDOWN_STARTED_KEY (shared by both pages, unlike the
+  // per-page dismissal keys); every later countdown, on either page,
+  // only waits out whatever is left of the original 45s, with a short
+  // MIN_DELAY_MS floor so the popup never appears the instant a page
+  // loads. The tour gating above is unchanged: a later page load still
+  // waits for "tourResolved" first, so this only shortens the wait
+  // *after* resolution, never skips it. If sessionStorage is blocked,
+  // this falls back to a full 45s countdown from each start, the
+  // previous behavior.
   //
   // This read below only sees a *correct* value because of script load
   // order: onboarding-tour.js's own resume/fresh-prompt decision (and
@@ -134,6 +147,10 @@
   // real bug that shipped once (the feedback popup appearing on top of
   // an active, unresolved tour) and was fixed by that reordering, not by
   // anything in this file. Don't reorder those <script> tags back.
+  var COUNTDOWN_MS = 45000;
+  var MIN_DELAY_MS = 3000;
+  var COUNTDOWN_STARTED_KEY = "feedbackCountdownStartedAt";
+
   function setupFeedbackModal(storageKey) {
     try {
       // Guarded on its own: some browsers' stricter privacy modes throw
@@ -198,9 +215,35 @@
         if (e.target === backdrop) dismiss();
       });
 
+      // Reads the session's original countdown start time, or saves
+      // now as the start if there isn't a usable one yet (first
+      // countdown this session, or a missing/garbled/future value).
+      // Returns how long is left of the 45s, floored at MIN_DELAY_MS.
+      function remainingDelay() {
+        var now = Date.now();
+        var startedAt = now;
+        try {
+          var saved = parseInt(sessionStorage.getItem(COUNTDOWN_STARTED_KEY), 10);
+          if (saved > 0 && saved <= now) {
+            startedAt = saved;
+          } else {
+            sessionStorage.setItem(COUNTDOWN_STARTED_KEY, String(now));
+          }
+        } catch (e) {
+          /* storage blocked/unavailable — full countdown from now */
+        }
+        return Math.max(COUNTDOWN_MS - (now - startedAt), MIN_DELAY_MS);
+      }
+
       function startCountdown() {
         setTimeout(function () {
-          if (dismissed || sessionStorage.getItem(storageKey)) return;
+          if (dismissed) return;
+          try {
+            if (sessionStorage.getItem(storageKey)) return;
+          } catch (e) {
+            /* storage blocked/unavailable — show it anyway, same
+               fallback as the alreadyDismissed check above */
+          }
           lastFocused = document.activeElement;
           backdrop.hidden = false;
           // Double rAF: guarantees the browser has painted the
@@ -215,7 +258,7 @@
           });
           document.addEventListener("keydown", onKeydown);
           closeBtn.focus();
-        }, 45000);
+        }, remainingDelay());
       }
 
       var tourAlreadyResolved = false;
